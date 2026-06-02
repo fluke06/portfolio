@@ -73,7 +73,7 @@ export function StickyNav({ alwaysVisible = false }: { alwaysVisible?: boolean }
         className="font-fraunces font-black text-[#EDE8E0] leading-none flex-shrink-0 hover:opacity-70 transition-opacity duration-200"
         style={{ fontSize: 'clamp(0.95rem, 1.8vw, 1.2rem)', wordSpacing: '0.12em' }}
       >
-        christian dizon<em className="italic text-[#EDE8E0]">.</em>
+        Christian Dizon<em className="italic text-[#EDE8E0]">.</em>
       </Link>
 
       <div className="hidden sm:flex items-center gap-5 md:gap-8">

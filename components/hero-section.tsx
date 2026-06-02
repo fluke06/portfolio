@@ -112,7 +112,7 @@ export function HeroSection({ introDone }: { introDone: boolean }) {
           className="font-fraunces font-black text-[#EDE8E0]"
           style={{ fontSize: 'clamp(0.88rem, 1.5vw, 1.1rem)', wordSpacing: '0.12em' }}
         >
-          CHRISTIAN DIZON.
+          Christian Dizon.
         </span>
         <nav aria-label="Main navigation" className="flex items-center gap-6 sm:gap-10">
           {([['About', '/about'], ['Works', '/works'], ['Contact', '/contact']] as const).map(([label, href]) => (

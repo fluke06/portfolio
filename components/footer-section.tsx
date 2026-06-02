@@ -98,7 +98,7 @@ export function FooterSection() {
                 opacity:       0.18,
               }}
             >
-              CHRISTIAN DIZON
+              Christian Dizon
             </span>
           ))}
         </div>
