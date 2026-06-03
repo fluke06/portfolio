@@ -232,28 +232,31 @@ export function HeroSection({ introDone }: { introDone: boolean }) {
             opacity:       0.40,
           }}
         >
-          {NAME.split('').map((char, i) => (
-            <m.span
-              key={i}
-              className="inline-block"
-              style={{
-                ...(char === ' ' ? { width: '0.38em' } : {}),
-                willChange: 'transform, opacity',
-              }}
-              initial={{ opacity: 0, y: '55%' }}
-              animate={show
-                ? { opacity: 1, y: '0%' }
-                : { opacity: 0, y: '55%' }
-              }
-              transition={{
-                duration: 0.92,
-                delay:    0.55 + i * 0.048,
-                ease:     expo,
-              }}
-            >
-              {char === ' ' ? ' ' : char}
-            </m.span>
-          ))}
+          {NAME.split('').map((char, i) =>
+            char === ' ' ? (
+              <span key={i} aria-hidden="true">
+                <br className="sm:hidden" />
+                <m.span
+                  className="hidden sm:inline-block"
+                  style={{ width: '0.38em', willChange: 'transform, opacity' }}
+                  initial={{ opacity: 0, y: '55%' }}
+                  animate={show ? { opacity: 1, y: '0%' } : { opacity: 0, y: '55%' }}
+                  transition={{ duration: 0.92, delay: 0.55 + i * 0.048, ease: expo }}
+                />
+              </span>
+            ) : (
+              <m.span
+                key={i}
+                className="inline-block"
+                style={{ willChange: 'transform, opacity' }}
+                initial={{ opacity: 0, y: '55%' }}
+                animate={show ? { opacity: 1, y: '0%' } : { opacity: 0, y: '55%' }}
+                transition={{ duration: 0.92, delay: 0.55 + i * 0.048, ease: expo }}
+              >
+                {char}
+              </m.span>
+            )
+          )}
         </div>
       </m.div>
     </section>
