@@ -145,7 +145,7 @@ export function HeroSection({ introDone }: { introDone: boolean }) {
       {/* ── Bio text — mobile, below moon ── */}
       <m.div
         className="absolute left-6 right-6 sm:hidden"
-        style={{ bottom: 'calc(10vw + 5.5rem)', zIndex: 10 }}
+        style={{ bottom: 'calc(10vw + 7.5rem)', zIndex: 10 }}
         initial={{ opacity: 0, y: 14 }}
         animate={show ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
         transition={{ duration: 0.78, delay: 0.48, ease: expo }}
@@ -223,9 +223,9 @@ export function HeroSection({ introDone }: { introDone: boolean }) {
         aria-hidden="true"
       >
         <div
-          className="font-fraunces font-black leading-[0.86] whitespace-nowrap"
+          className="font-fraunces font-black leading-[0.86] sm:whitespace-nowrap"
           style={{
-            fontSize:      'clamp(3.5rem, 10vw, 20rem)',
+            fontSize:      'clamp(4rem, 10vw, 20rem)',
             paddingLeft:   '0.08em',
             paddingBottom: '0.02em',
             color:         '#EDE8E0',
