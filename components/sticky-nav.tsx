@@ -1,7 +1,6 @@
 'use client';
 import { useRef, useEffect, useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const NAV_LINKS = [
@@ -80,37 +79,37 @@ export function StickyNav({ alwaysVisible = false }: { alwaysVisible?: boolean }
           borderBottom: border,
         }}
       >
-        <Link
+        <a
           href="/"
           className="font-fraunces font-black text-[#EDE8E0] leading-none flex-shrink-0 hover:opacity-70 transition-opacity duration-200"
           style={{ fontSize: 'clamp(0.95rem, 1.8vw, 1.2rem)', wordSpacing: '0.12em' }}
         >
           Christian Dizon<em className="italic">.</em>
-        </Link>
+        </a>
 
         {/* Desktop nav links */}
         <div className="hidden sm:flex items-center gap-5 md:gap-8">
           {NAV_LINKS.map(link => (
-            <Link
+            <a
               key={link.label}
               href={link.href}
               className="font-inter font-medium hover:text-[#EDE8E0] transition-colors duration-200 text-sm"
               style={{ color: '#b4ac97' }}
             >
               {link.label}
-            </Link>
+            </a>
           ))}
         </div>
 
         <div className="flex items-center gap-3">
           {/* Desktop CTA */}
-          <Link
+          <a
             href="/contact"
             className="hidden sm:inline-flex rounded-full font-inter font-medium text-xs items-center min-h-[44px] px-5 transition-colors duration-200 hover:bg-[#b4ac97] hover:text-[#100F0D]"
             style={{ color: '#b4ac97', border: '1px solid #b4ac97' }}
           >
             Start a project
-          </Link>
+          </a>
 
           {/* Hamburger — mobile only */}
           <button
@@ -162,7 +161,7 @@ export function StickyNav({ alwaysVisible = false }: { alwaysVisible?: boolean }
       >
         <div className="px-5 pt-1 pb-5 flex flex-col">
           {NAV_LINKS.map(link => (
-            <Link
+            <a
               key={link.label}
               href={link.href}
               onClick={() => setOpen(false)}
@@ -170,16 +169,16 @@ export function StickyNav({ alwaysVisible = false }: { alwaysVisible?: boolean }
               style={{ borderBottom: '1px solid rgba(237,232,224,0.06)' }}
             >
               {link.label}
-            </Link>
+            </a>
           ))}
-          <Link
+          <a
             href="/contact"
             onClick={() => setOpen(false)}
             className="mt-4 inline-flex justify-center items-center rounded-full font-inter font-medium text-sm min-h-[44px] px-5 transition-colors duration-200 hover:bg-[#b4ac97] hover:text-[#100F0D]"
             style={{ color: '#b4ac97', border: '1px solid #b4ac97' }}
           >
             Start a project
-          </Link>
+          </a>
         </div>
       </div>
     </div>
