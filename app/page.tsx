@@ -1,8 +1,16 @@
+import dynamic from 'next/dynamic';
 import { HomeClient } from '@/components/home-client';
-import { ProjectsSection } from '@/components/projects-section';
-import { CtaSection } from '@/components/cta-section';
-import { FooterSection } from '@/components/footer-section';
 import { StickyNav } from '@/components/sticky-nav';
+
+const ProjectsSection = dynamic(() =>
+  import('@/components/projects-section').then(m => ({ default: m.ProjectsSection }))
+);
+const CtaSection = dynamic(() =>
+  import('@/components/cta-section').then(m => ({ default: m.CtaSection }))
+);
+const FooterSection = dynamic(() =>
+  import('@/components/footer-section').then(m => ({ default: m.FooterSection }))
+);
 
 export default function HomePage() {
   return (

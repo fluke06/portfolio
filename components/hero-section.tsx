@@ -215,12 +215,12 @@ export function HeroSection({ introDone }: { introDone: boolean }) {
               className="inline-block"
               style={{
                 ...(char === ' ' ? { width: '0.38em' } : {}),
-                willChange: 'filter, transform, opacity',
+                willChange: 'transform, opacity',
               }}
-              initial={{ opacity: 0, y: '55%', filter: 'blur(10px)' }}
+              initial={{ opacity: 0, y: '55%' }}
               animate={show
-                ? { opacity: 1, y: '0%', filter: 'blur(0px)' }
-                : { opacity: 0, y: '55%', filter: 'blur(10px)' }
+                ? { opacity: 1, y: '0%' }
+                : { opacity: 0, y: '55%' }
               }
               transition={{
                 duration: 0.92,
