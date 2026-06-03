@@ -1,7 +1,7 @@
 'use client';
 import { useEffect } from 'react';
 import {
-  motion,
+  m,
   useScroll, useTransform,
   useMotionValue, useSpring, useReducedMotion,
   type MotionValue,
@@ -28,7 +28,7 @@ function Moon({
   const eclipseOpacity = useTransform(scrollY, [0, 500], [0, 1]);
 
   return (
-    <motion.div
+    <m.div
       className="relative select-none pointer-events-none"
       style={{
         width:  'clamp(240px, 44vmin, 540px)',
@@ -41,14 +41,14 @@ function Moon({
       <MoonCanvas />
 
       {/* Eclipse overlay — darkens to black on scroll */}
-      <motion.div
+      <m.div
         className="absolute inset-0 rounded-full"
         style={{
           background: '#100F0D',
           opacity: reduced ? 0 : eclipseOpacity,
         }}
       />
-    </motion.div>
+    </m.div>
   );
 }
 
@@ -101,7 +101,7 @@ export function HeroSection({ introDone }: { introDone: boolean }) {
       </video>
 
       {/* ── Top bar ── */}
-      <motion.div
+      <m.div
         className="absolute top-0 left-0 right-0 flex justify-between items-center px-6 md:px-10 pt-7 md:pt-9"
         style={{ zIndex: 20 }}
         initial={{ opacity: 0, y: 14 }}
@@ -126,24 +126,24 @@ export function HeroSection({ introDone }: { introDone: boolean }) {
             </a>
           ))}
         </nav>
-      </motion.div>
+      </m.div>
 
       {/* ── Moon ── */}
       <div
         className="absolute top-[46%] left-1/2 md:left-[28%]"
         style={{ transform: 'translate(-50%, -50%)', zIndex: 5 }}
       >
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 24 }}
           animate={show ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
           transition={{ duration: 0.9, delay: 0.22, ease: expo }}
         >
           <Moon sx={sx} sy={sy} reduced={reduced} scrollY={scrollY} />
-        </motion.div>
+        </m.div>
       </div>
 
       {/* ── Bio text — right side, desktop only ── */}
-      <motion.div
+      <m.div
         className="absolute hidden sm:block"
         style={{
           right:     'clamp(2rem, 5vw, 6rem)',
@@ -169,10 +169,10 @@ export function HeroSection({ introDone }: { introDone: boolean }) {
         >
           Next.js · AWS · Terraform
         </p>
-      </motion.div>
+      </m.div>
 
       {/* ── Bottom meta ── */}
-      <motion.div
+      <m.div
         className="absolute left-0 right-0 flex justify-between items-end px-6 md:px-10"
         style={{ bottom: 'calc(10vw + 2.2rem)', zIndex: 15 }}
         initial={{ opacity: 0, y: 14 }}
@@ -191,10 +191,10 @@ export function HeroSection({ introDone }: { introDone: boolean }) {
         >
           Available for new projects
         </span>
-      </motion.div>
+      </m.div>
 
       {/* ── Mega name ── */}
-      <motion.div
+      <m.div
         className="absolute left-0 right-0 bottom-0"
         style={{ zIndex: 3, y: nameY }}
         aria-hidden="true"
@@ -210,7 +210,7 @@ export function HeroSection({ introDone }: { introDone: boolean }) {
           }}
         >
           {NAME.split('').map((char, i) => (
-            <motion.span
+            <m.span
               key={i}
               className="inline-block"
               style={{
@@ -229,10 +229,10 @@ export function HeroSection({ introDone }: { introDone: boolean }) {
               }}
             >
               {char === ' ' ? ' ' : char}
-            </motion.span>
+            </m.span>
           ))}
         </div>
-      </motion.div>
+      </m.div>
     </section>
   );
 }

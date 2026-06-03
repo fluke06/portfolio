@@ -20,13 +20,17 @@ export function HomeClient() {
 
   useEffect(() => {
     const alreadyShown = sessionStorage.getItem('introShown') === '1';
-    if (alreadyShown) setIntroDone(true);
+    if (alreadyShown) {
+      setIntroDone(true);
+      document.getElementById('intro-placeholder')?.remove();
+    }
     setReady(true);
   }, []);
 
   const handleDone = () => {
     sessionStorage.setItem('introShown', '1');
     setIntroDone(true);
+    document.getElementById('intro-placeholder')?.remove();
   };
 
   return (

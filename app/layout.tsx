@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Cormorant_Garamond, Inter, Noto_Sans_Tagalog } from 'next/font/google';
+import { MotionProvider } from '@/components/motion-provider';
 import './globals.css';
 
 const cormorant = Cormorant_Garamond({
@@ -39,6 +40,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${cormorant.variable} ${inter.variable} ${notoTagalog.variable}`}>
       <body style={{ background: 'var(--color-bg)', overflowX: 'clip' }}>
+        {/* Runs sync before render: hides HELLO placeholder for visitors who already saw the intro */}
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{if(sessionStorage.getItem('introShown')==='1'){var s=document.createElement('style');s.textContent='#intro-placeholder{display:none}';document.head.appendChild(s);}}catch(e){}})();` }} />
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:rounded-md focus:text-white focus:text-sm focus:font-inter"
@@ -46,7 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           Skip to content
         </a>
-        {children}
+        <MotionProvider>{children}</MotionProvider>
       </body>
     </html>
   );
