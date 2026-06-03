@@ -77,8 +77,8 @@ export function HeroSection({ introDone }: { introDone: boolean }) {
 
   return (
     <section
-      className="h-screen relative overflow-hidden"
-      style={{ background: '#100F0D' }}
+      className="relative overflow-hidden"
+      style={{ background: '#100F0D', height: '100vh' }}
     >
       <h1 className="sr-only">Christian Dizon — Full-Stack Developer</h1>
 
@@ -218,7 +218,7 @@ export function HeroSection({ introDone }: { introDone: boolean }) {
 
       {/* ── Mega name ── */}
       <m.div
-        className="absolute left-0 right-0 bottom-0 max-sm:[bottom:15vh]"
+        className="absolute left-0 right-0 bottom-0 max-sm:[bottom:5vh]"
         style={{ zIndex: 3, y: nameY }}
         aria-hidden="true"
       >
