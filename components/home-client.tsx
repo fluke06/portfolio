@@ -20,17 +20,15 @@ export function HomeClient() {
 
   useEffect(() => {
     const alreadyShown = sessionStorage.getItem('introShown') === '1';
-    if (alreadyShown) {
-      setIntroDone(true);
-      document.getElementById('intro-placeholder')?.remove();
-    }
+    if (alreadyShown) setIntroDone(true);
+    // Remove placeholder immediately — IntroAnimation or hero takes over from here
+    document.getElementById('intro-placeholder')?.remove();
     setReady(true);
   }, []);
 
   const handleDone = () => {
     sessionStorage.setItem('introShown', '1');
     setIntroDone(true);
-    document.getElementById('intro-placeholder')?.remove();
   };
 
   return (
