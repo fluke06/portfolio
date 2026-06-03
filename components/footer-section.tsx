@@ -95,7 +95,7 @@ export function FooterSection() {
                 letterSpacing: '-0.02em',
                 paddingRight:  '0.4em',
                 lineHeight:    0.88,
-                opacity:       0.18,
+                opacity:       0.40,
               }}
             >
               Christian Dizon
