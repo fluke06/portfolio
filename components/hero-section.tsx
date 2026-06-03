@@ -142,10 +142,10 @@ export function HeroSection({ introDone }: { introDone: boolean }) {
         </m.div>
       </div>
 
-      {/* ── Bio text — mobile, below moon ── */}
+      {/* ── Bio text — mobile, above moon ── */}
       <m.div
         className="absolute left-6 right-6 sm:hidden"
-        style={{ bottom: 'calc(10vw + 7.5rem)', zIndex: 10 }}
+        style={{ bottom: 'calc(54% + 160px)', zIndex: 10 }}
         initial={{ opacity: 0, y: 14 }}
         animate={show ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
         transition={{ duration: 0.78, delay: 0.48, ease: expo }}
@@ -196,8 +196,8 @@ export function HeroSection({ introDone }: { introDone: boolean }) {
 
       {/* ── Bottom meta ── */}
       <m.div
-        className="absolute left-0 right-0 flex justify-between items-end px-6 md:px-10"
-        style={{ bottom: 'calc(10vw + 2.2rem)', zIndex: 15 }}
+        className="absolute left-0 right-0 flex justify-between items-end px-6 md:px-10 max-sm:[bottom:calc(54%_+_132px)] sm:[bottom:calc(10vw_+_2.2rem)]"
+        style={{ zIndex: 15 }}
         initial={{ opacity: 0, y: 14 }}
         animate={show ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
         transition={{ duration: 0.78, delay: 0.58, ease: expo }}
