@@ -74,7 +74,7 @@ export function ServicesSection() {
                     {svc.name}
                   </h3>
                   <p
-                    className="font-inter font-light text-[#7A7570] leading-relaxed"
+                    className="font-inter font-light text-[#888280] leading-relaxed"
                     style={{ fontSize: 'clamp(0.85rem, 1.35vw, 1.05rem)', maxWidth: '52ch' }}
                   >
                     {svc.desc}

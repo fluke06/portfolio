@@ -70,7 +70,7 @@ export default function AboutPage() {
 
           <FadeIn delay={0.15} y={20}>
             <p
-              className="font-inter font-light text-[#7A7570] mt-6 max-w-xl leading-relaxed"
+              className="font-inter font-light text-[#888280] mt-6 max-w-xl leading-relaxed"
               style={{ fontSize: 'clamp(1rem, 1.6vw, 1.15rem)' }}
             >
               Full-stack developer, 8 years. Next.js, AWS, Terraform.
@@ -92,7 +92,7 @@ export default function AboutPage() {
                     {s.val}
                   </p>
                   <p
-                    className="font-inter font-light text-[#7A7570] mt-1"
+                    className="font-inter font-light text-[#888280] mt-1"
                     style={{ fontSize: '12px', letterSpacing: '0.04em' }}
                   >
                     {s.label}
@@ -128,7 +128,7 @@ export default function AboutPage() {
                   </p>
                 ))}
                 <p
-                  className="font-inter font-light text-[#7A7570] leading-relaxed"
+                  className="font-inter font-light text-[#888280] leading-relaxed"
                   style={{ fontSize: 'clamp(0.9rem, 1.4vw, 1.05rem)' }}
                 >
                   Outside work, I make small things on weekends (see the{' '}
@@ -171,7 +171,7 @@ export default function AboutPage() {
                         >
                           {t.title}
                           {t.org && (
-                            <span className="font-inter font-light text-[#7A7570]"
+                            <span className="font-inter font-light text-[#888280]"
                               style={{ fontSize: 'clamp(0.85rem, 1.3vw, 1rem)' }}
                             >
                               {' '}· {t.org}
@@ -179,7 +179,7 @@ export default function AboutPage() {
                           )}
                         </p>
                         <p
-                          className="font-inter font-light text-[#7A7570] leading-relaxed"
+                          className="font-inter font-light text-[#888280] leading-relaxed"
                           style={{ fontSize: 'clamp(0.9rem, 1.3vw, 1rem)' }}
                         >
                           {t.body}
@@ -232,7 +232,7 @@ export default function AboutPage() {
                     </div>
                     {/* Note */}
                     <p
-                      className="font-inter font-light text-[#7A7570] text-right flex-shrink-0 hidden sm:block"
+                      className="font-inter font-light text-[#888280] text-right flex-shrink-0 hidden sm:block"
                       style={{ fontSize: '11px', minWidth: '8rem', letterSpacing: '0.02em' }}
                     >
                       {s.note}

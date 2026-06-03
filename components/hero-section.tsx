@@ -119,7 +119,7 @@ export function HeroSection({ introDone }: { introDone: boolean }) {
             <a
               key={label}
               href={href}
-              className="font-inter font-medium text-[#7A7570] hover:text-[#EDE8E0] transition-colors duration-200"
+              className="font-inter font-medium text-[#888280] hover:text-[#EDE8E0] transition-colors duration-200"
               style={{ fontSize: 'clamp(0.75rem, 1.2vw, 0.92rem)' }}
             >
               {label}
@@ -164,7 +164,7 @@ export function HeroSection({ introDone }: { introDone: boolean }) {
           <br />I build web apps end-to-end.
         </p>
         <p
-          className="font-inter font-light text-[#7A7570]"
+          className="font-inter font-light text-[#888280]"
           style={{ fontSize: 'clamp(0.78rem, 1.1vw, 0.9rem)', letterSpacing: '0.05em' }}
         >
           Next.js · AWS · Terraform
@@ -180,7 +180,7 @@ export function HeroSection({ introDone }: { introDone: boolean }) {
         transition={{ duration: 0.78, delay: 0.58, ease: expo }}
       >
         <p
-          className="font-inter font-light text-[#7A7570] uppercase"
+          className="font-inter font-light text-[#888280] uppercase"
           style={{ fontSize: '10px', letterSpacing: '0.10em' }}
         >
           Web Dev · Full-Stack · Cloud
@@ -213,7 +213,10 @@ export function HeroSection({ introDone }: { introDone: boolean }) {
             <motion.span
               key={i}
               className="inline-block"
-              style={char === ' ' ? { width: '0.38em' } : undefined}
+              style={{
+                ...(char === ' ' ? { width: '0.38em' } : {}),
+                willChange: 'filter, transform, opacity',
+              }}
               initial={{ opacity: 0, y: '55%', filter: 'blur(10px)' }}
               animate={show
                 ? { opacity: 1, y: '0%', filter: 'blur(0px)' }

@@ -37,7 +37,7 @@ export function CtaSection() {
 
         <FadeIn delay={0.16} y={16}>
           <p
-            className="font-inter font-light text-[#7A7570] leading-relaxed mb-10 sm:mb-12"
+            className="font-inter font-light text-[#888280] leading-relaxed mb-10 sm:mb-12"
             style={{ fontSize: 'clamp(1rem, 1.8vw, 1.2rem)', maxWidth: '52ch' }}
           >
             Full-stack web apps, cloud infrastructure, fast e-commerce — I'll scope it and ship it end-to-end.
@@ -59,7 +59,7 @@ export function CtaSection() {
         <FadeIn delay={0.36} y={0} duration={0.6}>
           <Link
             href="/contact"
-            className="inline-flex items-center gap-2 font-inter font-medium text-[#7A7570] hover:text-[#EDE8E0] transition-colors duration-200 mt-6"
+            className="inline-flex items-center gap-2 font-inter font-medium text-[#888280] hover:text-[#EDE8E0] transition-colors duration-200 mt-6"
             style={{ fontSize: 'clamp(0.85rem, 1.2vw, 1rem)' }}
           >
             Or use the contact form

@@ -50,7 +50,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
           <FadeIn delay={0} y={0} duration={0.5}>
             <Link
               href="/works"
-              className="inline-flex items-center gap-2 font-inter font-medium text-[#7A7570] text-sm hover:text-[#EDE8E0] transition-colors duration-200 mb-12 sm:mb-16 md:mb-20"
+              className="inline-flex items-center gap-2 font-inter font-medium text-[#888280] text-sm hover:text-[#EDE8E0] transition-colors duration-200 mb-12 sm:mb-16 md:mb-20"
             >
               <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M13 16 L7 10 L13 4" />
@@ -86,7 +86,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
 
               <FadeIn delay={0.22} y={20}>
                 <p
-                  className="font-inter font-light text-[#7A7570] leading-relaxed max-w-lg mb-8 sm:mb-10"
+                  className="font-inter font-light text-[#888280] leading-relaxed max-w-lg mb-8 sm:mb-10"
                   style={{ fontSize: 'clamp(1rem, 1.8vw, 1.2rem)' }}
                 >
                   {project.blurb}
@@ -95,7 +95,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
 
               <FadeIn delay={0.3} y={0} duration={0.5}>
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                  <span className="font-inter font-light text-[#7A7570] text-sm">{project.role}</span>
+                  <span className="font-inter font-light text-[#888280] text-sm">{project.role}</span>
                   <span className="text-[#EDE8E0]/40 text-sm" aria-hidden="true">·</span>
                   <span className="font-inter font-medium text-[#EDE8E0] text-sm">{project.year}</span>
                   {project.url && (
@@ -167,7 +167,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
           {SPEC_ROWS.map(({ label, value }) => (
             <div key={label}>
               <p
-                className="font-inter font-medium text-[#7A7570] uppercase tracking-widest mb-2"
+                className="font-inter font-medium text-[#888280] uppercase tracking-widest mb-2"
                 style={{ fontSize: '10px' }}
               >
                 {label}
@@ -214,7 +214,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
             </div>
             <div className="flex-1 max-w-[65ch]">
               <p
-                className="font-inter font-light text-[#7A7570] leading-relaxed"
+                className="font-inter font-light text-[#888280] leading-relaxed"
                 style={{ fontSize: 'clamp(1rem, 1.6vw, 1.2rem)' }}
               >
                 {project.detail}
@@ -240,7 +240,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
                         image={project.screens.find(s => s.device === 'desktop')!.image}
                         alt={`${project.title} desktop view`}
                       />
-                      <p className="font-inter font-medium text-[#7A7570] uppercase tracking-widest mt-4" style={{ fontSize: '10px' }}>
+                      <p className="font-inter font-medium text-[#888280] uppercase tracking-widest mt-4" style={{ fontSize: '10px' }}>
                         Desktop
                       </p>
                     </div>
@@ -252,7 +252,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
                         image={project.screens.find(s => s.device === 'tablet')!.image}
                         alt={`${project.title} tablet view`}
                       />
-                      <p className="font-inter font-medium text-[#7A7570] uppercase tracking-widest mt-4" style={{ fontSize: '10px' }}>
+                      <p className="font-inter font-medium text-[#888280] uppercase tracking-widest mt-4" style={{ fontSize: '10px' }}>
                         Tablet
                       </p>
                     </div>
@@ -264,7 +264,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
                         image={project.screens.find(s => s.device === 'mobile')!.image}
                         alt={`${project.title} mobile view`}
                       />
-                      <p className="font-inter font-medium text-[#7A7570] uppercase tracking-widest mt-4" style={{ fontSize: '10px' }}>
+                      <p className="font-inter font-medium text-[#888280] uppercase tracking-widest mt-4" style={{ fontSize: '10px' }}>
                         Mobile
                       </p>
                     </div>
@@ -291,7 +291,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
               className="group flex items-center justify-between gap-6 p-6 sm:p-8 md:p-10 rounded-[clamp(16px,3vw,28px)] border border-[#EDE8E0]/25 hover:border-[#EDE8E0]/50 hover:bg-[#EDE8E0]/[0.03] transition-colors duration-300"
             >
               <div className="min-w-0">
-                <p className="font-inter text-[#7A7570] text-sm mb-3">
+                <p className="font-inter text-[#888280] text-sm mb-3">
                   {next.num} · {next.year}
                 </p>
                 <p

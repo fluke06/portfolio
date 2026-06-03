@@ -33,7 +33,7 @@ export function StackSection() {
           </FadeIn>
           <FadeIn delay={0.1} y={0}>
             <p
-              className="font-inter font-light text-[#7A7570]"
+              className="font-inter font-light text-[#888280]"
               style={{ fontSize: 'clamp(0.82rem, 1.2vw, 0.95rem)', maxWidth: '32ch' }}
             >
               Tools I reach for when the job needs to get done.
@@ -53,7 +53,7 @@ export function StackSection() {
                 }}
               >
                 <p
-                  className="font-inter text-[#7A7570] mb-8"
+                  className="font-inter text-[#888280] mb-8"
                   style={{ fontSize: '10px', letterSpacing: '0.12em' }}
                 >
                   {col.head.toUpperCase()}
@@ -72,7 +72,7 @@ export function StackSection() {
                     >
                       <span>{item}</span>
                       <span
-                        className="font-inter text-[#7A7570]"
+                        className="font-inter text-[#888280]"
                         style={{ fontSize: '10px', letterSpacing: '0.1em' }}
                       >
                         {String(i + 1).padStart(2, '0')}

@@ -11,7 +11,7 @@ export function BilingualLabel({ num, en, ta, className = '' }: BilingualLabelPr
       {num && (
         <span
           className="font-inter font-medium text-[#8A94B0] uppercase"
-          style={{ fontSize: '10px', letterSpacing: '0.08em', color: '#7A7570' }}
+          style={{ fontSize: '10px', letterSpacing: '0.08em', color: '#888280' }}
         >
           ({num})
         </span>

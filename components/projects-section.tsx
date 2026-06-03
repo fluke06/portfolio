@@ -80,7 +80,7 @@ export function ProjectsSection() {
           <FadeIn delay={0.1} y={0} duration={0.5}>
             <Link
               href="/works"
-              className="font-inter font-medium text-[#7A7570] hover:text-[#EDE8E0] transition-colors duration-200 flex items-center gap-2 flex-shrink-0 pb-1"
+              className="font-inter font-medium text-[#888280] hover:text-[#EDE8E0] transition-colors duration-200 flex items-center gap-2 flex-shrink-0 pb-1"
               style={{ fontSize: 'clamp(0.85rem, 1.2vw, 1rem)' }}
             >
               See all 10
@@ -133,7 +133,7 @@ export function ProjectsSection() {
                 </div>
 
                 <p
-                  className="font-inter font-light text-[#7A7570] leading-relaxed mb-4"
+                  className="font-inter font-light text-[#888280] leading-relaxed mb-4"
                   style={{ fontSize: 'clamp(0.85rem, 1.3vw, 1rem)' }}
                 >
                   {p.blurb}

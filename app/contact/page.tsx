@@ -21,7 +21,7 @@ const CONTACT_META = [
 ];
 
 const INPUT =
-  'w-full bg-transparent border-b border-[rgba(237,232,224,0.15)] text-[#EDE8E0] placeholder-[#7A7570] font-inter font-light py-3 outline-none focus:border-[#EDE8E0] transition-colors duration-200';
+  'w-full bg-transparent border-b border-[rgba(237,232,224,0.15)] text-[#EDE8E0] placeholder-[#888280] font-inter font-light py-3 outline-none focus:border-[#EDE8E0] transition-colors duration-200';
 
 export default function ContactPage() {
   const [sent, setSent]       = useState(false);
@@ -66,7 +66,7 @@ export default function ContactPage() {
           </FadeIn>
           <FadeIn delay={0.15} y={20}>
             <p
-              className="font-inter font-light text-[#7A7570] mt-5 max-w-md leading-relaxed"
+              className="font-inter font-light text-[#888280] mt-5 max-w-md leading-relaxed"
               style={{ fontSize: 'clamp(1rem, 1.6vw, 1.15rem)' }}
             >
               I read everything. I reply within a day, usually less.
@@ -99,14 +99,14 @@ export default function ContactPage() {
                 >
                   Got it.
                 </h2>
-                <p className="font-inter font-light text-[#7A7570] leading-relaxed mb-8"
+                <p className="font-inter font-light text-[#888280] leading-relaxed mb-8"
                   style={{ fontSize: 'clamp(1rem, 1.5vw, 1.1rem)' }}
                 >
                   Thanks for writing in, {form.name || 'friend'}. I'll get back to you within a day, usually less.
                 </p>
                 <button
                   onClick={() => { setSent(false); setForm({ name: '', email: '', message: '', kind: 'project' }); }}
-                  className="font-inter font-medium text-[#7A7570] text-sm hover:text-[#EDE8E0] transition-colors duration-200"
+                  className="font-inter font-medium text-[#888280] text-sm hover:text-[#EDE8E0] transition-colors duration-200"
                 >
                   Send another note
                 </button>
@@ -123,7 +123,7 @@ export default function ContactPage() {
                     {CONTACT_META.map(({ label, href, target, text }) => (
                       <div key={label}>
                         <p
-                          className="font-inter font-medium text-[#7A7570] uppercase mb-1"
+                          className="font-inter font-medium text-[#888280] uppercase mb-1"
                           style={{ fontSize: '10px', letterSpacing: '0.1em' }}
                         >
                           {label}
@@ -173,7 +173,7 @@ export default function ContactPage() {
                       Employed · open to interesting work
                     </p>
                     <p
-                      className="font-inter font-light text-[#7A7570] leading-relaxed"
+                      className="font-inter font-light text-[#888280] leading-relaxed"
                       style={{ fontSize: 'clamp(0.8rem, 1.1vw, 0.875rem)' }}
                     >
                       Full-time at Straight Login Inc. Not actively looking, but happy to talk about ambitious side work or a strong role.
@@ -189,7 +189,7 @@ export default function ContactPage() {
                   {/* Kind selector */}
                   <div>
                     <p
-                      className="font-inter font-medium text-[#7A7570] uppercase mb-3"
+                      className="font-inter font-medium text-[#888280] uppercase mb-3"
                       style={{ fontSize: '10px', letterSpacing: '0.1em' }}
                     >
                       What is this about?
@@ -203,7 +203,7 @@ export default function ContactPage() {
                           className="font-inter font-medium text-sm rounded-full px-4 py-2 transition-all duration-200"
                           style={{
                             background: form.kind === k ? '#EDE8E0' : 'transparent',
-                            color:      form.kind === k ? '#100F0D' : '#7A7570',
+                            color:      form.kind === k ? '#100F0D' : '#888280',
                             border:     form.kind === k
                               ? '1px solid #EDE8E0'
                               : '1px solid rgba(184,122,60,0.25)',
@@ -219,7 +219,7 @@ export default function ContactPage() {
                   <div>
                     <label
                       htmlFor="name"
-                      className="font-inter font-medium text-[#7A7570] uppercase block mb-3"
+                      className="font-inter font-medium text-[#888280] uppercase block mb-3"
                       style={{ fontSize: '10px', letterSpacing: '0.1em' }}
                     >
                       Your name
@@ -239,7 +239,7 @@ export default function ContactPage() {
                   <div>
                     <label
                       htmlFor="email"
-                      className="font-inter font-medium text-[#7A7570] uppercase block mb-3"
+                      className="font-inter font-medium text-[#888280] uppercase block mb-3"
                       style={{ fontSize: '10px', letterSpacing: '0.1em' }}
                     >
                       Email
@@ -260,7 +260,7 @@ export default function ContactPage() {
                   <div>
                     <label
                       htmlFor="message"
-                      className="font-inter font-medium text-[#7A7570] uppercase block mb-3"
+                      className="font-inter font-medium text-[#888280] uppercase block mb-3"
                       style={{ fontSize: '10px', letterSpacing: '0.1em' }}
                     >
                       Message
@@ -292,7 +292,7 @@ export default function ContactPage() {
                         </svg>
                       )}
                     </button>
-                    <p className="font-inter font-light text-[#7A7570]" style={{ fontSize: '12px' }}>
+                    <p className="font-inter font-light text-[#888280]" style={{ fontSize: '12px' }}>
                       Not a form bot. Pinky promise.
                     </p>
                   </div>

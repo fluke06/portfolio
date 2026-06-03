@@ -40,7 +40,7 @@ export function FooterSection() {
             <div key={col.head}>
               {/* Column header */}
               <p
-                className="font-inter text-[#7A7570] mb-5 pb-3"
+                className="font-inter text-[#888280] mb-5 pb-3"
                 style={{
                   fontSize: '10px',
                   letterSpacing: '0.1em',
@@ -67,7 +67,7 @@ export function FooterSection() {
                   ) : (
                     <li
                       key={item.label}
-                      className="font-inter font-light text-[#7A7570]"
+                      className="font-inter font-light text-[#888280]"
                       style={{ fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)' }}
                     >
                       {item.label}

@@ -39,7 +39,7 @@ export function WorksClient() {
           </FadeIn>
           <FadeIn delay={0.15} y={20}>
             <p
-              className="font-inter font-light text-[#7A7570] mt-5 max-w-xl leading-relaxed"
+              className="font-inter font-light text-[#888280] mt-5 max-w-xl leading-relaxed"
               style={{ fontSize: 'clamp(1rem, 1.6vw, 1.15rem)' }}
             >
               Ten things built and shipped — client sites, e-commerce, and multilingual platforms.
@@ -58,7 +58,7 @@ export function WorksClient() {
               className={`font-inter font-medium text-sm rounded-full px-4 sm:px-5 py-2 transition-all duration-200 ${
                 filter === f.id
                   ? 'bg-[#EDE8E0] text-white'
-                  : 'text-[#7A7570] hover:text-[#EDE8E0] border border-[#EDE8E0]/20 hover:border-[#EDE8E0]/40'
+                  : 'text-[#888280] hover:text-[#EDE8E0] border border-[#EDE8E0]/20 hover:border-[#EDE8E0]/40'
               }`}
             >
               {f.label}{' '}
@@ -115,7 +115,7 @@ function WorkTile({ project, index }: { project: Project; index: number }) {
 
         {/* Meta */}
         <div className="p-5 sm:p-6 flex flex-col gap-3 flex-1">
-          <p className="font-inter text-[#7A7570]" style={{ fontSize: '11px' }}>
+          <p className="font-inter text-[#888280]" style={{ fontSize: '11px' }}>
             {project.num} · {project.year}
           </p>
           <h3
@@ -125,7 +125,7 @@ function WorkTile({ project, index }: { project: Project; index: number }) {
             {project.title}{' '}
             <em className="italic text-[#EDE8E0]">{project.titleAccent}</em>
           </h3>
-          <p className="font-inter font-light text-[#7A7570] text-sm leading-relaxed line-clamp-2">
+          <p className="font-inter font-light text-[#888280] text-sm leading-relaxed line-clamp-2">
             {project.blurb}
           </p>
           <div className="flex flex-wrap gap-x-3 gap-y-1 mt-auto pt-2">

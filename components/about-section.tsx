@@ -50,7 +50,7 @@ export function AboutSection() {
             </h2>
 
             <div
-              className="font-inter font-light text-[#7A7570] leading-relaxed space-y-5"
+              className="font-inter font-light text-[#888280] leading-relaxed space-y-5"
               style={{ fontSize: 'clamp(0.92rem, 1.4vw, 1.05rem)', maxWidth: '52ch' }}
             >
               <p>
@@ -87,7 +87,7 @@ export function AboutSection() {
                 transition={{ duration: 0.6, delay: 0.12 + i * 0.07, ease }}
               >
                 <span
-                  className="font-inter text-[#7A7570]"
+                  className="font-inter text-[#888280]"
                   style={{ fontSize: '11px', letterSpacing: '0.08em' }}
                 >
                   {label}
@@ -134,7 +134,7 @@ export function AboutSection() {
               transition={{ duration: 0.7, delay: 0.2 + i * 0.1, ease }}
             >
               <span
-                className="font-inter text-[#7A7570] block mb-4"
+                className="font-inter text-[#888280] block mb-4"
                 style={{ fontSize: '10px', letterSpacing: '0.12em' }}
               >
                 {n}
@@ -146,7 +146,7 @@ export function AboutSection() {
                 {head}
               </h3>
               <p
-                className="font-inter font-light text-[#7A7570] leading-relaxed"
+                className="font-inter font-light text-[#888280] leading-relaxed"
                 style={{ fontSize: 'clamp(0.85rem, 1.2vw, 0.95rem)', maxWidth: '34ch' }}
               >
                 {body}
