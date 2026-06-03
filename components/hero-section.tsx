@@ -218,7 +218,7 @@ export function HeroSection({ introDone }: { introDone: boolean }) {
 
       {/* ── Mega name ── */}
       <m.div
-        className="absolute left-0 right-0 bottom-0"
+        className="absolute left-0 right-0 bottom-0 max-sm:[bottom:15vh]"
         style={{ zIndex: 3, y: nameY }}
         aria-hidden="true"
       >
