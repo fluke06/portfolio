@@ -13,24 +13,24 @@ export function DeviceFrame({ device, image, alt, className = '' }: DeviceFrameP
       <div
         className={className}
         style={{
-          background: '#0E0C0B',
-          borderRadius: 44,
-          border: '2px solid rgba(237,232,224,0.13)',
-          padding: '14px 10px 10px',
-          boxShadow: '0 32px 80px rgba(0,0,0,0.55)',
+          background: '#111010',
+          borderRadius: 'clamp(22px, 20%, 44px)',
+          border: '2px solid rgba(237,232,224,0.28)',
+          padding: '10px 7px 8px',
+          boxShadow: '0 24px 64px rgba(0,0,0,0.7), 0 0 0 1px rgba(0,0,0,0.5)',
         }}
       >
-        {/* Dynamic island */}
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10 }}>
-          <div style={{ width: 88, height: 26, background: '#080706', borderRadius: 20 }} />
+        {/* Dynamic island — proportional width */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 7 }}>
+          <div style={{ width: '38%', maxWidth: 80, height: 15, background: '#000', borderRadius: 10 }} />
         </div>
         {/* Screen */}
-        <div style={{ position: 'relative', borderRadius: 26, overflow: 'hidden', aspectRatio: '9 / 19.5' }}>
+        <div style={{ position: 'relative', borderRadius: 'clamp(8px, 7%, 18px)', overflow: 'hidden', aspectRatio: '9 / 19.5' }}>
           <Image src={image} alt={alt} fill className="object-cover object-top" sizes="260px" />
         </div>
-        {/* Home indicator */}
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 10 }}>
-          <div style={{ width: 48, height: 5, background: '#EDE8E0', borderRadius: 3, opacity: 0.22 }} />
+        {/* Home indicator — proportional width */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 8 }}>
+          <div style={{ width: '34%', maxWidth: 56, height: 4, background: '#EDE8E0', borderRadius: 3, opacity: 0.35 }} />
         </div>
       </div>
     );
