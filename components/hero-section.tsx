@@ -142,6 +142,29 @@ export function HeroSection({ introDone }: { introDone: boolean }) {
         </m.div>
       </div>
 
+      {/* ── Bio text — mobile, below moon ── */}
+      <m.div
+        className="absolute left-6 right-6 sm:hidden"
+        style={{ bottom: 'calc(10vw + 5.5rem)', zIndex: 10 }}
+        initial={{ opacity: 0, y: 14 }}
+        animate={show ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
+        transition={{ duration: 0.78, delay: 0.48, ease: expo }}
+      >
+        <p
+          className="font-inter font-light text-[#EDE8E0] leading-relaxed mb-2"
+          style={{ fontSize: 'clamp(0.88rem, 3.5vw, 1rem)' }}
+        >
+          Full-stack developer, 8 years.
+          <br />I build web apps end-to-end.
+        </p>
+        <p
+          className="font-inter font-light text-[#888280]"
+          style={{ fontSize: 'clamp(0.75rem, 3vw, 0.875rem)', letterSpacing: '0.05em' }}
+        >
+          Next.js · AWS · Terraform
+        </p>
+      </m.div>
+
       {/* ── Bio text — right side, desktop only ── */}
       <m.div
         className="absolute hidden sm:block"

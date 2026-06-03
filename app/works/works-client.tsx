@@ -57,7 +57,7 @@ export function WorksClient() {
               onClick={() => setFilter(f.id)}
               className={`font-inter font-medium text-sm rounded-full px-4 sm:px-5 py-2 transition-all duration-200 ${
                 filter === f.id
-                  ? 'bg-[#EDE8E0] text-white'
+                  ? 'bg-[#EDE8E0] text-[#100F0D]'
                   : 'text-[#888280] hover:text-[#EDE8E0] border border-[#EDE8E0]/20 hover:border-[#EDE8E0]/40'
               }`}
             >

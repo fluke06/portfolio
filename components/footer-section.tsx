@@ -35,9 +35,9 @@ export function FooterSection() {
     >
       {/* ── Columns ── */}
       <div className="px-5 sm:px-8 md:px-10 pt-16 pb-12">
-        <div className="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-3 gap-10 sm:gap-6">
-          {COLS.map(col => (
-            <div key={col.head}>
+        <div className="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-3 gap-8 sm:gap-6">
+          {COLS.map((col, i) => (
+            <div key={col.head} className={i === 0 ? 'col-span-2 sm:col-span-1' : ''}>
               {/* Column header */}
               <p
                 className="font-inter text-[#888280] mb-5 pb-3"
