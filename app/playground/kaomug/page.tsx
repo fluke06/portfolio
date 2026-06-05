@@ -249,113 +249,233 @@ function MugSunny() {
   );
 }
 
+// ── Product data ──────────────────────────────────────────────────────────────
+
 const MUGS = [
-  { svg: MugSpecs,  name: 'Specs',  tag: 'The Classic',       price: '₱980',  desc: 'For the artsy overthinker. Red round glasses and that pensive stare.' },
-  { svg: MugSleepy, name: 'Sleepy', tag: 'Morning Mode',      price: '₱980',  desc: 'Perpetually tired, endlessly cute. Ships with zzz soundtrack.' },
-  { svg: MugKitty,  name: 'Kitty',  tag: 'Fan Favorite',      price: '₱1,080', desc: 'Vertical pupils, little bow. This one outsells everything else.' },
-  { svg: MugGhost,  name: 'Ghost',  tag: 'Limited Drop',      price: '₱1,080', desc: 'Hollow-eyed and spectral. Great for people who hate mornings.' },
-  { svg: MugPunk,   name: 'Punk',   tag: 'Statement Piece',   price: '₱1,180', desc: 'Mohawk, nose ring, zero patience. Ceramic rebellion since 2023.' },
-  { svg: MugSunny,  name: 'Sunny',  tag: 'Best Gifter',       price: '₱980',  desc: 'Star-shaped eyes, pigtails, permanently in a good mood.' },
+  { svg: MugSpecs,  name: 'Specs',  tag: 'THE CLASSIC',     price: '₱980',  desc: 'For the artsy overthinker. Red round glasses and that pensive stare.' },
+  { svg: MugSleepy, name: 'Sleepy', tag: 'MORNING MODE',    price: '₱980',  desc: 'Perpetually tired, endlessly cute. Ships with zzz soundtrack.' },
+  { svg: MugKitty,  name: 'Kitty',  tag: 'FAN FAVORITE',    price: '₱1,080', desc: 'Vertical pupils, little bow. This one outsells everything else.' },
+  { svg: MugGhost,  name: 'Ghost',  tag: 'LIMITED DROP',    price: '₱1,080', desc: 'Hollow-eyed and spectral. Great for people who hate mornings.' },
+  { svg: MugPunk,   name: 'Punk',   tag: 'STATEMENT PIECE', price: '₱1,180', desc: 'Mohawk, nose ring, zero patience. Ceramic rebellion since 2023.' },
+  { svg: MugSunny,  name: 'Sunny',  tag: 'BEST GIFTER',     price: '₱980',  desc: 'Star-shaped eyes, pigtails, permanently in a good mood.' },
 ];
+
+// Duplicate for seamless looping
+const ROW1 = [...MUGS, ...MUGS, ...MUGS];
+const ROW2 = [...MUGS.slice(3), ...MUGS, ...MUGS, ...MUGS.slice(0, 3)];
 
 export default function KaomugPage() {
   return (
-    <div className={outfit.variable} style={{ fontFamily: 'var(--font-outfit), sans-serif', background: '#000', color: '#fff', minHeight: '100vh' }}>
+    <div className={outfit.variable} style={{
+      fontFamily: 'var(--font-outfit), sans-serif',
+      background: '#0a0505',
+      color: '#fff',
+      minHeight: '100vh',
+      overflowX: 'hidden',
+    }}>
 
-      {/* ── Nav ────────────────────────────────────────────────────────── */}
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(18px)', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '0 clamp(20px, 5vw, 64px)' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64 }}>
-          <a href="/playground" style={{ color: '#fff', textDecoration: 'none', fontWeight: 800, fontSize: 'clamp(1rem,2vw,1.25rem)', letterSpacing: '-0.01em' }}>
+      {/* ── Nav ─────────────────────────────────────────────────────────── */}
+      <nav style={{
+        position: 'sticky', top: 0, zIndex: 100,
+        background: 'rgba(10,5,5,0.92)',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        padding: '0 clamp(20px,5vw,64px)',
+      }}>
+        <div style={{ maxWidth: 1080, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64 }}>
+          <a href="/playground" style={{ color: '#fff', textDecoration: 'none', fontWeight: 900, fontSize: 'clamp(1rem,2vw,1.2rem)', letterSpacing: '-0.01em' }}>
             KAO<span style={{ color: '#e60012' }}>MUG</span>
           </a>
-          <div style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 28, alignItems: 'center' }}>
             {['Shop', 'About', 'Custom'].map(l => (
-              <a key={l} href="#" style={{ color: 'rgba(255,255,255,0.55)', textDecoration: 'none', fontSize: '0.88rem', fontWeight: 500 }}>{l}</a>
+              <a key={l} href="#" style={{ color: 'rgba(255,255,255,0.5)', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 500 }}>{l}</a>
             ))}
           </div>
-          <a href="#shop" style={{ background: '#e60012', color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: '0.82rem', borderRadius: 44, padding: '10px 22px', letterSpacing: '0.02em' }}>
+          <a href="#shop" style={{
+            background: '#e60012', color: '#fff', textDecoration: 'none',
+            fontWeight: 700, fontSize: '0.8rem', borderRadius: 44,
+            padding: '10px 22px', letterSpacing: '0.04em',
+          }}>
             Shop Now
           </a>
         </div>
       </nav>
 
-      {/* ── Hero ───────────────────────────────────────────────────────── */}
-      <section style={{ padding: 'clamp(80px,12vh,160px) clamp(20px,5vw,64px) clamp(60px,8vh,120px)', maxWidth: 1200, margin: '0 auto' }}>
+      {/* ── Hero ────────────────────────────────────────────────────────── */}
+      <section style={{ padding: 'clamp(72px,11vh,140px) clamp(20px,5vw,64px) clamp(48px,6vh,80px)', maxWidth: 1080, margin: '0 auto' }}>
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 48 }}>
-          <div style={{ flex: '1 1 360px' }}>
-            <div style={{ display: 'inline-block', background: '#e60012', color: '#fff', fontWeight: 700, fontSize: '0.72rem', letterSpacing: '0.16em', padding: '6px 14px', borderRadius: 44, marginBottom: 24, textTransform: 'uppercase' }}>
+          <div style={{ flex: '1 1 320px' }}>
+            {/* Pill badge */}
+            <div style={{
+              display: 'inline-block', background: '#e60012', color: '#fff',
+              fontWeight: 700, fontSize: '0.68rem', letterSpacing: '0.18em',
+              padding: '6px 16px', borderRadius: 44, marginBottom: 28, textTransform: 'uppercase',
+            }}>
               Handcrafted in Manila
             </div>
-            <h1 style={{ fontFamily: 'var(--font-outfit)', fontWeight: 900, fontSize: 'clamp(3.5rem,9vw,7.5rem)', lineHeight: 0.88, letterSpacing: '-0.03em', margin: 0 }}>
-              Your<br />
-              face.<br />
+            <h1 style={{
+              fontWeight: 900, fontSize: 'clamp(3.5rem,9vw,7.5rem)',
+              lineHeight: 0.88, letterSpacing: '-0.03em', margin: '0 0 28px',
+            }}>
+              Your<br />face.<br />
               <span style={{ color: '#e60012' }}>Your cup.</span>
             </h1>
-            <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 'clamp(1rem,1.6vw,1.15rem)', lineHeight: 1.65, maxWidth: '44ch', marginTop: 28, marginBottom: 0 }}>
-              Each Kaomug is a hand-sculpted ceramic character. Six expressions, one you'll use every morning. Six that you'll buy as gifts even when you don't have a reason.
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 'clamp(0.95rem,1.5vw,1.1rem)', lineHeight: 1.7, maxWidth: '44ch', margin: '0 0 36px' }}>
+              Each Kaomug is a hand-sculpted ceramic character. Six expressions ready to ship, or send us your face and we'll make one just for you.
             </p>
-            <div style={{ display: 'flex', gap: 14, marginTop: 36, flexWrap: 'wrap' }}>
-              <a href="#shop" style={{ background: '#e60012', color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: '0.95rem', borderRadius: 44, padding: '14px 32px', letterSpacing: '0.01em' }}>
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              <a href="#shop" style={{
+                background: '#e60012', color: '#fff', textDecoration: 'none',
+                fontWeight: 700, fontSize: '0.95rem', borderRadius: 44, padding: '14px 32px',
+              }}>
                 Browse the collection
               </a>
-              <a href="#custom" style={{ color: 'rgba(255,255,255,0.65)', textDecoration: 'none', fontWeight: 600, fontSize: '0.95rem', borderRadius: 44, padding: '14px 24px', border: '1px solid rgba(255,255,255,0.18)' }}>
+              <a href="#custom" style={{
+                color: 'rgba(255,255,255,0.6)', textDecoration: 'none',
+                fontWeight: 600, fontSize: '0.95rem', borderRadius: 44,
+                padding: '14px 24px', border: '1px solid rgba(255,255,255,0.15)',
+              }}>
                 Custom order →
               </a>
             </div>
           </div>
+
           {/* Hero mug cluster */}
           <div style={{ flex: '0 0 auto', display: 'flex', gap: 20, alignItems: 'flex-end' }}>
-            <div style={{ width: 160, transform: 'rotate(-6deg) translateY(16px)' }}>
+            <div style={{ width: 150, transform: 'rotate(-8deg) translateY(20px)', filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.6))' }}>
               <MugGhost />
             </div>
-            <div style={{ width: 200, transform: 'rotate(2deg)' }}>
+            <div style={{ width: 190, transform: 'rotate(1deg)', filter: 'drop-shadow(0 8px 32px rgba(0,0,0,0.7))' }}>
               <MugSpecs />
             </div>
-            <div style={{ width: 150, transform: 'rotate(8deg) translateY(20px)' }}>
+            <div style={{ width: 145, transform: 'rotate(7deg) translateY(24px)', filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.6))' }}>
               <MugKitty />
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── Divider marquee ────────────────────────────────────────────── */}
-      <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', borderBottom: '1px solid rgba(255,255,255,0.08)', padding: '14px 0', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-        <div style={{ display: 'inline-flex', gap: 40, animation: 'km-scroll 18s linear infinite' }}>
+      {/* ── Marquee ticker ──────────────────────────────────────────────── */}
+      <div style={{
+        borderTop: '1px solid rgba(255,255,255,0.06)',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        padding: '12px 0', overflow: 'hidden', whiteSpace: 'nowrap',
+        background: '#000',
+      }}>
+        <div style={{ display: 'inline-flex', gap: 48, animation: 'km-ticker 20s linear infinite' }}>
           {Array.from({ length: 8 }).map((_, i) => (
-            <span key={i} style={{ color: 'rgba(255,255,255,0.22)', fontSize: '0.78rem', letterSpacing: '0.18em', fontWeight: 600, textTransform: 'uppercase' }}>
-              HANDCRAFTED CERAMIC · MADE IN MANILA · FOOD-SAFE GLAZE · CUSTOM ORDERS ·
+            <span key={i} style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.7rem', letterSpacing: '0.22em', fontWeight: 700, textTransform: 'uppercase' }}>
+              HANDCRAFTED CERAMIC · MADE IN MANILA · FOOD-SAFE GLAZE · CUSTOM ORDERS ·&nbsp;
             </span>
           ))}
         </div>
       </div>
 
-      {/* ── Shop Grid ──────────────────────────────────────────────────── */}
-      <section id="shop" style={{ padding: 'clamp(60px,8vh,100px) clamp(20px,5vw,64px)', maxWidth: 1200, margin: '0 auto' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 48, flexWrap: 'wrap', gap: 16 }}>
+      {/* ── Scrolling mug rows (Asahi kvRow style) ──────────────────────── */}
+      <section style={{ background: '#000', padding: '64px 0', overflow: 'hidden' }}>
+
+        {/* Label */}
+        <div style={{ maxWidth: 1080, margin: '0 auto 48px', padding: '0 clamp(20px,5vw,64px)' }}>
+          <div style={{ fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.22em', color: '#e60012', textTransform: 'uppercase', marginBottom: 12 }}>
+            The Full Lineup
+          </div>
           <h2 style={{ fontWeight: 900, fontSize: 'clamp(2rem,5vw,3.5rem)', letterSpacing: '-0.03em', margin: 0 }}>
-            The Collection
+            Six characters.<br />One you'll need.
           </h2>
-          <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.85rem', fontWeight: 500, letterSpacing: '0.08em' }}>
+        </div>
+
+        {/* Row 1 — scrolls left */}
+        <div style={{ overflow: 'hidden', marginBottom: 20 }}>
+          <div style={{
+            display: 'flex', gap: 16,
+            animation: 'km-row 28s linear infinite',
+            width: 'max-content',
+          }}>
+            {ROW1.map(({ svg: Svg, name, tag, price }, i) => (
+              <div key={i} style={{
+                background: '#4b271f',
+                borderRadius: 44, padding: 16,
+                flexShrink: 0, width: 220,
+                boxShadow: '0 0 8px rgba(0,0,0,0.6)',
+              }}>
+                <div style={{ width: '100%', marginBottom: 12 }}>
+                  <Svg />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '0 4px' }}>
+                  <span style={{ fontWeight: 700, fontSize: '1rem', color: '#fff' }}>{name}</span>
+                  <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#e60012' }}>{price}</span>
+                </div>
+                <div style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.16em', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', padding: '4px 4px 0' }}>
+                  {tag}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Row 2 — scrolls right */}
+        <div style={{ overflow: 'hidden' }}>
+          <div style={{
+            display: 'flex', gap: 16,
+            animation: 'km-row-reverse 28s linear infinite',
+            width: 'max-content',
+          }}>
+            {ROW2.map(({ svg: Svg, name, tag, price }, i) => (
+              <div key={i} style={{
+                background: '#4b271f',
+                borderRadius: 44, padding: 16,
+                flexShrink: 0, width: 220,
+                boxShadow: '0 0 8px rgba(0,0,0,0.6)',
+              }}>
+                <div style={{ width: '100%', marginBottom: 12 }}>
+                  <Svg />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '0 4px' }}>
+                  <span style={{ fontWeight: 700, fontSize: '1rem', color: '#fff' }}>{name}</span>
+                  <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#e60012' }}>{price}</span>
+                </div>
+                <div style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.16em', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', padding: '4px 4px 0' }}>
+                  {tag}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Shop Grid (detail cards) ─────────────────────────────────────── */}
+      <section id="shop" style={{ padding: 'clamp(64px,8vh,100px) clamp(20px,5vw,64px)', maxWidth: 1080, margin: '0 auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 48, flexWrap: 'wrap', gap: 16 }}>
+          <h2 style={{ fontWeight: 900, fontSize: 'clamp(2rem,5vw,3rem)', letterSpacing: '-0.03em', margin: 0 }}>
+            Shop All
+          </h2>
+          <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.82rem', letterSpacing: '0.1em', fontWeight: 500 }}>
             6 characters · All in stock
           </span>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 24 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(272px, 1fr))', gap: 20 }}>
           {MUGS.map(({ svg: Svg, name, tag, price, desc }) => (
-            <article key={name} style={{ background: '#111', borderRadius: 20, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)' }}>
-              <div style={{ background: '#1a1a1a', padding: '32px 20px 16px', display: 'flex', justifyContent: 'center' }}>
-                <div style={{ width: 160 }}>
-                  <Svg />
-                </div>
+            <article key={name} style={{
+              background: '#4b271f',
+              borderRadius: 44, overflow: 'hidden',
+              boxShadow: '0 0 8px rgba(0,0,0,0.6)',
+            }}>
+              <div style={{ padding: '32px 24px 16px', display: 'flex', justifyContent: 'center' }}>
+                <div style={{ width: 164 }}><Svg /></div>
               </div>
-              <div style={{ padding: '20px 20px 24px' }}>
+              <div style={{ padding: '16px 24px 28px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
-                  <span style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.14em', color: '#e60012', textTransform: 'uppercase' }}>{tag}</span>
-                  <span style={{ fontWeight: 800, fontSize: '1.05rem', color: '#fff' }}>{price}</span>
+                  <span style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.18em', color: '#e60012', textTransform: 'uppercase' }}>{tag}</span>
+                  <span style={{ fontWeight: 800, fontSize: '1rem', color: '#fff' }}>{price}</span>
                 </div>
-                <h3 style={{ fontWeight: 800, fontSize: '1.3rem', margin: '0 0 8px', letterSpacing: '-0.01em' }}>{name}</h3>
-                <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.85rem', lineHeight: 1.6, margin: '0 0 18px' }}>{desc}</p>
-                <button style={{ width: '100%', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontFamily: 'var(--font-outfit)', fontWeight: 700, fontSize: '0.88rem', borderRadius: 44, padding: '12px 0', cursor: 'pointer', letterSpacing: '0.02em' }}>
+                <h3 style={{ fontWeight: 800, fontSize: '1.25rem', margin: '0 0 8px', letterSpacing: '-0.01em' }}>{name}</h3>
+                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.82rem', lineHeight: 1.65, margin: '0 0 20px' }}>{desc}</p>
+                <button style={{
+                  width: '100%', background: 'transparent',
+                  border: '1px solid rgba(255,255,255,0.18)', color: '#fff',
+                  fontFamily: 'var(--font-outfit)', fontWeight: 700, fontSize: '0.85rem',
+                  borderRadius: 44, padding: '12px 0', cursor: 'pointer', letterSpacing: '0.04em',
+                }}>
                   Add to cart
                 </button>
               </div>
@@ -364,53 +484,68 @@ export default function KaomugPage() {
         </div>
       </section>
 
-      {/* ── Custom Order ───────────────────────────────────────────────── */}
-      <section id="custom" style={{ padding: 'clamp(60px,8vh,100px) clamp(20px,5vw,64px)', background: '#4b271f' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: 48, alignItems: 'center' }}>
-          <div style={{ flex: '1 1 360px' }}>
-            <div style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.16em', color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', marginBottom: 16 }}>Custom Orders</div>
-            <h2 style={{ fontWeight: 900, fontSize: 'clamp(2rem,5vw,3.5rem)', lineHeight: 0.92, letterSpacing: '-0.03em', margin: '0 0 24px' }}>
+      {/* ── Custom Order ─────────────────────────────────────────────────── */}
+      <section id="custom" style={{ background: '#4b271f', padding: 'clamp(64px,8vh,100px) clamp(20px,5vw,64px)' }}>
+        <div style={{ maxWidth: 1080, margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: 48, alignItems: 'center' }}>
+          <div style={{ flex: '1 1 320px' }}>
+            <div style={{ fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.22em', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', marginBottom: 16 }}>Custom Orders</div>
+            <h2 style={{ fontWeight: 900, fontSize: 'clamp(2rem,5vw,3rem)', lineHeight: 0.92, letterSpacing: '-0.03em', margin: '0 0 24px' }}>
               Make it<br /><em style={{ fontStyle: 'italic', color: '#ffd3d3' }}>yours.</em>
             </h2>
-            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 'clamp(0.95rem,1.5vw,1.1rem)', lineHeight: 1.7, maxWidth: '46ch', margin: '0 0 32px' }}>
+            <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 'clamp(0.95rem,1.4vw,1.05rem)', lineHeight: 1.75, maxWidth: '44ch', margin: '0 0 32px' }}>
               Send us a reference photo. We'll sculpt a mug that looks like your dog, your cat, your friend, your enemy — anyone. Four-week turnaround. All food-safe glazes.
             </p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, maxWidth: 380 }}>
-              {[['Step 01', 'Send a photo'], ['Step 02', 'We sculpt'], ['Step 03', 'Ships in 4 wks']].map(([num, label]) => (
-                <div key={num} style={{ background: 'rgba(0,0,0,0.25)', borderRadius: 12, padding: '16px 12px' }}>
-                  <div style={{ color: '#e60012', fontWeight: 800, fontSize: '0.72rem', letterSpacing: '0.1em', marginBottom: 6 }}>{num}</div>
-                  <div style={{ fontWeight: 600, fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)' }}>{label}</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, maxWidth: 360, marginBottom: 32 }}>
+              {[['01', 'Send a photo'], ['02', 'We sculpt'], ['03', 'Ships in 4 wks']].map(([num, label]) => (
+                <div key={num} style={{ background: 'rgba(0,0,0,0.3)', borderRadius: 16, padding: '16px 12px' }}>
+                  <div style={{ color: '#e60012', fontWeight: 800, fontSize: '0.68rem', letterSpacing: '0.12em', marginBottom: 8 }}>{num}</div>
+                  <div style={{ fontWeight: 600, fontSize: '0.82rem', color: 'rgba(255,255,255,0.8)' }}>{label}</div>
                 </div>
               ))}
             </div>
-            <a href="mailto:hello@kaomug.ph" style={{ display: 'inline-block', background: '#e60012', color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: '0.95rem', borderRadius: 44, padding: '14px 32px', marginTop: 32 }}>
+            <a href="mailto:hello@kaomug.ph" style={{
+              display: 'inline-block', background: '#e60012', color: '#fff',
+              textDecoration: 'none', fontWeight: 700, fontSize: '0.92rem',
+              borderRadius: 44, padding: '14px 32px',
+            }}>
               Start a custom order
             </a>
           </div>
-          <div style={{ flex: '0 0 auto', width: 240, transform: 'rotate(-4deg)' }}>
+          <div style={{ flex: '0 0 auto', width: 240, transform: 'rotate(-4deg)', filter: 'drop-shadow(0 12px 32px rgba(0,0,0,0.5))' }}>
             <MugPunk />
           </div>
         </div>
       </section>
 
-      {/* ── Footer ─────────────────────────────────────────────────────── */}
-      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.07)', padding: '40px clamp(20px,5vw,64px)' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
-          <span style={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.01em' }}>
+      {/* ── Footer ───────────────────────────────────────────────────────── */}
+      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '36px clamp(20px,5vw,64px)', background: '#000' }}>
+        <div style={{ maxWidth: 1080, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+          <span style={{ fontWeight: 900, fontSize: '1.05rem', letterSpacing: '-0.01em' }}>
             KAO<span style={{ color: '#e60012' }}>MUG</span>
           </span>
-          <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.78rem' }}>
+          <span style={{ color: 'rgba(255,255,255,0.22)', fontSize: '0.75rem' }}>
             A playground project by{' '}
-            <a href="/playground" style={{ color: 'rgba(255,255,255,0.45)', textDecoration: 'underline' }}>Christian Dizon</a>
-            {' '}— inspired by Asahi design
+            <a href="/playground" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'underline' }}>Christian Dizon</a>
+            {' '}— inspired by Asahi Fantasy Miniglass design
           </span>
         </div>
       </footer>
 
       <style>{`
-        @keyframes km-scroll {
+        @keyframes km-ticker {
           from { transform: translateX(0); }
           to   { transform: translateX(-50%); }
+        }
+        @keyframes km-row {
+          from { transform: translateX(0); }
+          to   { transform: translateX(-33.3333%); }
+        }
+        @keyframes km-row-reverse {
+          from { transform: translateX(-33.3333%); }
+          to   { transform: translateX(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
         }
       `}</style>
     </div>
