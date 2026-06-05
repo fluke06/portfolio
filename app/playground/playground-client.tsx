@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Mascot, Asterisk } from '@/components/mascot';
 import { PageHeader } from '@/components/page-header';
 
@@ -147,6 +148,33 @@ function NoodleCard() {
   );
 }
 
+function LandingCard({ href, bg, accent, textDark = false, label, title, sub, tag }: {
+  href: string; bg: string; accent: string; textDark?: boolean;
+  label: string; title: string; sub: string; tag: string;
+}) {
+  const fg = textDark ? '#000' : '#fff';
+  const fgMuted = textDark ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.45)';
+  const border = textDark ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)';
+  return (
+    <Link href={href} style={{ textDecoration: 'none', display: 'block', borderRadius: 16, overflow: 'hidden', background: bg, border: `1px solid ${border}`, position: 'relative', minHeight: 180 }}>
+      {/* Decorative accent shape */}
+      <div style={{ position: 'absolute', top: -30, right: -30, width: 120, height: 120, borderRadius: '50%', background: accent, opacity: 0.18 }}/>
+      <div style={{ position: 'absolute', bottom: -20, left: -20, width: 80, height: 80, borderRadius: '50%', background: accent, opacity: 0.1 }}/>
+      <div style={{ position: 'relative', zIndex: 1, padding: '24px 24px 22px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
+          <span style={{ color: fgMuted, fontFamily: 'var(--font-inter, sans-serif)', fontSize: '0.7rem', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{label}</span>
+          <span style={{ background: accent, color: '#fff', fontFamily: 'var(--font-inter, sans-serif)', fontWeight: 700, fontSize: '0.65rem', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '4px 10px', borderRadius: 44 }}>{tag}</span>
+        </div>
+        <h3 style={{ color: fg, fontFamily: 'var(--font-fraunces, serif)', fontWeight: 700, fontSize: 'clamp(1.4rem,2.5vw,1.75rem)', margin: '0 0 8px', lineHeight: 1, letterSpacing: '-0.01em' }}>{title}</h3>
+        <p style={{ color: fgMuted, fontFamily: 'var(--font-inter, sans-serif)', fontWeight: 400, fontSize: '0.82rem', lineHeight: 1.55, margin: '0 0 18px' }}>{sub}</p>
+        <span style={{ color: accent, fontFamily: 'var(--font-inter, sans-serif)', fontWeight: 600, fontSize: '0.78rem', letterSpacing: '0.04em' }}>
+          View page →
+        </span>
+      </div>
+    </Link>
+  );
+}
+
 export function PlaygroundClient() {
   return (
     <div className="page">
@@ -166,6 +194,38 @@ export function PlaygroundClient() {
         <PaletteCard />
         <MagneticBlobCard />
         <NoodleCard />
+      </div>
+
+      {/* Landing pages */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 20, padding: '8px 0 32px' }}>
+        <LandingCard
+          href="/playground/kaomug"
+          bg="#000"
+          accent="#e60012"
+          label="Landing Page · Dark"
+          title="Kaomug"
+          sub="Custom character mugs. Asahi-inspired."
+          tag="Shop"
+        />
+        <LandingCard
+          href="/playground/likha"
+          bg="#fff"
+          accent="#e60039"
+          textDark
+          label="Landing Page · Editorial"
+          title="Likhâ"
+          sub="Handpainted barong tagalog. Kakuwaku-inspired."
+          tag="Fashion"
+        />
+        <LandingCard
+          href="/playground/sora"
+          bg="#0a1c30"
+          accent="#2bdeff"
+          label="Landing Page · Real Estate"
+          title="Sora Realty"
+          sub="Premium properties. Mori Trust-inspired."
+          tag="Realty"
+        />
       </div>
 
       <div className="playground-note reveal">
