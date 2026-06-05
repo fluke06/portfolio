@@ -1,16 +1,11 @@
 import type { Metadata } from 'next';
 import { PlaygroundClient } from './playground-client';
-import { AppShell } from '@/components/app-shell';
 
 export const metadata: Metadata = {
-  title: 'Playground',
-  description: 'Small experiments. Most are pointless. That\'s the point.',
+  title: 'Playground — Christian Dizon',
+  description: 'Landing pages, interactive experiments, and things built during creative bursts.',
 };
 
 export default function PlaygroundPage() {
-  return (
-    <AppShell>
-      <PlaygroundClient />
-    </AppShell>
-  );
+  return <PlaygroundClient />;
 }

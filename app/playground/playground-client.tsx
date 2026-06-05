@@ -1,8 +1,13 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
+import { StickyNav } from '@/components/sticky-nav';
+import { FadeIn } from '@/components/fade-in';
+import { FooterSection } from '@/components/footer-section';
 import { Mascot, Asterisk } from '@/components/mascot';
-import { PageHeader } from '@/components/page-header';
+
+// ── Hooks ─────────────────────────────────────────────────────────────────────
 
 function useManilaTime() {
   const [t, setT] = useState('');
@@ -28,27 +33,43 @@ function useScrollY() {
   return y;
 }
 
-function CardShell({ title, blurb, kind, children }: {
+// ── Experiment card shell ─────────────────────────────────────────────────────
+
+function ExpCard({ title, blurb, kind, children }: {
   title: string; blurb: string; kind: string; children: React.ReactNode;
 }) {
   return (
-    <article className="exp-card reveal">
-      <div className="exp-stage">{children}</div>
-      <div className="exp-meta">
-        <div className="exp-kind t-eyebrow">{kind}</div>
-        <h3 className="exp-title">{title}</h3>
-        <p className="exp-blurb">{blurb}</p>
+    <article className="bg-[#1B1917] rounded-2xl overflow-hidden">
+      <div className="h-52 flex items-center justify-center p-6">
+        {children}
+      </div>
+      <div className="px-5 pb-5 pt-4 border-t border-white/[0.06]">
+        <div
+          className="font-inter text-[#888280] uppercase mb-1"
+          style={{ fontSize: '10px', letterSpacing: '0.14em' }}
+        >
+          {kind}
+        </div>
+        <h3 className="font-fraunces font-black text-[#EDE8E0] text-base leading-tight mb-1.5">
+          {title}
+        </h3>
+        <p className="font-inter text-[#888280] leading-relaxed" style={{ fontSize: '0.82rem' }}>
+          {blurb}
+        </p>
       </div>
     </article>
   );
 }
+
+// ── Experiment cards ──────────────────────────────────────────────────────────
 
 function BreatheCard() {
   const [phase, setPhase] = useState<'idle' | 'in' | 'hold' | 'out'>('idle');
   useEffect(() => {
     if (phase === 'idle') return;
     const seq: [typeof phase, number][] = [['in', 4000], ['hold', 7000], ['out', 8000]];
-    let i = 0; let timer: ReturnType<typeof setTimeout>;
+    let i = 0;
+    let timer: ReturnType<typeof setTimeout>;
     const tick = () => {
       const [p, ms] = seq[i % seq.length];
       setPhase(p);
@@ -58,17 +79,30 @@ function BreatheCard() {
     return () => clearTimeout(timer);
   }, [phase === 'idle']);
 
-  const scale = phase === 'in' ? 1 : phase === 'hold' ? 1 : phase === 'out' ? 0.4 : 0.7;
+  const scale = phase === 'out' ? 0.4 : phase === 'idle' ? 0.7 : 1;
   const ms = phase === 'in' ? 4000 : phase === 'out' ? 8000 : 7000;
   const label = phase === 'idle' ? 'tap to start' : phase === 'in' ? 'breathe in' : phase === 'hold' ? 'hold' : 'out';
 
   return (
-    <CardShell title="Breath circle" blurb="A 4-7-8 breathing visualizer. Click to start." kind="interactive">
-      <button className="breathe" onClick={() => setPhase('in')}>
-        <div className="breathe-circle" style={{ transform: `scale(${scale})`, transition: `transform ${ms}ms cubic-bezier(0.4,0,0.6,1)` }} />
-        <div className="breathe-label t-mono">{label}</div>
+    <ExpCard title="Breath circle" blurb="A 4-7-8 breathing visualizer. Click to start." kind="interactive">
+      <button
+        onClick={() => setPhase('in')}
+        className="relative flex items-center justify-center w-full h-full"
+        aria-label="Start breathing exercise"
+      >
+        <div
+          className="absolute rounded-full bg-[#C4B89A]/20"
+          style={{
+            width: 120, height: 120,
+            transform: `scale(${scale})`,
+            transition: `transform ${ms}ms cubic-bezier(0.4,0,0.6,1)`,
+          }}
+        />
+        <span className="relative font-inter text-[#888280] text-sm tracking-widest select-none">
+          {label}
+        </span>
       </button>
-    </CardShell>
+    </ExpCard>
   );
 }
 
@@ -80,24 +114,27 @@ function MorphCard() {
     return () => clearInterval(id);
   }, []);
   return (
-    <CardShell title="Morph" blurb="A blob that drifts through six shapes on a loop." kind="animation">
-      <div className="morph-stage">
-        <Mascot name={shapes[i]} className="morph-blob" />
-      </div>
-    </CardShell>
+    <ExpCard title="Morph" blurb="A blob that drifts through six shapes on a loop." kind="animation">
+      <Mascot name={shapes[i]} className="w-24 h-24 text-[#C4B89A]" />
+    </ExpCard>
   );
 }
 
 function ASCIIClockCard() {
   const t = useManilaTime();
   return (
-    <CardShell title="ASCII clock" blurb="A clock in monospace characters. Manila time." kind="live">
-      <div className="ascii-clock t-mono">
+    <ExpCard title="ASCII clock" blurb="A clock in monospace characters. Manila time." kind="live">
+      <div className="flex items-center gap-0.5 font-mono">
         {t.split('').map((c, i) => (
-          <span key={i} className={c === ':' ? 'ascii-colon' : 'ascii-digit'}>{c}</span>
+          <span
+            key={i}
+            className={`font-mono font-bold text-2xl ${c === ':' ? 'text-[#888280]' : 'text-[#EDE8E0]'}`}
+          >
+            {c}
+          </span>
         ))}
       </div>
-    </CardShell>
+    </ExpCard>
   );
 }
 
@@ -110,132 +147,299 @@ function PaletteCard() {
   ];
   const [i, setI] = useState(0);
   return (
-    <CardShell title="Palette mixer" blurb="Click to roll a new harmonious palette." kind="interactive">
-      <div className="palette-card" onClick={() => setI(v => (v + 1) % palettes.length)}>
-        {palettes[i].map((c, j) => <div key={j} className="palette-swatch" style={{ background: c }} />)}
-        <div className="palette-hint t-mono">click to roll</div>
-      </div>
-    </CardShell>
+    <ExpCard title="Palette mixer" blurb="Click to roll a new harmonious palette." kind="interactive">
+      <button
+        onClick={() => setI(v => (v + 1) % palettes.length)}
+        className="flex flex-col items-center gap-3 w-full h-full justify-center"
+        aria-label="Roll palette"
+      >
+        <div className="flex gap-2">
+          {palettes[i].map((c, j) => (
+            <div key={j} className="w-10 h-10 rounded-lg" style={{ background: c }} />
+          ))}
+        </div>
+        <span className="font-mono text-[#888280] tracking-widest" style={{ fontSize: '10px' }}>
+          click to roll
+        </span>
+      </button>
+    </ExpCard>
   );
 }
 
 function MagneticBlobCard() {
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   return (
-    <CardShell title="Magnetic cursor" blurb="Hover near the blob — it leans toward your cursor." kind="interactive">
+    <ExpCard title="Magnetic cursor" blurb="Hover near the blob — it leans toward your cursor." kind="interactive">
       <div
-        className="magnet-stage"
+        className="flex items-center justify-center w-full h-full"
         onMouseMove={e => {
           const r = e.currentTarget.getBoundingClientRect();
-          setOffset({ x: (e.clientX - r.left - r.width / 2) * 0.15, y: (e.clientY - r.top - r.height / 2) * 0.15 });
+          setOffset({
+            x: (e.clientX - r.left - r.width / 2) * 0.15,
+            y: (e.clientY - r.top - r.height / 2) * 0.15,
+          });
         }}
         onMouseLeave={() => setOffset({ x: 0, y: 0 })}
       >
-        <Mascot name="pebble" className="magnet-blob" style={{ transform: `translate(${offset.x}px, ${offset.y}px)` }} />
+        <Mascot
+          name="pebble"
+          className="w-20 h-20 text-[#C4B89A]"
+          style={{ transform: `translate(${offset.x}px, ${offset.y}px)`, transition: 'transform 0.1s ease-out' }}
+        />
       </div>
-    </CardShell>
+    </ExpCard>
   );
 }
 
 function NoodleCard() {
   const scrollY = useScrollY();
   return (
-    <CardShell title="Ribbon" blurb="A noodle that follows the scroll like a fish." kind="scroll">
-      <div className="noodle-stage">
-        <Mascot name="noodle" className="noodle-blob" style={{ transform: `translateY(${Math.sin(scrollY / 60) * 12}px)` }} />
-      </div>
-    </CardShell>
+    <ExpCard title="Ribbon" blurb="A noodle that follows the scroll like a fish." kind="scroll">
+      <Mascot
+        name="noodle"
+        className="w-24 h-24 text-[#C4B89A]"
+        style={{ transform: `translateY(${Math.sin(scrollY / 60) * 12}px)`, transition: 'transform 0.1s ease-out' }}
+      />
+    </ExpCard>
   );
 }
 
-function LandingCard({ href, bg, accent, textDark = false, label, title, sub, tag }: {
-  href: string; bg: string; accent: string; textDark?: boolean;
-  label: string; title: string; sub: string; tag: string;
-}) {
-  const fg = textDark ? '#000' : '#fff';
-  const fgMuted = textDark ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.45)';
-  const border = textDark ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)';
+// ── Landing page data + tile ───────────────────────────────────────────────────
+
+const LANDING_PAGES = [
+  {
+    href: '/playground/kaomug',
+    bg: '#111',
+    accent: '#e60012',
+    num: '01',
+    year: '2025',
+    title: 'Kaomug',
+    titleAccent: '',
+    sub: 'Custom ceramic character mugs. Six personalities, one addiction.',
+    tags: ['Shop'] as const,
+  },
+  {
+    href: '/playground/likha',
+    bg: '#f5ede3',
+    accent: '#e60039',
+    num: '02',
+    year: '2025',
+    title: 'Likhâ',
+    titleAccent: '',
+    sub: 'Handpainted barong tagalog. Every thread, a story.',
+    tags: ['Fashion'] as const,
+    previewImage: '/playground/likha/preview.png',
+  },
+  {
+    href: '/playground/sora',
+    bg: '#0a1c30',
+    accent: '#2bdeff',
+    num: '03',
+    year: '2025',
+    title: 'Sora Realty',
+    titleAccent: '',
+    sub: 'Premium properties. Thoughtful placement. Find your place in the sky.',
+    tags: ['Real Estate'] as const,
+  },
+];
+
+function LandingTile({
+  href, bg, accent, num, year, title, titleAccent, sub, tags, previewImage,
+}: typeof LANDING_PAGES[number] & { previewImage?: string }) {
   return (
-    <Link href={href} style={{ textDecoration: 'none', display: 'block', borderRadius: 16, overflow: 'hidden', background: bg, border: `1px solid ${border}`, position: 'relative', minHeight: 180 }}>
-      {/* Decorative accent shape */}
-      <div style={{ position: 'absolute', top: -30, right: -30, width: 120, height: 120, borderRadius: '50%', background: accent, opacity: 0.18 }}/>
-      <div style={{ position: 'absolute', bottom: -20, left: -20, width: 80, height: 80, borderRadius: '50%', background: accent, opacity: 0.1 }}/>
-      <div style={{ position: 'relative', zIndex: 1, padding: '24px 24px 22px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
-          <span style={{ color: fgMuted, fontFamily: 'var(--font-inter, sans-serif)', fontSize: '0.7rem', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{label}</span>
-          <span style={{ background: accent, color: '#fff', fontFamily: 'var(--font-inter, sans-serif)', fontWeight: 700, fontSize: '0.65rem', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '4px 10px', borderRadius: 44 }}>{tag}</span>
+    <FadeIn y={20}>
+      <Link href={href} className="group block">
+        {/* Num + year */}
+        <div className="flex items-baseline justify-between mb-4">
+          <span
+            className="font-fraunces font-black text-[#EDE8E0] leading-none"
+            style={{ fontSize: 'clamp(1.4rem, 2.4vw, 2rem)', opacity: 0.15 }}
+          >
+            {num}
+          </span>
+          <span
+            className="font-inter text-[#888280] uppercase"
+            style={{ fontSize: '10px', letterSpacing: '0.14em' }}
+          >
+            {year}
+          </span>
         </div>
-        <h3 style={{ color: fg, fontFamily: 'var(--font-fraunces, serif)', fontWeight: 700, fontSize: 'clamp(1.4rem,2.5vw,1.75rem)', margin: '0 0 8px', lineHeight: 1, letterSpacing: '-0.01em' }}>{title}</h3>
-        <p style={{ color: fgMuted, fontFamily: 'var(--font-inter, sans-serif)', fontWeight: 400, fontSize: '0.82rem', lineHeight: 1.55, margin: '0 0 18px' }}>{sub}</p>
-        <span style={{ color: accent, fontFamily: 'var(--font-inter, sans-serif)', fontWeight: 600, fontSize: '0.78rem', letterSpacing: '0.04em' }}>
-          View page →
-        </span>
-      </div>
-    </Link>
+
+        {/* Thumbnail */}
+        <div
+          className="relative overflow-hidden mb-5"
+          style={{ aspectRatio: '16/10', background: bg }}
+        >
+          {previewImage ? (
+            <Image
+              src={previewImage}
+              alt={title}
+              fill
+              className="object-cover object-top group-hover:scale-105 transition-transform duration-700 ease-out"
+              sizes="(max-width: 768px) 100vw, 33vw"
+            />
+          ) : (
+            <>
+              <div
+                className="absolute rounded-full group-hover:scale-110 transition-transform duration-700 ease-out"
+                style={{ background: accent, opacity: 0.18, width: '60%', height: '120%', top: '-10%', right: '-10%' }}
+              />
+              <div
+                className="absolute rounded-full"
+                style={{ background: accent, opacity: 0.08, width: '40%', height: '80%', bottom: '-20%', left: '-5%' }}
+              />
+            </>
+          )}
+          <span
+            className="absolute top-3 left-3 font-inter font-bold text-white rounded-full px-3 py-1 z-10"
+            style={{ background: accent, fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}
+          >
+            Landing page
+          </span>
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-black/[0.15] z-10" />
+        </div>
+
+        {/* Title */}
+        <h3
+          className="font-fraunces font-black text-[#EDE8E0] leading-tight mb-2 group-hover:text-[#C4B89A] transition-colors duration-300"
+          style={{ fontSize: 'clamp(1.1rem, 2vw, 1.4rem)' }}
+        >
+          {title}
+          {titleAccent && <em className="italic font-normal"> {titleAccent}</em>}
+        </h3>
+
+        <p
+          className="font-inter font-light text-[#888280] leading-relaxed mb-3 line-clamp-2"
+          style={{ fontSize: 'clamp(0.82rem, 1.1vw, 0.9rem)' }}
+        >
+          {sub}
+        </p>
+
+        <div className="flex flex-wrap gap-x-3 gap-y-1">
+          {tags.map(t => (
+            <span
+              key={t}
+              className="font-inter font-medium text-[#888280] uppercase"
+              style={{ fontSize: '10px', letterSpacing: '0.08em' }}
+            >
+              / {t}
+            </span>
+          ))}
+        </div>
+      </Link>
+    </FadeIn>
   );
 }
+
+// ── Section divider label ─────────────────────────────────────────────────────
+
+function SectionLabel({ num, label }: { num: string; label: string }) {
+  return (
+    <FadeIn y={12}>
+      <div className="flex items-center gap-4 mb-10 sm:mb-14">
+        <span
+          className="font-inter text-[#888280] uppercase shrink-0"
+          style={{ fontSize: '10px', letterSpacing: '0.2em' }}
+        >
+          {num}
+        </span>
+        <div className="flex-1 h-px bg-[#EDE8E0]/10" />
+        <span
+          className="font-fraunces font-black text-[#EDE8E0] shrink-0"
+          style={{ fontSize: 'clamp(0.9rem, 1.5vw, 1.05rem)' }}
+        >
+          {label}
+        </span>
+      </div>
+    </FadeIn>
+  );
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
 
 export function PlaygroundClient() {
   return (
-    <div className="page">
-      <PageHeader
-        num="04"
-        en="Playground"
-        title="Things I made on"
-        accent="weekends."
-        accentBlock
-        sub="Small experiments. Most are pointless. That's the point."
-      />
+    <div className="min-h-screen bg-[#100F0D]">
+      <StickyNav alwaysVisible />
 
-      <div className="playground-grid">
-        <BreatheCard />
-        <MorphCard />
-        <ASCIIClockCard />
-        <PaletteCard />
-        <MagneticBlobCard />
-        <NoodleCard />
-      </div>
+      {/* Header */}
+      <section className="pt-28 sm:pt-32 md:pt-40 px-5 sm:px-8 md:px-10 pb-12 sm:pb-16">
+        <div className="max-w-7xl mx-auto">
+          <FadeIn delay={0.05} y={32}>
+            <h1
+              className="font-fraunces font-black tracking-tight text-balance"
+              style={{ fontSize: 'clamp(2.8rem, 8vw, 6rem)', lineHeight: 0.92 }}
+            >
+              <span className="text-[#EDE8E0] block">Things I made</span>
+              <em className="italic text-[#EDE8E0] block">for fun.</em>
+            </h1>
+          </FadeIn>
+          <FadeIn delay={0.15} y={20}>
+            <p
+              className="font-inter font-light text-[#888280] mt-5 max-w-xl leading-relaxed"
+              style={{ fontSize: 'clamp(1rem, 1.6vw, 1.15rem)' }}
+            >
+              Landing pages, interactive experiments, and other things built during creative bursts.
+            </p>
+          </FadeIn>
+        </div>
+      </section>
 
       {/* Landing pages */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 20, padding: '8px 0 32px' }}>
-        <LandingCard
-          href="/playground/kaomug"
-          bg="#000"
-          accent="#e60012"
-          label="Landing Page · Dark"
-          title="Kaomug"
-          sub="Custom character mugs. Asahi-inspired."
-          tag="Shop"
-        />
-        <LandingCard
-          href="/playground/likha"
-          bg="#fff"
-          accent="#e60039"
-          textDark
-          label="Landing Page · Editorial"
-          title="Likhâ"
-          sub="Handpainted barong tagalog. Kakuwaku-inspired."
-          tag="Fashion"
-        />
-        <LandingCard
-          href="/playground/sora"
-          bg="#0a1c30"
-          accent="#2bdeff"
-          label="Landing Page · Real Estate"
-          title="Sora Realty"
-          sub="Premium properties. Mori Trust-inspired."
-          tag="Realty"
-        />
+      <section className="px-5 sm:px-8 md:px-10 pb-20 sm:pb-28">
+        <div className="max-w-7xl mx-auto">
+          <SectionLabel num="01" label="Landing pages" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16 sm:gap-y-20">
+            {LANDING_PAGES.map(p => (
+              <LandingTile key={p.href} {...p} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Experiments */}
+      <section className="px-5 sm:px-8 md:px-10 pb-32">
+        <div className="max-w-7xl mx-auto">
+          <SectionLabel num="02" label="Experiments" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+            {[
+              <BreatheCard key="breathe" />,
+              <MorphCard key="morph" />,
+              <ASCIIClockCard key="clock" />,
+              <PaletteCard key="palette" />,
+              <MagneticBlobCard key="magnetic" />,
+              <NoodleCard key="noodle" />,
+            ].map((card, i) => (
+              <FadeIn key={i} delay={i * 0.05} y={16}>{card}</FadeIn>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Footer note */}
+      <div className="px-5 sm:px-8 md:px-10 pb-12">
+        <div className="max-w-7xl mx-auto">
+          <FadeIn y={12}>
+            <div className="flex items-start gap-3 text-[#888280]">
+              <Asterisk size={16} />
+              <p className="font-inter font-light leading-relaxed" style={{ fontSize: '0.82rem' }}>
+                Built with vanilla web tech, mostly. Source on{' '}
+                <a
+                  href="https://github.com/fluke06"
+                  className="text-[#C4B89A] hover:text-[#EDE8E0] transition-colors duration-200"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  GitHub →
+                </a>{' '}
+                when it&rsquo;s not embarrassing.
+              </p>
+            </div>
+          </FadeIn>
+        </div>
       </div>
 
-      <div className="playground-note reveal">
-        <Asterisk size={18} />
-        <p className="t-body-sm">
-          Built with vanilla web tech, mostly. Source on{' '}
-          <a href="https://github.com/fluke06" className="t-link" target="_blank" rel="noreferrer">GitHub →</a>
-          {' '}when it&rsquo;s not embarrassing.
-        </p>
-      </div>
+      <FooterSection />
     </div>
   );
 }

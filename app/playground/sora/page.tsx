@@ -1,526 +1,510 @@
 import type { Metadata } from 'next';
 import { Zen_Old_Mincho, Oswald } from 'next/font/google';
 
-const zenMincho = Zen_Old_Mincho({ subsets: ['latin'], weight: ['400', '700', '900'], variable: '--font-mincho', display: 'swap' });
-const oswald = Oswald({ subsets: ['latin'], weight: ['300', '400', '500', '600'], variable: '--font-oswald', display: 'swap' });
+const zenMincho = Zen_Old_Mincho({
+  subsets: ['latin'],
+  weight: ['400', '700', '900'],
+  variable: '--font-mincho',
+  display: 'swap',
+});
+const oswald = Oswald({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600'],
+  variable: '--font-oswald',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
-  title: 'Sora Realty — Premium Properties in the Philippines',
+  title: 'Sora Realty — Premium Properties',
   description: 'Exceptional properties. Thoughtful placement. Find your place in the sky.',
 };
 
-// ── City skyline SVG ──────────────────────────────────────────────────────────
+// ── Mascot (bunny/tanuki style, like Mori Trust footer mascot) ────────────────
 
-function CitySkyline() {
+function SoraMascot() {
   return (
-    <svg
-      viewBox="0 0 1440 520"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      preserveAspectRatio="xMidYMax slice"
-      aria-hidden="true"
-      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.18 }}
-    >
-      {/* Far background hills */}
-      <ellipse cx="720" cy="600" rx="900" ry="260" fill="#1a3a5c" opacity="0.4"/>
-
-      {/* Tower 1 — tallest center */}
-      <rect x="640" y="60" width="90" height="460" fill="#2bdeff"/>
-      {/* Tower 1 spire */}
-      <polygon points="685,20 680,60 690,60" fill="#2bdeff"/>
-      {/* Tower 1 windows grid */}
-      {Array.from({ length: 18 }, (_, row) =>
-        Array.from({ length: 5 }, (_, col) => (
-          <rect key={`t1-${row}-${col}`}
-            x={648 + col * 16} y={70 + row * 22}
-            width="10" height="14"
-            fill="rgba(0,0,0,0.45)"
-          />
-        ))
-      )}
-      {/* Antenna dot */}
-      <circle cx="685" cy="16" r="4" fill="#2bdeff" opacity="0.7"/>
-
-      {/* Tower 2 — left tall */}
-      <rect x="490" y="120" width="70" height="400" fill="#2bdeff" opacity="0.7"/>
-      <rect x="505" y="100" width="40" height="25" fill="#2bdeff" opacity="0.7"/>
-      <line x1="525" y1="100" x2="525" y2="82" stroke="#2bdeff" strokeWidth="3" opacity="0.7"/>
-      {Array.from({ length: 14 }, (_, row) =>
-        Array.from({ length: 3 }, (_, col) => (
-          <rect key={`t2-${row}-${col}`}
-            x={498 + col * 20} y={130 + row * 24}
-            width="12" height="16"
-            fill="rgba(0,0,0,0.45)"
-          />
-        ))
-      )}
-
-      {/* Tower 3 — right tall */}
-      <rect x="780" y="100" width="80" height="420" fill="#2bdeff" opacity="0.65"/>
-      <rect x="793" y="80" width="54" height="24" fill="#2bdeff" opacity="0.65"/>
-      <line x1="820" y1="80" x2="820" y2="58" stroke="#2bdeff" strokeWidth="3" opacity="0.6"/>
-      <circle cx="820" cy="55" r="5" fill="#2bdeff" opacity="0.5"/>
-      {Array.from({ length: 16 }, (_, row) =>
-        Array.from({ length: 4 }, (_, col) => (
-          <rect key={`t3-${row}-${col}`}
-            x={788 + col * 18} y={108 + row * 24}
-            width="11" height="16"
-            fill="rgba(0,0,0,0.45)"
-          />
-        ))
-      )}
-
-      {/* Tower 4 — mid-left */}
-      <rect x="360" y="180" width="55" height="340" fill="#2bdeff" opacity="0.5"/>
-      {Array.from({ length: 10 }, (_, row) =>
-        Array.from({ length: 3 }, (_, col) => (
-          <rect key={`t4-${row}-${col}`}
-            x={368 + col * 16} y={192 + row * 28}
-            width="10" height="18"
-            fill="rgba(0,0,0,0.4)"
-          />
-        ))
-      )}
-
-      {/* Tower 5 — mid-right */}
-      <rect x="920" y="160" width="60" height="360" fill="#2bdeff" opacity="0.5"/>
-      {Array.from({ length: 11 }, (_, row) =>
-        Array.from({ length: 3 }, (_, col) => (
-          <rect key={`t5-${row}-${col}`}
-            x={928 + col * 18} y={172 + row * 28}
-            width="12" height="18"
-            fill="rgba(0,0,0,0.4)"
-          />
-        ))
-      )}
-
-      {/* Tower 6 — far left */}
-      <rect x="220" y="240" width="45" height="280" fill="#2bdeff" opacity="0.35"/>
-      {/* Tower 7 — far right */}
-      <rect x="1070" y="220" width="50" height="300" fill="#2bdeff" opacity="0.35"/>
-
-      {/* Small buildings */}
-      <rect x="150" y="300" width="35" height="220" fill="#2bdeff" opacity="0.25"/>
-      <rect x="1140" y="280" width="40" height="240" fill="#2bdeff" opacity="0.25"/>
-      <rect x="1200" y="340" width="60" height="180" fill="#2bdeff" opacity="0.2"/>
-      <rect x="80" y="360" width="50" height="160" fill="#2bdeff" opacity="0.2"/>
-
-      {/* Ground plane */}
-      <rect x="0" y="510" width="1440" height="10" fill="#2bdeff" opacity="0.15"/>
-
-      {/* Architectural grid overlay */}
-      {Array.from({ length: 10 }, (_, i) => (
-        <line key={`vg-${i}`} x1={144 * i} y1="0" x2={144 * i} y2="520" stroke="#2bdeff" strokeWidth="0.4" opacity="0.12"/>
-      ))}
-      {Array.from({ length: 6 }, (_, i) => (
-        <line key={`hg-${i}`} x1="0" y1={86 * i} x2="1440" y2={86 * i} stroke="#2bdeff" strokeWidth="0.4" opacity="0.12"/>
-      ))}
+    <svg viewBox="0 0 60 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      {/* Tall ears */}
+      <ellipse cx="20" cy="22" rx="7" ry="20" fill="#fff" stroke="#aaa" strokeWidth="1.5"/>
+      <ellipse cx="40" cy="22" rx="7" ry="20" fill="#fff" stroke="#aaa" strokeWidth="1.5"/>
+      <ellipse cx="20" cy="22" rx="4" ry="16" fill="#f4a0b0" opacity="0.5"/>
+      <ellipse cx="40" cy="22" rx="4" ry="16" fill="#f4a0b0" opacity="0.5"/>
+      {/* Head */}
+      <circle cx="30" cy="42" r="18" fill="#fff" stroke="#aaa" strokeWidth="1.5"/>
+      {/* Eyes */}
+      <circle cx="23" cy="40" r="4" fill="#2a2a2a"/>
+      <circle cx="37" cy="40" r="4" fill="#2a2a2a"/>
+      <circle cx="24.5" cy="38.5" r="1.5" fill="#fff"/>
+      <circle cx="38.5" cy="38.5" r="1.5" fill="#fff"/>
+      {/* Nose */}
+      <ellipse cx="30" cy="46" rx="3" ry="2" fill="#f4a0b0"/>
+      {/* Whiskers */}
+      <line x1="10" y1="46" x2="26" y2="47" stroke="#aaa" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="10" y1="50" x2="26" y2="49" stroke="#aaa" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="34" y1="47" x2="50" y2="46" stroke="#aaa" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="34" y1="49" x2="50" y2="50" stroke="#aaa" strokeWidth="1" strokeLinecap="round"/>
+      {/* Mouth */}
+      <path d="M 26 51 Q 30 55 34 51" fill="none" stroke="#aaa" strokeWidth="1.5" strokeLinecap="round"/>
+      {/* Body */}
+      <ellipse cx="30" cy="68" rx="14" ry="11" fill="#fff" stroke="#aaa" strokeWidth="1.5"/>
     </svg>
   );
 }
 
-// ── Property data ──────────────────────────────────────────────────────────────
+// ── Building SVG for hero ─────────────────────────────────────────────────────
 
-const PROPERTIES = [
-  { id: 'SR-001', name: 'The Meridian', location: 'BGC, Taguig', type: 'Condominium', beds: 3, area: 142, price: '₱28,000,000', tag: 'Featured', accentColor: '#2bdeff', floor: '28F' },
-  { id: 'SR-002', name: 'Casa Celeste', location: 'Alabang, Muntinlupa', type: 'House & Lot', beds: 5, area: 320, price: '₱62,000,000', tag: 'New Listing', accentColor: '#c0c4ce', floor: null },
-  { id: 'SR-003', name: 'Sky Residences 12A', location: 'Ortigas, Pasig', type: 'Condominium', beds: 2, area: 88, price: '₱12,500,000', tag: 'Move-in Ready', accentColor: '#48a08f', floor: '12F' },
-  { id: 'SR-004', name: 'Hacienda Verde', location: 'Silang, Cavite', type: 'Farm Lot', beds: null, area: 1200, price: '₱18,000,000', tag: 'Investment', accentColor: '#8dc556', floor: null },
-  { id: 'SR-005', name: 'The Residences at Azure', location: 'Parañaque City', type: 'Condominium', beds: 1, area: 54, price: '₱9,800,000', tag: 'Promo', accentColor: '#2bdeff', floor: '7F' },
-];
-
-// ── Section data ──────────────────────────────────────────────────────────────
-
-const PANELS = [
-  {
-    num: '01 / 03',
-    title: 'Urban Towers',
-    subtitle: "Metro Manila’s Skyline",
-    desc: 'Exceptional condominiums in BGC, Ortigas, and the Makati CBD. Floor-to-ceiling views, concierge services, and addresses that define your standard.',
-    color: '#0a1c30',
-    accent: '#2bdeff',
-    prop: PROPERTIES[0],
-  },
-  {
-    num: '02 / 03',
-    title: 'Premium Estates',
-    subtitle: 'Suburban Havens',
-    desc: 'House-and-lot properties in Alabang, Cavite, and Laguna. Space for a family, a garden, and the kind of morning light you can only find outside the city.',
-    color: '#fff',
-    accent: '#0a1c30',
-    prop: PROPERTIES[1],
-  },
-  {
-    num: '03 / 03',
-    title: 'Land & Investment',
-    subtitle: 'Long-Horizon Assets',
-    desc: "Farm lots and raw land for the patient investor. We identify parcels with infrastructure tailwinds, zoning potential, and the coordinates of the next decade's growth.",
-    color: '#0a1c30',
-    accent: '#2bdeff',
-    prop: PROPERTIES[3],
-  },
-];
-
-function PropertyMiniCard({ prop, accent }: { prop: typeof PROPERTIES[0]; accent: string }) {
+function HeroBuilding() {
   return (
-    <div style={{
-      background: 'rgba(255,255,255,0.06)',
-      border: `1px solid ${accent}30`,
-      padding: '20px 24px',
-      position: 'relative',
-    }}>
-      {/* Small SVG cityscape thumbnail */}
-      <div style={{ height: 100, background: '#04111e', marginBottom: 16, position: 'relative', overflow: 'hidden' }}>
-        <svg viewBox="0 0 300 100" fill="none" style={{ width: '100%', height: '100%', opacity: 0.5 }} aria-hidden="true">
-          <rect x="110" y="10" width="30" height="90" fill={accent}/>
-          <rect x="80" y="30" width="25" height="70" fill={accent} opacity="0.7"/>
-          <rect x="145" y="25" width="28" height="75" fill={accent} opacity="0.65"/>
-          <rect x="50" y="45" width="20" height="55" fill={accent} opacity="0.5"/>
-          <rect x="180" y="40" width="22" height="60" fill={accent} opacity="0.5"/>
-          {Array.from({length: 4}, (_, r) => Array.from({length: 2}, (_, c) => (
-            <rect key={`${r}-${c}`} x={118+c*14} y={18+r*20} width="8" height="12" fill="rgba(0,0,0,0.5)"/>
-          )))}
-        </svg>
-        {prop.floor && (
-          <div style={{
-            position: 'absolute', top: 8, right: 8,
-            background: 'rgba(0,0,0,0.5)', border: `1px solid ${accent}50`,
-            padding: '3px 8px',
-          }}>
-            <span style={{ fontFamily: 'var(--font-oswald)', fontWeight: 500, fontSize: '0.68rem', color: accent, letterSpacing: '0.1em' }}>{prop.floor}</span>
-          </div>
-        )}
+    <svg viewBox="0 0 800 500" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '60%', opacity: 0.12 }} aria-hidden="true">
+      {/* Large tower center */}
+      <rect x="340" y="80" width="120" height="420" fill="#fff"/>
+      <rect x="360" y="80" width="80" height="60" fill="#c0c4ce"/>
+      {/* Windows grid center */}
+      {Array.from({ length: 10 }).map((_, row) =>
+        Array.from({ length: 5 }).map((_, col) => (
+          <rect key={`c-${row}-${col}`} x={352 + col * 15} y={160 + row * 30} width="10" height="18" fill="#fff" opacity="0.3"/>
+        ))
+      )}
+      {/* Left building */}
+      <rect x="180" y="180" width="80" height="320" fill="#c0c4ce"/>
+      {Array.from({ length: 7 }).map((_, row) =>
+        Array.from({ length: 3 }).map((_, col) => (
+          <rect key={`l-${row}-${col}`} x={190 + col * 24} y={200 + row * 40} width="16" height="24" fill="#fff" opacity="0.25"/>
+        ))
+      )}
+      {/* Right building */}
+      <rect x="540" y="150" width="90" height="350" fill="#c0c4ce"/>
+      {Array.from({ length: 8 }).map((_, row) =>
+        Array.from({ length: 3 }).map((_, col) => (
+          <rect key={`r-${row}-${col}`} x={552 + col * 26} y={170 + row * 38} width="18" height="22" fill="#fff" opacity="0.25"/>
+        ))
+      )}
+      {/* Far left */}
+      <rect x="60" y="240" width="60" height="260" fill="#909195"/>
+      {/* Far right */}
+      <rect x="680" y="200" width="70" height="300" fill="#909195"/>
+      {/* Ground */}
+      <rect x="0" y="488" width="800" height="12" fill="#c0c4ce" opacity="0.5"/>
+    </svg>
+  );
+}
+
+// ── Moon SVG ──────────────────────────────────────────────────────────────────
+
+function Moon() {
+  return (
+    <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <circle cx="60" cy="60" r="55" fill="#e8e0d0" opacity="0.9"/>
+      <circle cx="60" cy="60" r="52" fill="#f5f0e8"/>
+      {/* Craters */}
+      <circle cx="38" cy="45" r="6" fill="#e0d8cc" opacity="0.6"/>
+      <circle cx="72" cy="35" r="4" fill="#e0d8cc" opacity="0.5"/>
+      <circle cx="55" cy="72" r="8" fill="#e0d8cc" opacity="0.5"/>
+      <circle cx="80" cy="65" r="5" fill="#e0d8cc" opacity="0.4"/>
+    </svg>
+  );
+}
+
+// ── Tree silhouette SVG ────────────────────────────────────────────────────────
+
+function Trees() {
+  return (
+    <svg viewBox="0 0 800 300" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', opacity: 0.7 }} aria-hidden="true">
+      {/* Dense tree line */}
+      {[40,80,130,180,220,270,310,360,400,440,490,540,580,630,670,720,760].map((x, i) => (
+        <path key={i} d={`M ${x} 300 L ${x - 15 - (i%3)*5} ${200 - (i%4)*20} L ${x + 15 + (i%3)*5} ${200 - (i%4)*20} Z`} fill="#0a1c30"/>
+      ))}
+      {/* Thicker trunks */}
+      {[100,250,400,560,700].map(x => (
+        <rect key={x} x={x-3} y={250} width={6} height={50} fill="#0a1c30"/>
+      ))}
+      {/* Japanese house silhouette */}
+      <rect x="330" y="200" width="140" height="80" fill="#0a1c30"/>
+      <path d="M 310 205 L 400 150 L 490 205 Z" fill="#0a1c30"/>
+      <rect x="380" y="230" width="40" height="50" fill="#0c0c12"/>
+      <rect x="340" y="210" width="30" height="25" fill="#0c0c12"/>
+      <rect x="430" y="210" width="30" height="25" fill="#0c0c12"/>
+    </svg>
+  );
+}
+
+// ── Circular diagram ──────────────────────────────────────────────────────────
+
+function CircleDiagram() {
+  const nodes = [
+    { angle: -90, label: '日本を代表する\nホテルの可能性' },
+    { angle: -18, label: 'ビジネス交流を\n育むオフィスの可能性' },
+    { angle: 54,  label: '社会課題を\n解決する可能性' },
+    { angle: 126, label: '土地・建物\n開発を委ねる可能性' },
+    { angle: 198, label: '人を育て\n守る可能性' },
+  ];
+  const cx = 200, cy = 200, r = 130, nodeR = 40;
+  return (
+    <svg viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: 'min(380px, 90vw)', height: 'min(380px, 90vw)' }} aria-hidden="true">
+      {/* Connection lines */}
+      {nodes.map((n, i) => {
+        const rad = (n.angle * Math.PI) / 180;
+        const nx = cx + r * Math.cos(rad), ny = cy + r * Math.sin(rad);
+        return <line key={i} x1={cx} y1={cy} x2={nx} y2={ny} stroke="#909195" strokeWidth="1" opacity="0.4"/>;
+      })}
+      {/* Outer nodes */}
+      {nodes.map((n, i) => {
+        const rad = (n.angle * Math.PI) / 180;
+        const nx = cx + r * Math.cos(rad), ny = cy + r * Math.sin(rad);
+        return (
+          <g key={i}>
+            <circle cx={nx} cy={ny} r={nodeR} fill="#ebf1ff" stroke="#615d6a" strokeWidth="1"/>
+            {n.label.split('\n').map((line, j) => (
+              <text key={j} x={nx} y={ny + (j - (n.label.split('\n').length - 1) / 2) * 11} textAnchor="middle" fontSize="7" fill="#01000a" fontFamily="sans-serif">{line}</text>
+            ))}
+          </g>
+        );
+      })}
+      {/* Center */}
+      <circle cx={cx} cy={cy} r={52} fill="#0a1c30" stroke="#615d6a" strokeWidth="1.5"/>
+      <text x={cx} y={cy - 8} textAnchor="middle" fontSize="10" fill="#fff" fontFamily="sans-serif" fontWeight="700">可能性</text>
+      <text x={cx} y={cy + 8} textAnchor="middle" fontSize="10" fill="#fff" fontFamily="sans-serif" fontWeight="700">デベロッパー</text>
+    </svg>
+  );
+}
+
+// ── Property card component ───────────────────────────────────────────────────
+
+function PropertyCard({ title, sub, idx }: { title: string; sub: string; idx: number }) {
+  const gradients = [
+    'linear-gradient(160deg, #1a3a5c 0%, #0a1c30 100%)',
+    'linear-gradient(160deg, #2a1a3c 0%, #1a0a2c 100%)',
+    'linear-gradient(160deg, #1a3c2a 0%, #0a2c1a 100%)',
+  ];
+  return (
+    <div style={{ background: gradients[idx % gradients.length], borderRadius: 8, overflow: 'hidden', position: 'relative' }}>
+      {/* Window grid faux-photo */}
+      <div style={{ height: 160, position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0 }}>
+          {Array.from({ length: 4 }).map((_, row) =>
+            Array.from({ length: 6 }).map((_, col) => (
+              <div key={`${row}-${col}`} style={{
+                position: 'absolute',
+                top: `${16 + row * 38}px`, left: `${8 + col * 44}px`,
+                width: 28, height: 24,
+                background: `rgba(255,255,255,${0.05 + (row + col) % 3 * 0.04})`,
+                border: '1px solid rgba(255,255,255,0.08)',
+              }}/>
+            ))
+          )}
+        </div>
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg, rgba(0,0,0,0.5) 0%, transparent 60%)' }}/>
       </div>
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
-        <span style={{ fontFamily: 'var(--font-oswald)', fontWeight: 500, fontSize: '0.65rem', letterSpacing: '0.18em', color: accent, textTransform: 'uppercase' }}>{prop.tag}</span>
-        <span style={{ width: 3, height: 3, background: 'rgba(255,255,255,0.2)', borderRadius: '50%', flexShrink: 0 }}/>
-        <span style={{ fontFamily: 'var(--font-oswald)', fontWeight: 400, fontSize: '0.65rem', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>{prop.id}</span>
-      </div>
-      <h4 style={{ fontFamily: 'var(--font-mincho)', fontWeight: 700, fontSize: '1.1rem', margin: '0 0 4px', color: '#fff', lineHeight: 1.15 }}>{prop.name}</h4>
-      <p style={{ fontFamily: 'var(--font-oswald)', fontWeight: 300, fontSize: '0.78rem', color: 'rgba(255,255,255,0.5)', margin: '0 0 12px', letterSpacing: '0.04em' }}>{prop.location}</p>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-        <span style={{ fontFamily: 'var(--font-mincho)', fontWeight: 700, fontSize: '1.05rem', color: '#fff' }}>{prop.price}</span>
-        <span style={{ fontFamily: 'var(--font-oswald)', fontWeight: 400, fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.06em' }}>
-          {prop.area} sqm{prop.beds ? ` · ${prop.beds} BR` : ''}
-        </span>
+      <div style={{ padding: '16px 20px 20px' }}>
+        <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#fff', marginBottom: 6 }}>{title}</div>
+        <div style={{ fontSize: '0.75rem', color: '#909195', lineHeight: 1.65 }}>{sub}</div>
       </div>
     </div>
   );
 }
 
+const PROPERTIES = [
+  { title: '森トラストHP', sub: '高級ホテル・リゾート' },
+  { title: 'プロジェクト一覧', sub: '不動産開発プロジェクト' },
+  { title: 'セリトラ！', sub: 'ライフスタイル提案' },
+];
+
 export default function SoraPage() {
   return (
-    <div className={`${zenMincho.variable} ${oswald.variable}`} style={{ fontFamily: 'var(--font-oswald), sans-serif', background: '#fff', color: '#01000a', minHeight: '100vh' }}>
+    <div
+      className={`${zenMincho.variable} ${oswald.variable}`}
+      style={{ fontFamily: 'var(--font-oswald), sans-serif', background: '#fff', color: '#01000a', minHeight: '100vh', overflowX: 'hidden' }}
+    >
 
-      {/* ── Nav ──────────────────────────────────────────────────────────── */}
+      {/* ── Fixed nav ───────────────────────────────────────────────────── */}
       <nav style={{
-        position: 'sticky', top: 0, zIndex: 100,
-        background: 'rgba(255,255,255,0.96)',
-        borderBottom: '1px solid rgba(0,0,0,0.08)',
-        padding: '0 clamp(20px,5vw,64px)',
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+        padding: '20px clamp(16px,4vw,48px)',
+        display: 'flex', alignItems: 'center',
       }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64 }}>
-          <a href="/playground" style={{ color: '#01000a', textDecoration: 'none' }}>
-            <span style={{ fontFamily: 'var(--font-mincho)', fontWeight: 700, fontSize: 'clamp(1rem,2vw,1.2rem)', letterSpacing: '0.05em', display: 'block', lineHeight: 1 }}>SORA</span>
-            <span style={{ fontFamily: 'var(--font-oswald)', fontWeight: 400, fontSize: '0.6rem', letterSpacing: '0.22em', color: '#909195', display: 'block' }}>REALTY</span>
-          </a>
-          <div style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
-            {['Properties', 'About', 'Agents', 'Contact'].map(l => (
-              <a key={l} href="#" style={{ color: '#909195', textDecoration: 'none', fontFamily: 'var(--font-oswald)', fontWeight: 400, fontSize: '0.82rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{l}</a>
-            ))}
-          </div>
-          <a href="#properties" style={{
-            background: '#01000a', color: '#fff', textDecoration: 'none',
-            fontFamily: 'var(--font-oswald)', fontWeight: 500, fontSize: '0.78rem',
-            letterSpacing: '0.14em', textTransform: 'uppercase', padding: '10px 22px',
+        <a href="/playground" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: '50%',
+            background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
           }}>
-            Find Property
-          </a>
-        </div>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M 4 4 L 20 4 L 20 14 L 12 20 L 4 14 Z" fill="#0a1c30"/></svg>
+          </div>
+          <div style={{ lineHeight: 1.15 }}>
+            <div style={{ fontFamily: 'var(--font-oswald)', fontWeight: 600, fontSize: '0.85rem', color: '#fff', letterSpacing: '0.1em', textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>SORA</div>
+            <div style={{ fontFamily: 'var(--font-oswald)', fontWeight: 300, fontSize: '0.6rem', color: 'rgba(255,255,255,0.7)', letterSpacing: '0.12em', textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>REALTY GROUP</div>
+          </div>
+        </a>
       </nav>
 
-      {/* ── Hero — full-screen dark navy ─────────────────────────────────── */}
-      <section style={{
-        position: 'relative',
-        minHeight: '100vh',
-        background: '#0a1c30',
-        display: 'flex', flexDirection: 'column',
-        justifyContent: 'flex-end',
-        overflow: 'hidden',
-      }}>
-        {/* Gradient atmosphere layer */}
+      {/* ── Hero — full screen dark photo ──────────────────────────────── */}
+      <section style={{ height: '100vh', position: 'relative', overflow: 'hidden', background: '#0a1c30' }}>
+        {/* Dark gradient layers */}
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(160deg, #001030 0%, #0a1c30 40%, #1a2a40 100%)' }}/>
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 60% 40%, rgba(43,222,255,0.04) 0%, transparent 70%)' }}/>
+        {/* Building silhouette */}
+        <HeroBuilding />
+        {/* Subtle left panel overlay (like the Mori Trust left side text panel) */}
         <div style={{
-          position: 'absolute', inset: 0,
-          background: 'linear-gradient(180deg, #00091b 0%, #0a1c30 40%, #0a1c30 70%, rgba(10,28,48,0.85) 100%)',
-          zIndex: 1,
-        }}/>
-
-        {/* City skyline illustration */}
-        <CitySkyline />
-
-        {/* Stars / ambient dots */}
-        <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 2, opacity: 0.5 }} aria-hidden="true">
+          position: 'absolute', left: 0, top: 0, bottom: 0, width: '220px',
+          background: 'rgba(0,0,0,0.35)',
+          borderRight: '1px solid rgba(255,255,255,0.06)',
+          padding: '80px 24px 40px',
+          display: 'flex', flexDirection: 'column', gap: 24,
+        }}>
           {[
-            [120, 80], [280, 50], [450, 120], [600, 40], [750, 90], [920, 60],
-            [1080, 110], [1250, 45], [1380, 95], [200, 160], [500, 180], [850, 140],
-            [1100, 170], [350, 200], [700, 220], [990, 195],
-          ].map(([x, y], i) => (
-            <circle key={i} cx={x} cy={y} r={i % 3 === 0 ? 2 : 1.2} fill="#fff" opacity={0.3 + (i % 4) * 0.1}/>
+            { label: 'TV CMキャスター', val: '実績' },
+            { label: 'ストーリー', val: '' },
+            { label: '不動産デベロッパー', val: '' },
+            { label: '人の可能性を信じ', val: '' },
+            { label: 'まちを育てる', val: '' },
+            { label: 'キャラクターについて', val: '' },
+          ].map(({ label }) => (
+            <div key={label} style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.06em', lineHeight: 1.8 }}>{label}</div>
           ))}
-        </svg>
-
-        {/* Hero content */}
-        <div style={{ position: 'relative', zIndex: 10, padding: 'clamp(80px,10vh,120px) clamp(20px,5vw,72px) clamp(60px,8vh,100px)', maxWidth: 1200, margin: '0 auto', width: '100%' }}>
-
-          {/* Eyebrow */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 32 }}>
-            <div style={{ width: 32, height: 1, background: '#2bdeff' }}/>
-            <span style={{ fontFamily: 'var(--font-oswald)', fontWeight: 400, fontSize: '0.75rem', letterSpacing: '0.22em', color: '#c0c4ce', textTransform: 'uppercase' }}>
-              Premium Properties · Philippines
-            </span>
-          </div>
-
-          {/* Main headline */}
-          <h1 style={{
-            fontFamily: 'var(--font-mincho)',
-            fontWeight: 900,
-            fontSize: 'clamp(3.5rem,8vw,7.5rem)',
-            lineHeight: 0.92,
-            letterSpacing: '-0.01em',
-            margin: '0 0 40px',
-            color: '#fff',
-            maxWidth: '14ch',
+        </div>
+        {/* Hero text — bottom right (Mori Trust style) */}
+        <div style={{
+          position: 'absolute', bottom: 'clamp(48px,8vh,96px)', right: 'clamp(20px,5vw,80px)',
+          textAlign: 'right', color: '#fff',
+        }}>
+          <div style={{
+            fontFamily: 'var(--font-mincho)', fontWeight: 400,
+            fontSize: 'clamp(0.8rem,1.5vw,1rem)', letterSpacing: '0.06em',
+            marginBottom: 8, opacity: 0.8,
           }}>
-            Find your<br />place in<br />
-            <em style={{ fontStyle: 'italic', color: '#2bdeff' }}>the sky.</em>
-          </h1>
-
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 40, alignItems: 'flex-end' }}>
-            <p style={{ fontFamily: 'var(--font-oswald)', fontWeight: 300, fontSize: 'clamp(0.95rem,1.4vw,1.05rem)', lineHeight: 1.75, maxWidth: '44ch', color: '#c0c4ce', margin: 0, flex: '1 1 280px' }}>
-              Sora curates exceptional properties across Metro Manila and beyond. We match discerning buyers with homes that meet their exact standard — nothing more, nothing less.
-            </p>
-            <div style={{ display: 'flex', gap: 12, flexShrink: 0, flexWrap: 'wrap' }}>
-              <a href="#properties" style={{
-                background: '#2bdeff', color: '#01000a', textDecoration: 'none',
-                fontFamily: 'var(--font-oswald)', fontWeight: 600, fontSize: '0.85rem',
-                letterSpacing: '0.12em', textTransform: 'uppercase', padding: '14px 32px',
-              }}>
-                Browse listings
-              </a>
-              <a href="#contact" style={{
-                color: '#fff', textDecoration: 'none',
-                fontFamily: 'var(--font-oswald)', fontWeight: 500, fontSize: '0.85rem',
-                letterSpacing: '0.1em', textTransform: 'uppercase',
-                padding: '14px 28px', border: '1px solid rgba(255,255,255,0.2)',
-              }}>
-                Speak to an agent
-              </a>
-            </div>
+            不動産デベロッパー？
           </div>
+          <div style={{
+            fontFamily: 'var(--font-mincho)', fontWeight: 700,
+            fontSize: 'clamp(2.2rem,5.5vw,5rem)', letterSpacing: '-0.01em',
+            lineHeight: 1.1,
+          }}>
+            可能性<span style={{ fontFamily: 'var(--font-oswald)', fontWeight: 300, letterSpacing: '0.04em' }}> デベロッパー。</span>
+          </div>
+        </div>
+        {/* Scroll down */}
+        <div style={{
+          position: 'absolute', bottom: 28, left: '50%', transform: 'translateX(-50%)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+          color: 'rgba(255,255,255,0.45)', fontSize: '0.62rem', letterSpacing: '0.18em',
+          fontFamily: 'var(--font-oswald)', fontWeight: 400,
+        }}>
+          SCROLL DOWN
+          <svg width="16" height="20" viewBox="0 0 16 20" fill="none"><path d="M 8 2 L 8 16 M 2 12 L 8 18 L 14 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        </div>
+      </section>
 
-          {/* Scroll indicator */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 64 }}>
-            <div style={{
-              width: 1, height: 44,
-              background: 'linear-gradient(to bottom, transparent, #2bdeff)',
-              animation: 'sora-scroll-pulse 2s ease-in-out infinite',
-            }}/>
-            <span style={{ fontFamily: 'var(--font-oswald)', fontWeight: 400, fontSize: '0.65rem', letterSpacing: '0.22em', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase' }}>
-              Scroll Down
-            </span>
+      {/* ── Night scene section (Mori Trust scroll-017 style) ───────────── */}
+      <section style={{ minHeight: '100vh', background: '#00091b', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', padding: 'clamp(48px,8vh,96px) clamp(20px,5vw,80px)' }}>
+        {/* Trees silhouette */}
+        <Trees />
+        {/* Moon */}
+        <div style={{ position: 'absolute', top: '10%', right: '12%', width: 'clamp(80px,10vw,120px)', opacity: 0.9 }}>
+          <Moon />
+        </div>
+        {/* Dark gradient at bottom over trees */}
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '40%', background: 'linear-gradient(0deg, #00091b 0%, transparent 100%)' }}/>
+
+        {/* Left panel: small text */}
+        <div style={{ maxWidth: 1000, margin: '0 auto', position: 'relative', zIndex: 1, display: 'flex', gap: 'clamp(40px,8vw,120px)', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+          {/* Vertical Japanese text block */}
+          <div style={{
+            writingMode: 'vertical-rl', textOrientation: 'mixed',
+            fontFamily: 'var(--font-mincho)', fontWeight: 400,
+            fontSize: 'clamp(0.9rem,1.5vw,1.15rem)', color: 'rgba(255,255,255,0.8)',
+            lineHeight: 2, letterSpacing: '0.08em', flexShrink: 0,
+          }}>
+            <span style={{ display: 'block', marginBottom: 16 }}>まちづくり、そしてその先へ、</span>
+            <span style={{ display: 'block' }}>拓き、未来へと進む。</span>
+          </div>
+          {/* Story text */}
+          <div style={{ flex: 1, minWidth: 260, paddingTop: 20 }}>
+            <p style={{ fontFamily: 'var(--font-mincho)', fontSize: 'clamp(0.8rem,1.2vw,0.95rem)', color: 'rgba(255,255,255,0.6)', lineHeight: 2.2, marginBottom: 32 }}>
+              そんなことは誰にもわかっている。
+            </p>
+            <p style={{ fontFamily: 'var(--font-mincho)', fontSize: 'clamp(0.8rem,1.2vw,0.95rem)', color: 'rgba(255,255,255,0.6)', lineHeight: 2.2, marginBottom: 32 }}>
+              しかし虎の尾を踏まれような、この感情はなんなのか。
+            </p>
+            <p style={{ fontFamily: 'var(--font-mincho)', fontSize: 'clamp(0.8rem,1.2vw,0.95rem)', color: 'rgba(255,255,255,0.6)', lineHeight: 2.2 }}>
+              「虎トラに憧憬し」まっすぐ前を向いて歩み続けるために。
+            </p>
           </div>
         </div>
       </section>
 
-      {/* ── Stats bar ────────────────────────────────────────────────────── */}
-      <div style={{ background: '#ebf1ff', borderTop: '1px solid rgba(0,0,0,0.06)', borderBottom: '1px solid rgba(0,0,0,0.06)', padding: '28px clamp(20px,5vw,64px)' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: 0, justifyContent: 'space-around' }}>
-          {[['₱2.1B', 'Total Listings Value'], ['87', 'Active Properties'], ['14', 'Years in Business'], ['98%', 'Client Satisfaction']].map(([num, label], i) => (
-            <div key={label} style={{ textAlign: 'center', padding: '0 24px', borderRight: i < 3 ? '1px solid rgba(0,0,0,0.1)' : 'none' }}>
-              <div style={{ fontFamily: 'var(--font-mincho)', fontWeight: 700, fontSize: 'clamp(1.5rem,3vw,2.2rem)', letterSpacing: '-0.02em', color: '#01000a' }}>{num}</div>
-              <div style={{ fontFamily: 'var(--font-oswald)', fontWeight: 400, fontSize: '0.7rem', letterSpacing: '0.16em', color: '#909195', textTransform: 'uppercase', marginTop: 6 }}>{label}</div>
+      {/* ── Circular diagram section (scroll-033 style) ────────────────── */}
+      <section style={{ background: '#f5f5f5', padding: 'clamp(64px,9vh,112px) clamp(20px,5vw,80px)' }}>
+        <div style={{ maxWidth: 1000, margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: 'clamp(32px,6vw,80px)', alignItems: 'center' }}>
+          <div style={{ flex: '1 1 320px' }}>
+            <div style={{ fontFamily: 'var(--font-oswald)', fontWeight: 400, fontSize: '0.75rem', letterSpacing: '0.2em', color: '#909195', textTransform: 'uppercase', marginBottom: 20 }}>
+              MORI IS NOT ONLY
             </div>
-          ))}
+            <p style={{ fontFamily: 'var(--font-mincho)', fontSize: 'clamp(0.85rem,1.4vw,1rem)', color: '#333', lineHeight: 2, marginBottom: 28 }}>
+              空不動産に働くだけではない。<br/>
+              人の、人の、企業の持つ可能性を輝かせ<br/>
+              ビジネスそのものを進化させるオフィス。
+            </p>
+            <p style={{ fontFamily: 'var(--font-mincho)', fontSize: 'clamp(0.85rem,1.4vw,1rem)', color: '#333', lineHeight: 2 }}>
+              量だけではない。<br/>
+              文化、自然、この国に眠る可能性を<br/>
+              共に手を組み磨き上げていく、リゾートホテルを。
+            </p>
+          </div>
+          <div style={{ flex: '0 0 auto', display: 'flex', justifyContent: 'center' }}>
+            <CircleDiagram />
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* ── Numbered sections alternating ───────────────────────────────── */}
-      {PANELS.map(({ num, title, subtitle, desc, color, accent, prop }, idx) => {
-        const isDark = color === '#0a1c30';
-        return (
-          <section key={num} id={idx === 0 ? 'properties' : undefined} style={{ background: color, padding: 'clamp(80px,10vh,120px) clamp(20px,5vw,72px)' }}>
-            <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 64, alignItems: 'center' }}>
-
-              {/* Text side */}
-              <div>
-                {/* Section number — big display */}
-                <div style={{
-                  fontFamily: 'var(--font-oswald)',
-                  fontWeight: 300,
-                  fontSize: 'clamp(4rem,10vw,8rem)',
-                  lineHeight: 1,
-                  color: isDark ? 'rgba(43,222,255,0.15)' : 'rgba(10,28,48,0.08)',
-                  letterSpacing: '-0.02em',
-                  marginBottom: -24,
-                  userSelect: 'none',
-                }}>
-                  {num}
+      {/* ── Blue property sections (01/03, 02/03, 03/03) ────────────────── */}
+      {([
+        {
+          num: '01', total: '03',
+          heading: '空トラストのまちづくり',
+          body: '街の価値を高め、人の可能性を広げるまちづくりを私たちは手がけています。国内外の大都市において、様々な施設を高度に組み合わせた新しい形の土地活用を推進し、新しい価値のある土地を生み出す不動産開発を行っています。',
+          sub: '日本、そして世界へ',
+          sub2: '大規模複合施設「東京ワールドゲート渋谷」、ラグジュアリーライフスタイルホテル「W東京」なども手がける空の先へ、世界の大都市においても多くのみなさんとともに不動産業務を行っております。',
+          cta: 'View More →',
+        },
+        {
+          num: '02', total: '03',
+          heading: '空ホテル',
+          body: '明治36年に日本における最高格式のホテルとして創業した「空ホテル」は、日本を代表するクラシックホテルのひとつとなり、皇室や国内外の要人にも多く利用されてきた品格のあるラグジュアリーホテルです。',
+          sub: 'ホテルインディゴ銀座プラザストリート',
+          sub2: '伝統的な建築と現代的なデザインが融合した、最上のホスピタリティ空間。空トラストが誇るフラッグシップホテルとして、世界基準のサービスをご提供いたします。',
+          cta: 'View More →',
+        },
+        {
+          num: '03', total: '03',
+          heading: '社会の未来を変えるイノベーションの可能性',
+          body: '日本建設の化石ともいえることを止め、現代に生きる人々の多様なニーズを機軸に設計してこそ、現代社会の新しい生き方と新たな価値を創造する大型複合施設が生まれます。',
+          sub: '',
+          sub2: '',
+          cta: '投資案件 →',
+        },
+      ] as Array<{ num: string; total: string; heading: string; body: string; sub: string; sub2: string; cta: string }>)
+        .map(({ num, total, heading, body, sub, sub2, cta }) => (
+          <section key={num} style={{ background: '#1a6eb5', padding: 'clamp(56px,8vh,96px) clamp(20px,5vw,80px)' }}>
+            <div style={{ maxWidth: 1000, margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: 'clamp(32px,5vw,64px)', alignItems: 'flex-start' }}>
+              <div style={{ flex: '1 1 300px' }}>
+                <div style={{ fontFamily: 'var(--font-oswald)', fontWeight: 300, fontSize: 'clamp(2.5rem,5vw,4rem)', color: '#fff', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: 4, opacity: 0.5 }}>
+                  {num}<span style={{ fontSize: '0.45em', letterSpacing: '0.05em' }}>/{total}</span>
                 </div>
-
-                <div style={{ fontFamily: 'var(--font-oswald)', fontWeight: 400, fontSize: '0.72rem', letterSpacing: '0.22em', color: isDark ? '#909195' : '#909195', textTransform: 'uppercase', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span style={{ width: 24, height: 1, background: isDark ? '#2bdeff' : '#0a1c30', display: 'inline-block', flexShrink: 0 }}/>
-                  {subtitle}
-                </div>
-
-                <h2 style={{
-                  fontFamily: 'var(--font-mincho)',
-                  fontWeight: 700,
-                  fontSize: 'clamp(2rem,4.5vw,3.5rem)',
-                  margin: '0 0 20px',
-                  lineHeight: 1,
-                  letterSpacing: '-0.01em',
-                  color: isDark ? '#fff' : '#01000a',
-                }}>
-                  {title}
+                <h2 style={{ fontFamily: 'var(--font-mincho)', fontWeight: 700, fontSize: 'clamp(1rem,2.2vw,1.4rem)', color: '#fff', margin: '0 0 20px', lineHeight: 1.4 }}>
+                  {heading}
                 </h2>
-
-                <p style={{ fontFamily: 'var(--font-oswald)', fontWeight: 300, fontSize: '0.95rem', lineHeight: 1.8, color: isDark ? '#c0c4ce' : '#615d6a', margin: '0 0 32px', maxWidth: '44ch' }}>
-                  {desc}
+                <p style={{ fontFamily: 'var(--font-mincho)', fontSize: 'clamp(0.78rem,1.2vw,0.92rem)', color: 'rgba(255,255,255,0.75)', lineHeight: 1.95, marginBottom: 28 }}>
+                  {body}
                 </p>
-
-                <a href="#contact" style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 10,
-                  background: isDark ? '#2bdeff' : '#01000a',
-                  color: isDark ? '#01000a' : '#fff',
-                  textDecoration: 'none',
-                  fontFamily: 'var(--font-oswald)', fontWeight: 600,
-                  fontSize: '0.8rem', letterSpacing: '0.14em', textTransform: 'uppercase',
-                  padding: '12px 28px',
-                }}>
-                  View listings
-                  <span style={{ fontSize: '1rem' }}>→</span>
+                <a href="#" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: '#fff', textDecoration: 'none', fontSize: '0.8rem', fontFamily: 'var(--font-oswald)', letterSpacing: '0.08em', fontWeight: 400, borderBottom: '1px solid rgba(255,255,255,0.4)', paddingBottom: 2 }}>
+                  {cta}
                 </a>
               </div>
-
-              {/* Property card side */}
-              <PropertyMiniCard prop={prop} accent={isDark ? '#2bdeff' : '#0a1c30'} />
+              {sub && (
+                <div style={{ flex: '1 1 280px' }}>
+                  <h3 style={{ fontFamily: 'var(--font-mincho)', fontWeight: 700, fontSize: 'clamp(0.85rem,1.5vw,1rem)', color: '#fff', marginBottom: 12 }}>{sub}</h3>
+                  <p style={{ fontFamily: 'var(--font-mincho)', fontSize: 'clamp(0.75rem,1.1vw,0.85rem)', color: 'rgba(255,255,255,0.65)', lineHeight: 1.95 }}>{sub2}</p>
+                </div>
+              )}
             </div>
           </section>
-        );
-      })}
+        ))
+      }
 
-      {/* ── About / dark navy ───────────────────────────────────────────── */}
-      <section style={{ background: '#0a1c30', padding: 'clamp(80px,10vh,120px) clamp(20px,5vw,72px)', color: '#fff' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px,1fr))', gap: 64, alignItems: 'center' }}>
-          <div>
-            <div style={{ fontFamily: 'var(--font-oswald)', fontWeight: 400, fontSize: '0.72rem', letterSpacing: '0.22em', color: '#909195', textTransform: 'uppercase', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span style={{ width: 24, height: 1, background: '#2bdeff', display: 'inline-block' }}/>
-              About Sora
+      {/* ── About section — giant watermark (scroll-083 style) ──────────── */}
+      <section style={{ background: '#fff', padding: 'clamp(64px,9vh,112px) clamp(20px,5vw,80px)', position: 'relative', overflow: 'hidden' }}>
+        {/* Giant faint watermark text */}
+        <div style={{
+          position: 'absolute', top: '50%', left: '50%',
+          transform: 'translate(-50%, -50%)',
+          whiteSpace: 'nowrap',
+          fontFamily: 'var(--font-oswald)', fontWeight: 600,
+          fontSize: 'clamp(5rem,12vw,10rem)', letterSpacing: '0.05em',
+          color: '#f0f0f0', userSelect: 'none', pointerEvents: 'none',
+          zIndex: 0,
+        }}>
+          ABOUT SORA REALT
+        </div>
+        <div style={{ maxWidth: 1000, margin: '0 auto', position: 'relative', zIndex: 1, display: 'flex', flexWrap: 'wrap', gap: 'clamp(40px,7vw,96px)', alignItems: 'flex-start' }}>
+          {/* Logo area */}
+          <div style={{ flex: '0 0 auto' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+              <div style={{ width: 52, height: 52, borderRadius: '50%', background: '#0a1c30', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none"><path d="M 4 4 L 20 4 L 20 14 L 12 20 L 4 14 Z" fill="#fff"/></svg>
+              </div>
+              <div>
+                <div style={{ fontFamily: 'var(--font-oswald)', fontWeight: 600, fontSize: '1rem', letterSpacing: '0.15em', color: '#0a1c30' }}>SORA</div>
+                <div style={{ fontFamily: 'var(--font-oswald)', fontWeight: 300, fontSize: '0.7rem', letterSpacing: '0.12em', color: '#909195' }}>REALTY GROUP</div>
+              </div>
             </div>
-            <h2 style={{ fontFamily: 'var(--font-mincho)', fontWeight: 700, fontSize: 'clamp(2rem,4vw,3.2rem)', margin: '0 0 24px', lineHeight: 1, letterSpacing: '-0.01em' }}>
-              We don't sell<br /><em style={{ color: '#2bdeff', fontStyle: 'italic' }}>properties.</em><br />We place people.
+            <div style={{ fontFamily: 'var(--font-mincho)', fontSize: '0.8rem', color: '#909195', lineHeight: 1.9, maxWidth: 200 }}>
+              空トラストグループは、1985年に創業した総合不動産デベロッパーグループです。
+            </div>
+          </div>
+          {/* Description */}
+          <div style={{ flex: '1 1 280px' }}>
+            <h2 style={{ fontFamily: 'var(--font-mincho)', fontWeight: 700, fontSize: 'clamp(1rem,2vw,1.3rem)', color: '#0a1c30', marginBottom: 20 }}>
+              空トラストについて
             </h2>
-            <p style={{ fontFamily: 'var(--font-oswald)', fontWeight: 300, fontSize: '0.95rem', lineHeight: 1.8, color: '#c0c4ce', margin: '0 0 32px', maxWidth: '40ch' }}>
-              Fourteen years in Manila real estate taught us that the transaction is the easy part. What matters is the fit — the neighborhood, the light at 7am, the commute on a Tuesday.
+            <p style={{ fontFamily: 'var(--font-mincho)', fontSize: 'clamp(0.8rem,1.2vw,0.92rem)', color: '#333', lineHeight: 2, marginBottom: 24 }}>
+              街の価値を高め、人の可能性を広げることを目指し、国内外において商業施設、ホテル・リゾート、オフィス等の不動産開発を手がけてきました。全国各所に展開しています。
             </p>
-            <a href="#contact" style={{
-              display: 'inline-block', background: '#2bdeff', color: '#01000a',
-              textDecoration: 'none', fontFamily: 'var(--font-oswald)', fontWeight: 600,
-              fontSize: '0.8rem', letterSpacing: '0.14em', textTransform: 'uppercase',
-              padding: '13px 28px',
+            <a href="#" style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              background: '#0a1c30', color: '#fff', textDecoration: 'none',
+              fontFamily: 'var(--font-oswald)', fontWeight: 400, fontSize: '0.78rem', letterSpacing: '0.1em',
+              padding: '12px 24px', borderRadius: 2,
             }}>
-              Meet the team
+              事業内容 →
             </a>
           </div>
+        </div>
+      </section>
 
-          <div>
-            {[['14', 'Years in the industry'],['₱2.1B','In properties placed'],['87','Active listings now'],['98%','Referral rate from clients']].map(([num, label], i) => (
-              <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '18px 0', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-                <span style={{ fontFamily: 'var(--font-oswald)', fontWeight: 300, fontSize: '0.8rem', letterSpacing: '0.08em', color: '#909195', textTransform: 'uppercase' }}>{label}</span>
-                <span style={{ fontFamily: 'var(--font-mincho)', fontWeight: 700, fontSize: 'clamp(1.1rem,2vw,1.5rem)', color: i === 0 ? '#2bdeff' : '#fff' }}>{num}</span>
-              </div>
+      {/* ── Footer ───────────────────────────────────────────────────────── */}
+      <footer style={{ background: '#0a1c30', padding: 'clamp(48px,6vh,72px) clamp(20px,5vw,80px) 32px', position: 'relative', overflow: 'hidden' }}>
+        {/* Giant "SORA TRUST G" watermark in footer (like Mori Trust) */}
+        <div style={{
+          position: 'absolute', top: '50%', left: '50%',
+          transform: 'translate(-50%, -50%)',
+          whiteSpace: 'nowrap',
+          fontFamily: 'var(--font-oswald)', fontWeight: 700,
+          fontSize: 'clamp(4rem,9vw,7rem)', letterSpacing: '0.04em',
+          color: 'rgba(255,255,255,0.04)', userSelect: 'none', pointerEvents: 'none',
+        }}>
+          SORA REALTY G
+        </div>
+        {/* Property cards grid */}
+        <div style={{ maxWidth: 1000, margin: '0 auto', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12, marginBottom: 40 }}>
+            {PROPERTIES.map((p, i) => (
+              <PropertyCard key={p.title} {...p} idx={i} />
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* ── CTA ─────────────────────────────────────────────────────────── */}
-      <section id="contact" style={{ background: '#ebf1ff', padding: 'clamp(60px,8vh,100px) clamp(20px,5vw,72px)', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 40 }}>
-          <div>
-            <h2 style={{ fontFamily: 'var(--font-mincho)', fontWeight: 700, fontSize: 'clamp(2rem,4.5vw,3.5rem)', margin: '0 0 16px', lineHeight: 1, letterSpacing: '-0.01em' }}>
-              Ready to<br />find your place?
-            </h2>
-            <p style={{ fontFamily: 'var(--font-oswald)', fontWeight: 300, fontSize: '0.95rem', color: '#615d6a', lineHeight: 1.7, margin: 0, maxWidth: '44ch' }}>
-              Tell us what you're looking for and we'll match you within 48 hours.
-            </p>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, flexShrink: 0 }}>
-            <a href="mailto:hello@sorarealty.ph" style={{
-              background: '#01000a', color: '#fff', textDecoration: 'none',
-              fontFamily: 'var(--font-oswald)', fontWeight: 500, fontSize: '1.05rem',
-              letterSpacing: '0.06em', padding: '16px 36px',
-            }}>
-              hello@sorarealty.ph
-            </a>
-            <span style={{ fontFamily: 'var(--font-oswald)', fontWeight: 300, fontSize: '0.72rem', letterSpacing: '0.14em', color: '#909195', textAlign: 'center', textTransform: 'uppercase' }}>
-              Or call +63 2 8888 SORA
-            </span>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Footer with watermark wordmark ──────────────────────────────── */}
-      <footer style={{ background: '#0a1c30', padding: '48px clamp(20px,5vw,72px) 32px', position: 'relative', overflow: 'hidden' }}>
-        {/* Large watermark wordmark */}
-        <div style={{
-          position: 'absolute',
-          bottom: -24,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          fontFamily: 'var(--font-mincho)',
-          fontWeight: 900,
-          fontSize: 'clamp(4rem,14vw,10rem)',
-          letterSpacing: '0.08em',
-          color: 'rgba(43,222,255,0.04)',
-          whiteSpace: 'nowrap',
-          userSelect: 'none',
-          lineHeight: 1,
-          pointerEvents: 'none',
-        }}>
-          SORA REALTY
-        </div>
-
-        <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 32, marginBottom: 48 }}>
+          {/* Bottom bar */}
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16 }}>
             <div>
-              <span style={{ fontFamily: 'var(--font-mincho)', fontWeight: 700, fontSize: '1.25rem', letterSpacing: '0.05em', display: 'block', color: '#fff', marginBottom: 4 }}>SORA REALTY</span>
-              <span style={{ fontFamily: 'var(--font-oswald)', fontWeight: 300, fontSize: '0.7rem', letterSpacing: '0.14em', color: '#909195', display: 'block' }}>© 2025 Sora Realty Inc.</span>
+              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 12 }}>
+                {['プライバシーポリシー', '利用規約', 'お問い合わせ'].map(l => (
+                  <a key={l} href="#" style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.65rem', textDecoration: 'none', letterSpacing: '0.04em', fontFamily: 'var(--font-mincho)' }}>{l}</a>
+                ))}
+              </div>
+              <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.62rem', fontFamily: 'var(--font-oswald)', letterSpacing: '0.06em' }}>
+                MORI TRUST CO.,LTD. All Rights Reserved.
+              </div>
             </div>
-            <div style={{ display: 'flex', gap: 32 }}>
-              {['Properties', 'About', 'Agents', 'Contact'].map(l => (
-                <a key={l} href="#" style={{ fontFamily: 'var(--font-oswald)', fontWeight: 400, fontSize: '0.75rem', letterSpacing: '0.12em', color: '#909195', textDecoration: 'none', textTransform: 'uppercase' }}>{l}</a>
-              ))}
+            {/* Mascot */}
+            <div style={{ width: 56, opacity: 0.7 }}>
+              <SoraMascot />
             </div>
-          </div>
-
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 24 }}>
-            <span style={{ fontFamily: 'var(--font-oswald)', fontWeight: 300, color: '#909195', fontSize: '0.72rem', letterSpacing: '0.06em' }}>
-              A playground project by{' '}
-              <a href="/playground" style={{ color: '#c0c4ce', textDecoration: 'underline' }}>Christian Dizon</a>
-              {' '}— inspired by Mori Trust design
-            </span>
           </div>
         </div>
       </footer>
 
       <style>{`
-        @keyframes sora-scroll-pulse {
-          0%, 100% { opacity: 0.4; transform: scaleY(1); }
-          50%       { opacity: 1;   transform: scaleY(1.15); }
-        }
         @media (prefers-reduced-motion: reduce) {
-          * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+          * { animation-duration: 0.01ms !important; }
         }
       `}</style>
     </div>

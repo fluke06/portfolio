@@ -127,21 +127,21 @@ export function AboutSection() {
           ].map(({ n, head, body }, i) => (
             <motion.div
               key={n}
-              className={`py-10 ${i < 2 ? 'sm:pr-10 sm:border-r' : ''} ${i > 0 ? 'sm:pl-10' : ''}`}
+              className={`py-12 ${i < 2 ? 'sm:pr-12 sm:border-r' : ''} ${i > 0 ? 'sm:pl-12' : ''}`}
               style={{ borderColor: 'rgba(237,232,224,0.08)' }}
               initial={reduced ? false : { opacity: 0, y: 24 }}
               animate={inView || reduced ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.7, delay: 0.2 + i * 0.1, ease }}
             >
               <span
-                className="font-inter text-[#888280] block mb-4"
-                style={{ fontSize: '10px', letterSpacing: '0.12em' }}
+                className="font-fraunces font-black text-[#EDE8E0] block mb-5 leading-none"
+                style={{ fontSize: 'clamp(2.2rem, 4vw, 3.5rem)', opacity: 0.12 }}
               >
                 {n}
               </span>
               <h3
-                className="font-fraunces text-[#EDE8E0] mb-3"
-                style={{ fontSize: 'clamp(1.1rem, 2vw, 1.5rem)', fontStyle: 'italic', fontWeight: 400 }}
+                className="font-fraunces text-[#EDE8E0] mb-4"
+                style={{ fontSize: 'clamp(1.25rem, 2.2vw, 1.75rem)', fontStyle: 'italic', fontWeight: 400 }}
               >
                 {head}
               </h3>

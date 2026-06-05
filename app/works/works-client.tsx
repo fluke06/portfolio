@@ -70,7 +70,7 @@ export function WorksClient() {
 
       {/* Grid */}
       <div className="px-5 sm:px-8 md:px-10 pb-24 sm:pb-32">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16 sm:gap-y-20">
           {visible.map((p, i) => (
             <WorkTile key={p.id} project={p} index={i} />
           ))}
@@ -85,18 +85,32 @@ export function WorksClient() {
 function WorkTile({ project, index }: { project: Project; index: number }) {
   return (
     <FadeIn delay={Math.min(index * 0.04, 0.28)} y={20}>
-      <Link
-        href={`/works/${project.id}`}
-        className="group flex flex-col rounded-[clamp(14px,2.5vw,22px)] overflow-hidden border border-[#EDE8E0]/12 hover:border-[#EDE8E0]/40 transition-colors duration-300 bg-[#1B1917] h-full"
-      >
+      <Link href={`/works/${project.id}`} className="group block">
+
+        {/* Num + Year */}
+        <div className="flex items-baseline justify-between mb-4">
+          <span
+            className="font-fraunces font-black text-[#EDE8E0] leading-none"
+            style={{ fontSize: 'clamp(1.4rem, 2.4vw, 2rem)', opacity: 0.15 }}
+          >
+            {project.num}
+          </span>
+          <span
+            className="font-inter text-[#888280] uppercase"
+            style={{ fontSize: '10px', letterSpacing: '0.14em' }}
+          >
+            {project.year}
+          </span>
+        </div>
+
         {/* Thumbnail */}
-        <div className="relative overflow-hidden flex-shrink-0" style={{ aspectRatio: '16 / 10' }}>
+        <div className="relative overflow-hidden mb-5" style={{ aspectRatio: '16 / 10' }}>
           {project.image ? (
             <Image
               src={project.image}
               alt={`${project.title} ${project.titleAccent}`}
               fill
-              className="object-cover object-top group-hover:scale-[1.03] transition-transform duration-500 ease-out"
+              className="object-cover object-top group-hover:scale-[1.03] transition-transform duration-700 ease-out"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
             />
           ) : (
@@ -111,35 +125,42 @@ function WorkTile({ project, index }: { project: Project; index: number }) {
               />
             </div>
           )}
+          <div
+            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+            style={{ background: 'rgba(16,15,13,0.18)' }}
+          />
         </div>
 
-        {/* Meta */}
-        <div className="p-5 sm:p-6 flex flex-col gap-3 flex-1">
-          <p className="font-inter text-[#888280]" style={{ fontSize: '11px' }}>
-            {project.num} · {project.year}
-          </p>
-          <h3
-            className="font-fraunces font-black text-[#EDE8E0] leading-tight"
-            style={{ fontSize: 'clamp(1.15rem, 2.2vw, 1.5rem)' }}
-          >
-            {project.title}{' '}
-            <em className="italic text-[#EDE8E0]">{project.titleAccent}</em>
-          </h3>
-          <p className="font-inter font-light text-[#888280] text-sm leading-relaxed line-clamp-2">
-            {project.blurb}
-          </p>
-          <div className="flex flex-wrap gap-x-3 gap-y-1 mt-auto pt-2">
-            {project.tags.slice(0, 3).map(t => (
-              <span
-                key={t}
-                className="font-inter font-medium text-[#EDE8E0] uppercase"
-                style={{ fontSize: '10px', letterSpacing: '0.06em' }}
-              >
-                / {t}
-              </span>
-            ))}
-          </div>
+        {/* Title */}
+        <h3
+          className="font-fraunces font-black text-[#EDE8E0] leading-tight mb-2 group-hover:text-[#C4B89A] transition-colors duration-300"
+          style={{ fontSize: 'clamp(1.1rem, 2vw, 1.4rem)' }}
+        >
+          {project.title}{' '}
+          <em className="italic font-normal">{project.titleAccent}</em>
+        </h3>
+
+        {/* Blurb */}
+        <p
+          className="font-inter font-light text-[#888280] leading-relaxed mb-3 line-clamp-2"
+          style={{ fontSize: 'clamp(0.82rem, 1.1vw, 0.9rem)' }}
+        >
+          {project.blurb}
+        </p>
+
+        {/* Tags */}
+        <div className="flex flex-wrap gap-x-3 gap-y-1">
+          {project.tags.slice(0, 3).map(t => (
+            <span
+              key={t}
+              className="font-inter font-medium text-[#888280] uppercase"
+              style={{ fontSize: '10px', letterSpacing: '0.08em' }}
+            >
+              / {t}
+            </span>
+          ))}
         </div>
+
       </Link>
     </FadeIn>
   );

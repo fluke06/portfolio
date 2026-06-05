@@ -16,7 +16,7 @@ export function CtaSection() {
       >
         <span
           className="font-baybayin leading-none"
-          style={{ fontSize: 'clamp(12rem, 40vw, 52rem)', color: '#EDE8E0', opacity: 0.035 }}
+          style={{ fontSize: 'clamp(12rem, 40vw, 52rem)', color: '#EDE8E0', opacity: 0.055 }}
         >
           ᜃ
         </span>
