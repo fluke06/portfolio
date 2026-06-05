@@ -1,581 +1,826 @@
 import type { Metadata } from 'next';
-import { Zen_Kaku_Gothic_New } from 'next/font/google';
+import Image from 'next/image';
+import { Zen_Kaku_Gothic_New, Noto_Sans_JP, Klee_One } from 'next/font/google';
+import ClotheslineSection from './ClotheslineSection';
+import SampleWorksSection from './SampleWorksSection';
+import HowItWorksSection from './HowItWorksSection';
+import CtaSocialsSection from './CtaSocialsSection';
+import MissionSection from './MissionSection';
 
-const zenKaku = Zen_Kaku_Gothic_New({ subsets: ['latin'], weight: ['400', '700', '900'], variable: '--font-zen', display: 'swap' });
+const zenKaku = Zen_Kaku_Gothic_New({
+  subsets: ['latin'],
+  weight: ['400', '700', '900'],
+  variable: '--font-zen',
+  display: 'swap',
+});
+const notoJP = Noto_Sans_JP({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-noto',
+  display: 'swap',
+});
+const kleeOne = Klee_One({
+  subsets: ['latin'],
+  weight: ['600'],
+  variable: '--font-klee',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
-  title: 'Likhâ — Handpainted Barong Collection',
-  description: 'Barong Tagalog as a canvas. Original illustrations, hand-embroidered.',
+  title: 'Likhâ — Handpainted Barong Tagalog',
+  description: 'Hand-embroidered barong tagalog. Each piece tells a story.',
 };
+
+// ── Design tokens (Kakuwaku) ──────────────────────────────────────────────────
+const D_RED   = '#e60039';
+const D_GREEN = '#8dc556';
+const D_TEAL  = '#5BC8E0';
+const D_ORG   = '#E87000';
+const D_YELLOW = '#fff100';
+
+// ── Colorful doodle SVG components ───────────────────────────────────────────
+
+function DLightning({ c }: { c: string }) {
+  return (
+    <svg viewBox="0 0 46 86" fill="none" style={{ width: '100%', height: '100%' }}>
+      <path className="draw-in" pathLength={1} strokeDasharray={1} d="M 32 5 L 10 44 L 26 44 L 14 82 L 44 34 L 28 34 Z" fill={c} stroke="#111" strokeWidth="2" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+function DWave({ c }: { c: string }) {
+  return (
+    <svg viewBox="0 0 130 38" fill="none" style={{ width: '100%', height: '100%' }}>
+      <path className="draw-in" pathLength={1} strokeDasharray={1} d="M 6 26 Q 24 8 42 24 Q 62 38 82 22 Q 102 6 124 22" stroke={c} strokeWidth="6" strokeLinecap="round" fill="none"/>
+    </svg>
+  );
+}
+function DStar({ c, outline = false }: { c: string; outline?: boolean }) {
+  return (
+    <svg viewBox="0 0 60 60" fill="none" style={{ width: '100%', height: '100%' }}>
+      <path className="draw-in" pathLength={1} strokeDasharray={1} d="M 30 4 L 36 21 L 54 21 L 40 32 L 45 49 L 30 38 L 15 49 L 20 32 L 6 21 L 24 21 Z"
+        fill={outline ? 'none' : c} stroke={c} strokeWidth={outline ? 3 : 1.5} strokeLinejoin="round"/>
+    </svg>
+  );
+}
+function DArrow({ c }: { c: string }) {
+  return (
+    <svg viewBox="0 0 82 46" fill="none" style={{ width: '100%', height: '100%' }}>
+      <path className="draw-in" pathLength={1} strokeDasharray={1} d="M 5 23 L 62 23 M 48 8 L 68 23 L 48 38" stroke={c} strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+    </svg>
+  );
+}
+function DSpiral({ c }: { c: string }) {
+  return (
+    <svg viewBox="0 0 60 60" fill="none" style={{ width: '100%', height: '100%' }}>
+      <path className="draw-in" pathLength={1} strokeDasharray={1} d="M 30 30 Q 44 16 40 7 Q 34 0 22 5 Q 8 12 10 28 Q 13 46 30 48 Q 50 50 52 30 Q 54 8 30 6" stroke={c} strokeWidth="4" fill="none" strokeLinecap="round"/>
+    </svg>
+  );
+}
+function DRibbon({ c }: { c: string }) {
+  return (
+    <svg viewBox="0 0 34 96" fill="none" style={{ width: '100%', height: '100%' }}>
+      <path className="draw-in" pathLength={1} strokeDasharray={1} d="M 24 6 Q 5 24 8 48 Q 5 72 24 90" stroke={c} strokeWidth="6" strokeLinecap="round" fill="none"/>
+    </svg>
+  );
+}
+function DZigzag({ c }: { c: string }) {
+  return (
+    <svg viewBox="0 0 120 44" fill="none" style={{ width: '100%', height: '100%' }}>
+      <path className="draw-in" pathLength={1} strokeDasharray={1} d="M 6 34 L 24 10 L 42 34 L 60 10 L 78 34 L 96 10 L 114 34" stroke={c} strokeWidth="5.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+    </svg>
+  );
+}
+function DConfetti({ c }: { c: string }) {
+  return (
+    <svg viewBox="0 0 100 26" fill="none" style={{ width: '100%', height: '100%' }}>
+      <rect className="draw-in" pathLength={1} strokeDasharray={1} x="4" y="4" width="92" height="18" rx="9" fill={c} stroke={c} strokeWidth="2" transform="rotate(-4 50 13)"/>
+    </svg>
+  );
+}
+function DDot({ c }: { c: string }) {
+  return (
+    <svg viewBox="0 0 36 36" fill="none" style={{ width: '100%', height: '100%' }}>
+      <circle className="draw-in" pathLength={1} strokeDasharray={1} cx="18" cy="18" r="14" fill="none" stroke={c} strokeWidth="4"/>
+    </svg>
+  );
+}
+
+function DBarong({ c, size = 120 }: { c: string; size?: number }) {
+  return (
+    <svg viewBox="0 0 80 110" fill="none" style={{ width: size, height: 'auto', display: 'block', filter: 'url(#crayon)' }}>
+      <path className="draw-in" pathLength={1} strokeDasharray={1} style={{ animationDelay: 'calc(var(--draw-delay, 0s) + 0s)' }}
+        d="M 22 32 L 22 104 L 58 104 L 58 32" stroke={c} strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path className="draw-in" pathLength={1} strokeDasharray={1} style={{ animationDelay: 'calc(var(--draw-delay, 0s) + 0.25s)' }}
+        d="M 22 32 L 4 22 L 4 56 L 22 52" stroke={c} strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path className="draw-in" pathLength={1} strokeDasharray={1} style={{ animationDelay: 'calc(var(--draw-delay, 0s) + 0.5s)' }}
+        d="M 58 32 L 76 22 L 76 56 L 58 52" stroke={c} strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path className="draw-in" pathLength={1} strokeDasharray={1} style={{ animationDelay: 'calc(var(--draw-delay, 0s) + 0.75s)' }}
+        d="M 22 32 Q 30 28 40 42 Q 50 28 58 32" stroke={c} strokeWidth="3" strokeLinecap="round" fill="none"/>
+      <line className="draw-in" pathLength={1} strokeDasharray={1} style={{ animationDelay: 'calc(var(--draw-delay, 0s) + 0.95s)' }}
+        x1="40" y1="42" x2="40" y2="104" stroke={c} strokeWidth="2" strokeLinecap="round"/>
+      <path className="draw-in" pathLength={1} strokeDasharray={1} style={{ animationDelay: 'calc(var(--draw-delay, 0s) + 1.15s)' }}
+        d="M 22 104 Q 40 108 58 104" stroke={c} strokeWidth="3" strokeLinecap="round" fill="none"/>
+      <circle cx="32" cy="60" r="2.5" fill={c} className="draw-in" style={{ animationDelay: 'calc(var(--draw-delay, 0s) + 1.35s)' }}/>
+      <circle cx="32" cy="72" r="2.5" fill={c} className="draw-in" style={{ animationDelay: 'calc(var(--draw-delay, 0s) + 1.45s)' }}/>
+      <circle cx="48" cy="60" r="2.5" fill={c} className="draw-in" style={{ animationDelay: 'calc(var(--draw-delay, 0s) + 1.55s)' }}/>
+      <circle cx="48" cy="72" r="2.5" fill={c} className="draw-in" style={{ animationDelay: 'calc(var(--draw-delay, 0s) + 1.65s)' }}/>
+    </svg>
+  );
+}
+
+// ── Hero doodle positions (27 items, big + colorful) ─────────────────────────
+function _unused() {
+  const lineYs = [68, 90, 112, 134, 156, 178, 200, 222, 244];
+  const sunRays = [0, 45, 90, 135, 180, 225, 270, 315];
+  return (
+    <svg viewBox="0 0 480 268" fill="none" style={{ width: '100%', maxWidth: 480, height: 'auto', display: 'block' }}>
+      {/* Paper bg */}
+      <rect x="4" y="4" width="472" height="260" rx="18" fill="#fffde8"/>
+      {/* Lined paper */}
+      {lineYs.map((y, i) => (
+        <line key={y} className="draw-in" pathLength={1} strokeDasharray={1}
+          x1="18" y1={y} x2="462" y2={y}
+          stroke="#a8d8f0" strokeWidth="1.3"
+          style={{ animationDelay: `${0.15 + i * 0.06}s`, animationDuration: '0.5s' }}
+        />
+      ))}
+      {/* Red crayon border */}
+      <rect className="draw-in" pathLength={1} strokeDasharray={1}
+        x="5" y="5" width="470" height="258" rx="18"
+        stroke={D_RED} strokeWidth="10" fill="none"
+        style={{ animationDelay: '0s', animationDuration: '1.1s', filter: 'url(#crayon)' }}
+      />
+      {/* Sun — top-left */}
+      <g style={{ filter: 'url(#crayon)' }}>
+        <circle className="draw-in" pathLength={1} strokeDasharray={1}
+          cx="58" cy="48" r="20" fill="#FFD700" stroke="#E87000" strokeWidth="2.5"
+          style={{ animationDelay: '0.35s' }}/>
+        {sunRays.map((deg, i) => {
+          const r = Math.PI / 180 * deg;
+          return <line key={deg} className="draw-in" pathLength={1} strokeDasharray={1}
+            x1={58 + 24 * Math.cos(r)} y1={48 + 24 * Math.sin(r)}
+            x2={58 + 33 * Math.cos(r)} y2={48 + 33 * Math.sin(r)}
+            stroke="#E87000" strokeWidth="3" strokeLinecap="round"
+            style={{ animationDelay: `${0.42 + i * 0.04}s` }}/>;
+        })}
+        <circle cx="52" cy="46" r="2.2" fill="#E87000"/>
+        <circle cx="64" cy="46" r="2.2" fill="#E87000"/>
+        <path d="M 50 54 Q 58 60 66 54" stroke="#E87000" strokeWidth="2" strokeLinecap="round" fill="none"/>
+      </g>
+      {/* Lightning */}
+      <path className="draw-in" pathLength={1} strokeDasharray={1}
+        d="M 244 10 L 232 36 L 242 36 L 230 58 L 258 28 L 246 28 Z"
+        fill="#5BC8E0" stroke="#111" strokeWidth="1.5"
+        style={{ animationDelay: '0.3s', filter: 'url(#crayon)' }}
+      />
+      {/* "q" doodle */}
+      <text x="170" y="46" fill="#8dc556" fontSize="26" fontWeight="700"
+        style={{ fontFamily: 'Georgia, serif', animationDelay: '0.5s' }}
+        className="logo-text-reveal">q</text>
+      {/* Star */}
+      <path className="draw-in" pathLength={1} strokeDasharray={1}
+        d="M 72 108 L 76 120 L 89 120 L 79 128 L 83 140 L 72 132 L 61 140 L 65 128 L 55 120 L 68 120 Z"
+        fill="#FFD700" stroke="#E87000" strokeWidth="1.8"
+        style={{ animationDelay: '0.85s' }}
+      />
+      {/* "Likhâ" main text */}
+      <text x="68" y="210"
+        fill="#1a3a8a" fontSize="116" fontWeight="600" letterSpacing="-1"
+        style={{ fontFamily: 'var(--font-klee), cursive', animationDelay: '0.65s' }}
+        className="logo-text-reveal"
+      >Likhâ</text>
+      {/* subtitle */}
+      <text x="240" y="246"
+        fill="#555" fontSize="20" textAnchor="middle"
+        style={{ fontFamily: 'Georgia, serif', animationDelay: '0.95s' }}
+        className="logo-text-reveal"
+      >hand-drawn barongs</text>
+      {/* Heart */}
+      <path className="draw-in" pathLength={1} strokeDasharray={1}
+        d="M 428 116 C 428 110 424 106 419 106 C 416 106 414 108 413 110 C 412 108 410 106 407 106 C 402 106 398 110 398 116 C 398 122 406 129 413 136 C 420 129 428 122 428 116 Z"
+        fill={D_RED}
+        style={{ animationDelay: '0.75s', filter: 'url(#crayon)' }}
+      />
+      {/* Stick figure */}
+      {[
+        { el: 'circle', cx: 425, cy: 162, r: 10, style: { animationDelay: '1.05s' } },
+      ].map((_, i) => null)}
+      <circle className="draw-in" pathLength={1} strokeDasharray={1} cx="425" cy="162" r="10" stroke="#555" strokeWidth="2.5" fill="none" style={{ animationDelay: '1.05s' }}/>
+      <line className="draw-in" pathLength={1} strokeDasharray={1} x1="425" y1="172" x2="425" y2="200" stroke="#555" strokeWidth="2.5" strokeLinecap="round" style={{ animationDelay: '1.1s' }}/>
+      <line className="draw-in" pathLength={1} strokeDasharray={1} x1="410" y1="183" x2="440" y2="183" stroke="#555" strokeWidth="2.5" strokeLinecap="round" style={{ animationDelay: '1.15s' }}/>
+      <line className="draw-in" pathLength={1} strokeDasharray={1} x1="425" y1="200" x2="414" y2="218" stroke="#555" strokeWidth="2.5" strokeLinecap="round" style={{ animationDelay: '1.2s' }}/>
+      <line className="draw-in" pathLength={1} strokeDasharray={1} x1="425" y1="200" x2="436" y2="218" stroke="#555" strokeWidth="2.5" strokeLinecap="round" style={{ animationDelay: '1.25s' }}/>
+      {/* Squiggle */}
+      <path className="draw-in" pathLength={1} strokeDasharray={1}
+        d="M 26 250 Q 42 238 58 250 Q 74 262 90 250 Q 106 238 122 250"
+        stroke="#8dc556" strokeWidth="4" strokeLinecap="round" fill="none"
+        style={{ animationDelay: '1.1s', filter: 'url(#crayon)' }}
+      />
+    </svg>
+  );
+}
+
+const HERO_DOODLES: Array<{
+  top?: string; bottom?: string; left?: string; right?: string;
+  w: number; h: number; r: number; s?: number;
+  el: React.ReactElement;
+}> = [
+  // Top edge
+  { top: '1%',  left: '0%',   w: 46, h: 86, r: -15, el: <DLightning c={D_RED}/> },
+  { top: '0%',  left: '7%',   w: 60, h: 60, r: 20,  el: <DStar c={D_GREEN}/> },
+  { top: '1%',  left: '16%',  w: 100,h: 26, r: -6,  el: <DConfetti c={D_TEAL}/> },
+  { top: '0%',  left: '32%',  w: 60, h: 60, r: 30,  el: <DStar c={D_RED} outline/> },
+  { top: '1%',  right: '30%', w: 82, h: 46, r: -18, el: <DArrow c={D_ORG}/> },
+  { top: '0%',  right: '16%', w: 60, h: 60, r: -12, el: <DStar c={D_ORG}/> },
+  { top: '2%',  right: '7%',  w: 130,h: 38, r: 10,  el: <DWave c={D_GREEN}/> },
+  { top: '0%',  right: '0%',  w: 46, h: 86, r: 12,  el: <DLightning c={D_TEAL}/> },
+  // Upper-mid
+  { top: '13%', left: '0%',   w: 34, h: 96, r: 5,   el: <DRibbon c={D_RED}/> },
+  { top: '12%', left: '8%',   w: 60, h: 60, r: -25, el: <DSpiral c={D_GREEN}/> },
+  { top: '10%', left: '17%',  w: 120,h: 44, r: -5,  el: <DZigzag c={D_ORG}/> },
+  { top: '11%', right: '14%', w: 60, h: 60, r: 18,  el: <DStar c={D_TEAL} outline/> },
+  { top: '12%', right: '4%',  w: 60, h: 60, r: -28, el: <DStar c={D_RED}/> },
+  // Mid
+  { top: '30%', left: '2%',   w: 130,h: 38, r: 8,   el: <DWave c={D_ORG}/> },
+  { top: '32%', left: '14%',  w: 36, h: 36, r: 0,   el: <DDot c={D_GREEN}/> },
+  { top: '28%', right: '12%', w: 100,h: 26, r: 10,  el: <DConfetti c={D_RED}/> },
+  { top: '30%', right: '1%',  w: 34, h: 96, r: -8,  el: <DRibbon c={D_GREEN}/> },
+  // Lower-mid
+  { bottom:'26%',left: '0%',  w: 46, h: 86, r: 18,  el: <DLightning c={D_ORG}/> },
+  { bottom:'22%',left: '9%',  w: 82, h: 46, r: -12, el: <DArrow c={D_TEAL}/> },
+  { bottom:'20%',left: '20%', w: 60, h: 60, r: 25,  el: <DSpiral c={D_RED}/> },
+  { bottom:'22%',right: '7%', w: 60, h: 60, r: 10,  el: <DStar c={D_GREEN}/> },
+  { bottom:'24%',right: '0%', w: 34, h: 96, r: -5,  el: <DRibbon c={D_TEAL}/> },
+  // Bottom edge
+  { bottom:'4%', left: '3%',  w: 60, h: 60, r: -10, el: <DStar c={D_TEAL}/> },
+  { bottom:'2%', left: '13%', w: 100,h: 26, r: 6,   el: <DConfetti c={D_GREEN}/> },
+  { bottom:'3%', left: '28%', w: 46, h: 86, r: -4,  el: <DLightning c={D_RED}/> },
+  { bottom:'2%', right:'24%', w: 130,h: 38, r: -9,  el: <DWave c={D_RED}/> },
+  { bottom:'3%', right: '9%', w: 60, h: 60, r: 22,  el: <DStar c={D_ORG} outline/> },
+];
 
 // ── Barong SVGs ──────────────────────────────────────────────────────────────
 
-function BarongBase({ color = '#fafaf5', stripeColor = 'rgba(0,0,0,0.07)' }: { color?: string; stripeColor?: string }) {
+function BarongABC() {
   return (
-    <>
-      <path d="M 40 80 L 20 280 Q 150 295 280 280 L 260 80 L 220 60 L 200 85 L 200 90 L 150 95 L 100 90 L 100 85 L 80 60 Z" fill={color}/>
-      <path d="M 40 80 L 80 60 L 55 30 L 5 55 Z" fill={color}/>
-      <path d="M 260 80 L 220 60 L 245 30 L 295 55 Z" fill={color}/>
-      <path d="M 100 90 Q 100 62 150 58 Q 200 62 200 90 L 195 95 L 150 88 L 105 95 Z" fill={color} stroke="rgba(0,0,0,0.12)" strokeWidth="1"/>
-      <path d="M 105 95 L 100 90 Q 110 75 130 72 L 140 88 Z" fill="rgba(0,0,0,0.05)"/>
-      <path d="M 195 95 L 200 90 Q 190 75 170 72 L 160 88 Z" fill="rgba(0,0,0,0.05)"/>
-      <line x1="150" y1="90" x2="150" y2="275" stroke="rgba(0,0,0,0.12)" strokeWidth="2"/>
-      {[108, 128, 148, 168, 188, 208, 228].map(y => (
-        <circle key={y} cx="150" cy={y} r="5" fill="#f0ede8" stroke="rgba(0,0,0,0.15)" strokeWidth="1"/>
-      ))}
-      {Array.from({ length: 28 }, (_, i) => (
-        <line key={i} x1="20" y1={90 + i * 7} x2="280" y2={90 + i * 7} stroke={stripeColor} strokeWidth="0.8"/>
-      ))}
-      {Array.from({ length: 6 }, (_, i) => (
-        <line key={i} x1="6" y1={56 + i * 7} x2="80" y2={74 + i * 4} stroke={stripeColor} strokeWidth="0.8"/>
-      ))}
-      {Array.from({ length: 6 }, (_, i) => (
-        <line key={i} x1="220" y1={74 + i * 4} x2="294" y2={56 + i * 7} stroke={stripeColor} strokeWidth="0.8"/>
-      ))}
-      <path d="M 150 10 L 150 38" stroke="#aaa" strokeWidth="3" strokeLinecap="round"/>
-      <path d="M 150 38 Q 130 30 118 42 Q 110 54 118 62 Q 130 68 150 58 Q 170 68 182 62 Q 190 54 182 42 Q 170 30 150 38" fill="none" stroke="#bbb" strokeWidth="3"/>
-    </>
-  );
-}
-
-function BarongNotebook() {
-  return (
-    <svg viewBox="0 0 300 310" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <BarongBase />
-      <text x="55" y="135" fontFamily="'Courier New', monospace" fontSize="11" fontWeight="700" fill="#1a1a1a" opacity="0.75">ABC DEF</text>
-      <text x="55" y="150" fontFamily="'Courier New', monospace" fontSize="11" fontWeight="700" fill="#1a1a1a" opacity="0.75">GHIJKLM</text>
-      <text x="55" y="165" fontFamily="'Courier New', monospace" fontSize="11" fontWeight="700" fill="#1a1a1a" opacity="0.75">NOPQRSTU</text>
-      <text x="60" y="180" fontFamily="'Courier New', monospace" fontSize="11" fontWeight="700" fill="#1a1a1a" opacity="0.75">VWXYZ</text>
-      <path d="M 200 115 L 203 125 L 213 125 L 205 131 L 208 141 L 200 135 L 192 141 L 195 131 L 187 125 L 197 125 Z" fill="none" stroke="#e94a37" strokeWidth="2.5"/>
-      <path d="M 220 108 L 222 116 L 230 116 L 224 121 L 226 129 L 220 124 L 214 129 L 216 121 L 210 116 L 218 116 Z" fill="none" stroke="#de3421" strokeWidth="2" opacity="0.6"/>
-      <rect x="180" y="185" width="50" height="45" fill="none" stroke="#de3421" strokeWidth="2.5"/>
-      <path d="M 175 192 L 205 170 L 235 192" fill="none" stroke="#e94a37" strokeWidth="2.5"/>
-      <rect x="192" y="205" width="12" height="25" fill="none" stroke="#de3421" strokeWidth="2"/>
-      <circle cx="210" cy="208" r="2" fill="#de3421"/>
-      <line x1="245" y1="230" x2="245" y2="185" stroke="#2a5a1a" strokeWidth="3"/>
-      <ellipse cx="245" cy="178" rx="14" ry="14" fill="none" stroke="#2a5a1a" strokeWidth="2.5"/>
-      <ellipse cx="245" cy="183" rx="18" ry="18" fill="none" stroke="#2a5a1a" strokeWidth="2.5"/>
-      <text x="68" y="220" fontFamily="'Courier New', monospace" fontSize="13" fontWeight="700" fill="#e60039" opacity="0.85">9/10 VG!</text>
-      <path d="M 195 135 L 188 155 L 196 153 L 189 175" fill="none" stroke="#f4a435" strokeWidth="3" strokeLinecap="round"/>
+    <svg viewBox="0 0 180 220" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M 40 40 L 10 75 L 25 82 L 20 200 L 160 200 L 155 82 L 170 75 L 140 40 Q 120 30 90 30 Q 60 30 40 40Z" fill="#FAFAF5" stroke="#333" strokeWidth="2.5"/>
+      <path d="M 70 38 L 90 65 L 110 38" fill="#FAFAF5" stroke="#333" strokeWidth="2"/>
+      <path d="M 90 40 L 90 80" stroke="#333" strokeWidth="1.5" strokeDasharray="3,3"/>
+      <circle cx="90" cy="90" r="4" fill="#ddd" stroke="#999" strokeWidth="1"/>
+      <circle cx="90" cy="108" r="4" fill="#ddd" stroke="#999" strokeWidth="1"/>
+      <circle cx="90" cy="126" r="4" fill="#ddd" stroke="#999" strokeWidth="1"/>
+      <text x="35" y="110" fontSize="8" fill="#333" fontFamily="serif" transform="rotate(-5,35,110)">A B C</text>
+      <text x="118" y="108" fontSize="8" fill="#333" fontFamily="serif" transform="rotate(4,118,108)">D E F</text>
+      <text x="38" y="128" fontSize="7" fill="#555" fontFamily="serif">G H I J</text>
+      <text x="112" y="130" fontSize="7" fill="#555" fontFamily="serif" transform="rotate(3,112,130)">K L M</text>
+      <text x="42" y="150" fontSize="8" fill="#333" fontFamily="serif" transform="rotate(-3,42,150)">N O P</text>
+      <text x="110" y="152" fontSize="8" fill="#333" fontFamily="serif">Q R S</text>
+      <rect x="70" y="155" width="20" height="14" fill="none" stroke="#555" strokeWidth="1.5"/>
+      <path d="M 67 157 L 80 146 L 93 157" fill="none" stroke="#555" strokeWidth="1.5"/>
+      <rect x="77" y="160" width="6" height="9" fill="none" stroke="#555" strokeWidth="1"/>
+      <text x="44" y="172" fontSize="10" fill={D_ORG}>★</text>
+      <text x="118" y="170" fontSize="8" fill={D_ORG}>★</text>
+      <text x="58" y="162" fontSize="7" fill="#555">9/10 VG!</text>
     </svg>
   );
 }
 
-function BarongOcean() {
+function BarongHardin() {
   return (
-    <svg viewBox="0 0 300 310" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <BarongBase color="#f0f8ff" stripeColor="rgba(70,130,180,0.12)"/>
-      <ellipse cx="100" cy="145" rx="32" ry="18" fill="none" stroke="#4c7ef3" strokeWidth="2.5"/>
-      <path d="M 68 145 L 52 132 L 52 158 Z" fill="none" stroke="#4c7ef3" strokeWidth="2.5"/>
-      <circle cx="116" cy="140" r="4" fill="#4c7ef3" opacity="0.7"/>
-      <circle cx="116" cy="140" r="2" fill="#fff"/>
-      <ellipse cx="195" cy="180" rx="20" ry="11" fill="none" stroke="#59bded" strokeWidth="2"/>
-      <path d="M 175 180 L 163 171 L 163 189 Z" fill="none" stroke="#59bded" strokeWidth="2"/>
-      <circle cx="208" cy="177" r="3" fill="#59bded" opacity="0.7"/>
-      <circle cx="208" cy="177" r="1.5" fill="#fff"/>
-      <path d="M 30 230 Q 55 220 80 230 Q 105 240 130 230 Q 155 220 180 230 Q 205 240 230 230 Q 255 220 270 230" fill="none" stroke="#4c7ef3" strokeWidth="2.5" strokeLinecap="round"/>
-      <path d="M 30 244 Q 55 234 80 244 Q 105 254 130 244 Q 155 234 180 244 Q 205 254 230 244 Q 255 234 270 244" fill="none" stroke="#59bded" strokeWidth="2" strokeLinecap="round" opacity="0.6"/>
-      <path d="M 175 130 Q 180 118 188 118 Q 200 118 200 132 Q 200 145 188 150 Q 175 150 175 130 Z" fill="none" stroke="#de3421" strokeWidth="2"/>
-      <path d="M 188 118 L 188 150" stroke="#de3421" strokeWidth="1.5" opacity="0.6"/>
-      <path d="M 175 132 Q 188 132 200 132" stroke="#de3421" strokeWidth="1.5" opacity="0.6"/>
-      <path d="M 60 255 Q 65 240 58 225 Q 63 210 56 195" fill="none" stroke="#2a5a1a" strokeWidth="2.5" strokeLinecap="round"/>
-      <path d="M 60 230 Q 70 225 72 218" fill="none" stroke="#2a5a1a" strokeWidth="2.5" strokeLinecap="round"/>
-      <path d="M 58 215 Q 50 210 48 203" fill="none" stroke="#2a5a1a" strokeWidth="2.5" strokeLinecap="round"/>
-      <circle cx="130" cy="160" r="4" fill="none" stroke="#4c7ef3" strokeWidth="1.5"/>
-      <circle cx="138" cy="150" r="3" fill="none" stroke="#59bded" strokeWidth="1.5"/>
-      <circle cx="124" cy="148" r="2.5" fill="none" stroke="#4c7ef3" strokeWidth="1.5"/>
-      <path d="M 215 118 L 195 135 L 235 135 Z" fill="none" stroke="#de3421" strokeWidth="2"/>
-      <line x1="225" y1="118" x2="225" y2="100" stroke="#de3421" strokeWidth="2"/>
-      <path d="M 225 100 L 240 110 L 225 110 Z" fill="#de3421" opacity="0.7"/>
+    <svg viewBox="0 0 180 220" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M 40 40 L 10 75 L 25 82 L 20 200 L 160 200 L 155 82 L 170 75 L 140 40 Q 120 30 90 30 Q 60 30 40 40Z" fill="#FAFAF5" stroke="#333" strokeWidth="2.5"/>
+      <path d="M 70 38 L 90 65 L 110 38" fill="#FAFAF5" stroke="#333" strokeWidth="2"/>
+      <path d="M 90 40 L 90 80" stroke="#333" strokeWidth="1.5" strokeDasharray="3,3"/>
+      <circle cx="90" cy="90" r="4" fill="#ddd" stroke="#999" strokeWidth="1"/>
+      <circle cx="90" cy="108" r="4" fill="#ddd" stroke="#999" strokeWidth="1"/>
+      <circle cx="90" cy="126" r="4" fill="#ddd" stroke="#999" strokeWidth="1"/>
+      <circle cx="52" cy="105" r="8" fill="none" stroke={D_RED} strokeWidth="1.5"/>
+      <circle cx="52" cy="105" r="3" fill={D_RED} opacity="0.6"/>
+      <circle cx="128" cy="110" r="7" fill="none" stroke={D_GREEN} strokeWidth="1.5"/>
+      <circle cx="128" cy="110" r="3" fill={D_GREEN} opacity="0.6"/>
+      <path d="M 35 120 Q 45 112 55 120 Q 65 128 75 118" fill="none" stroke={D_GREEN} strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M 105 118 Q 115 110 125 118 Q 135 128 145 116" fill="none" stroke={D_GREEN} strokeWidth="1.5" strokeLinecap="round"/>
+      <text x="76" y="185" fontSize="8" fill="#555" fontFamily="serif">Hardin</text>
     </svg>
   );
 }
 
-function BarongGarden() {
+function BarongLangit() {
   return (
-    <svg viewBox="0 0 300 310" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <BarongBase color="#fafaf2" stripeColor="rgba(80,140,60,0.08)"/>
-      {[0, 45, 90, 135, 180, 225, 270, 315].map((deg, i) => (
-        <ellipse key={i}
-          cx={150 + Math.cos(deg * Math.PI / 180) * 24}
-          cy={165 + Math.sin(deg * Math.PI / 180) * 24}
-          rx="12" ry="8" fill="none"
-          stroke={i % 2 === 0 ? '#de3421' : '#f4a435'}
-          strokeWidth="2.5"
-          transform={`rotate(${deg}, ${150 + Math.cos(deg * Math.PI / 180) * 24}, ${165 + Math.sin(deg * Math.PI / 180) * 24})`}
-        />
-      ))}
-      <circle cx="150" cy="165" r="10" fill="none" stroke="#f4a435" strokeWidth="3"/>
-      <circle cx="150" cy="165" r="5" fill="#f4a435" opacity="0.5"/>
-      {[0, 60, 120, 180, 240, 300].map((deg, i) => (
-        <ellipse key={i}
-          cx={78 + Math.cos(deg * Math.PI / 180) * 14}
-          cy={145 + Math.sin(deg * Math.PI / 180) * 14}
-          rx="7" ry="5" fill="none" stroke="#59bded" strokeWidth="2"
-          transform={`rotate(${deg}, ${78 + Math.cos(deg * Math.PI / 180) * 14}, ${145 + Math.sin(deg * Math.PI / 180) * 14})`}
-        />
-      ))}
-      <circle cx="78" cy="145" r="6" fill="#f4a435" opacity="0.6"/>
-      {[0, 60, 120, 180, 240, 300].map((deg, i) => (
-        <ellipse key={i}
-          cx={218 + Math.cos(deg * Math.PI / 180) * 14}
-          cy={138 + Math.sin(deg * Math.PI / 180) * 14}
-          rx="7" ry="5" fill="none" stroke="#de3421" strokeWidth="2"
-          transform={`rotate(${deg}, ${218 + Math.cos(deg * Math.PI / 180) * 14}, ${138 + Math.sin(deg * Math.PI / 180) * 14})`}
-        />
-      ))}
-      <circle cx="218" cy="138" r="6" fill="#de3421" opacity="0.5"/>
-      <line x1="78" y1="159" x2="78" y2="200" stroke="#2a6a18" strokeWidth="2.5" strokeLinecap="round"/>
-      <line x1="150" y1="180" x2="150" y2="230" stroke="#2a6a18" strokeWidth="2.5" strokeLinecap="round"/>
-      <line x1="218" y1="152" x2="218" y2="200" stroke="#2a6a18" strokeWidth="2.5" strokeLinecap="round"/>
-      <path d="M 78 175 Q 60 168 58 158" fill="none" stroke="#3a8a20" strokeWidth="2.5" strokeLinecap="round"/>
-      <path d="M 78 183 Q 96 176 98 166" fill="none" stroke="#3a8a20" strokeWidth="2.5" strokeLinecap="round"/>
-      <path d="M 150 205 Q 132 198 130 188" fill="none" stroke="#3a8a20" strokeWidth="2.5" strokeLinecap="round"/>
-      <path d="M 150 215 Q 168 208 170 198" fill="none" stroke="#3a8a20" strokeWidth="2.5" strokeLinecap="round"/>
-      <path d="M 185 110 Q 176 98 172 106 Q 168 114 176 116 Q 180 117 185 110 Z" fill="none" stroke="#b81a2d" strokeWidth="2"/>
-      <path d="M 185 110 Q 194 98 198 106 Q 202 114 194 116 Q 190 117 185 110 Z" fill="none" stroke="#b81a2d" strokeWidth="2"/>
-      <path d="M 185 110 Q 178 115 176 122 Q 174 128 180 126 Q 184 125 185 118 Z" fill="none" stroke="#b81a2d" strokeWidth="1.5"/>
-      <path d="M 185 110 Q 192 115 194 122 Q 196 128 190 126 Q 186 125 185 118 Z" fill="none" stroke="#b81a2d" strokeWidth="1.5"/>
-      <circle cx="185" cy="112" r="2" fill="#b81a2d"/>
-      <ellipse cx="95" cy="118" rx="7" ry="5" fill="none" stroke="#f4a435" strokeWidth="2"/>
-      <line x1="89" y1="118" x2="101" y2="118" stroke="#1a1a1a" strokeWidth="1.5"/>
-      <path d="M 92 113 Q 91 107 96 108" fill="none" stroke="#ccc" strokeWidth="1.5"/>
-      <path d="M 98 113 Q 99 107 104 108" fill="none" stroke="#ccc" strokeWidth="1.5"/>
-      <path d="M 55 210 Q 90 215 150 210 Q 210 205 245 210" fill="none" stroke="rgba(90,55,20,0.4)" strokeWidth="2" strokeDasharray="4 4"/>
+    <svg viewBox="0 0 180 220" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M 40 40 L 10 75 L 25 82 L 20 200 L 160 200 L 155 82 L 170 75 L 140 40 Q 120 30 90 30 Q 60 30 40 40Z" fill="#FAFAF5" stroke="#333" strokeWidth="2.5"/>
+      <path d="M 70 38 L 90 65 L 110 38" fill="#FAFAF5" stroke="#333" strokeWidth="2"/>
+      <path d="M 90 40 L 90 80" stroke="#333" strokeWidth="1.5" strokeDasharray="3,3"/>
+      <circle cx="90" cy="90" r="4" fill="#ddd" stroke="#999" strokeWidth="1"/>
+      <circle cx="90" cy="108" r="4" fill="#ddd" stroke="#999" strokeWidth="1"/>
+      <circle cx="90" cy="126" r="4" fill="#ddd" stroke="#999" strokeWidth="1"/>
+      <path d="M 55 100 Q 62 88 72 93 Q 60 98 58 110 Q 50 108 55 100Z" fill="#555" opacity="0.6"/>
+      <path d="M 128 100 L 130 106 L 136 106 L 131 110 L 133 116 L 128 112 L 123 116 L 125 110 L 120 106 L 126 106Z" fill={D_ORG} opacity="0.8"/>
+      <text x="105" y="175" fontSize="8" fill="#555" fontFamily="serif">Langit</text>
     </svg>
   );
 }
 
-function BarongCity() {
+function BarongLungsod() {
   return (
-    <svg viewBox="0 0 300 310" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <BarongBase color="#f8f4f0" stripeColor="rgba(50,50,80,0.07)"/>
-      <rect x="58" y="185" width="28" height="55" fill="none" stroke="#1a1a3a" strokeWidth="2"/>
-      <rect x="62" y="175" width="20" height="15" fill="none" stroke="#1a1a3a" strokeWidth="2"/>
-      <rect x="63" y="192" width="5" height="5" fill="none" stroke="#4c7ef3" strokeWidth="1.5"/>
-      <rect x="72" y="192" width="5" height="5" fill="none" stroke="#4c7ef3" strokeWidth="1.5"/>
-      <rect x="63" y="204" width="5" height="5" fill="none" stroke="#4c7ef3" strokeWidth="1.5"/>
-      <rect x="72" y="204" width="5" height="5" fill="none" stroke="#4c7ef3" strokeWidth="1.5"/>
-      <rect x="92" y="170" width="35" height="70" fill="none" stroke="#1a1a3a" strokeWidth="2"/>
-      <rect x="98" y="158" width="23" height="16" fill="none" stroke="#1a1a3a" strokeWidth="2"/>
-      <line x1="109" y1="158" x2="109" y2="148" stroke="#1a1a3a" strokeWidth="2"/>
-      {[175, 185, 195, 205, 215].map(y => (
-        <g key={y}>
-          <rect x="97" y={y} width="6" height="6" fill="none" stroke="#f4a435" strokeWidth="1.5"/>
-          <rect x="108" y={y} width="6" height="6" fill="none" stroke="#f4a435" strokeWidth="1.5"/>
-          <rect x="119" y={y} width="6" height="6" fill="none" stroke="#f4a435" strokeWidth="1.5"/>
-        </g>
-      ))}
-      <rect x="155" y="155" width="40" height="85" fill="none" stroke="#1a1a3a" strokeWidth="2"/>
-      <rect x="163" y="143" width="24" height="16" fill="none" stroke="#1a1a3a" strokeWidth="2"/>
-      <line x1="175" y1="143" x2="175" y2="130" stroke="#1a1a3a" strokeWidth="2"/>
-      <circle cx="175" cy="128" r="4" fill="none" stroke="#de3421" strokeWidth="2"/>
-      {[162, 172, 182, 192, 202, 212].map(y => (
-        <g key={y}>
-          <rect x="161" y={y} width="6" height="6" fill="none" stroke="#59bded" strokeWidth="1.5"/>
-          <rect x="172" y={y} width="6" height="6" fill="none" stroke="#59bded" strokeWidth="1.5"/>
-          <rect x="183" y={y} width="6" height="6" fill="none" stroke="#59bded" strokeWidth="1.5"/>
-        </g>
-      ))}
-      <rect x="202" y="190" width="30" height="50" fill="none" stroke="#1a1a3a" strokeWidth="2"/>
-      <rect x="208" y="200" width="6" height="6" fill="none" stroke="#de3421" strokeWidth="1.5"/>
-      <rect x="218" y="200" width="6" height="6" fill="none" stroke="#de3421" strokeWidth="1.5"/>
-      <rect x="208" y="212" width="6" height="6" fill="none" stroke="#de3421" strokeWidth="1.5"/>
-      <rect x="218" y="212" width="6" height="6" fill="none" stroke="#de3421" strokeWidth="1.5"/>
-      <path d="M 40 242 L 260 242" stroke="#666" strokeWidth="2" strokeDasharray="8 5"/>
-      <rect x="90" y="233" width="36" height="14" rx="4" fill="none" stroke="#4c7ef3" strokeWidth="2"/>
-      <circle cx="97" cy="247" r="4" fill="none" stroke="#4c7ef3" strokeWidth="2"/>
-      <circle cx="119" cy="247" r="4" fill="none" stroke="#4c7ef3" strokeWidth="2"/>
-      <path d="M 96 233 Q 99 224 109 223 Q 119 224 122 233" fill="none" stroke="#4c7ef3" strokeWidth="2"/>
-      <path d="M 82 130 L 98 125 L 82 120 Z" fill="none" stroke="#1a1a3a" strokeWidth="2"/>
-      <line x1="82" y1="125" x2="66" y2="125" stroke="#1a1a3a" strokeWidth="2"/>
-      <path d="M 76 125 L 72 118 L 68 125 L 72 132 Z" fill="none" stroke="#1a1a3a" strokeWidth="1.5"/>
-      <path d="M 195 118 Q 195 110 202 110 Q 202 104 209 104 Q 216 104 218 110 Q 225 109 226 115 Q 229 115 229 120 Q 229 125 225 125 L 197 125 Q 193 125 193 121 Q 193 118 195 118 Z" fill="none" stroke="#aaa" strokeWidth="1.5"/>
+    <svg viewBox="0 0 180 220" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M 40 40 L 10 75 L 25 82 L 20 200 L 160 200 L 155 82 L 170 75 L 140 40 Q 120 30 90 30 Q 60 30 40 40Z" fill="#FAFAF5" stroke="#333" strokeWidth="2.5"/>
+      <path d="M 70 38 L 90 65 L 110 38" fill="#FAFAF5" stroke="#333" strokeWidth="2"/>
+      <path d="M 90 40 L 90 80" stroke="#333" strokeWidth="1.5" strokeDasharray="3,3"/>
+      <circle cx="90" cy="90" r="4" fill="#ddd" stroke="#999" strokeWidth="1"/>
+      <circle cx="90" cy="108" r="4" fill="#ddd" stroke="#999" strokeWidth="1"/>
+      <circle cx="90" cy="126" r="4" fill="#ddd" stroke="#999" strokeWidth="1"/>
+      <rect x="30" y="130" width="10" height="45" fill="none" stroke="#333" strokeWidth="1.5"/>
+      <rect x="42" y="118" width="12" height="57" fill="none" stroke="#333" strokeWidth="1.5"/>
+      <rect x="56" y="125" width="10" height="50" fill="none" stroke="#333" strokeWidth="1.5"/>
+      <rect x="120" y="120" width="12" height="55" fill="none" stroke="#333" strokeWidth="1.5"/>
+      <rect x="134" y="126" width="10" height="49" fill="none" stroke="#333" strokeWidth="1.5"/>
+      <line x1="25" y1="175" x2="155" y2="175" stroke="#333" strokeWidth="1.5"/>
+      <text x="72" y="190" fontSize="8" fill="#555" fontFamily="serif">Lungsod</text>
     </svg>
   );
 }
 
-// ── Collection data ───────────────────────────────────────────────────────────
+// ── Clothesline components ────────────────────────────────────────────────────
 
-const COLLECTION = [
-  { id: '01', barong: BarongNotebook, name: 'Notebook', nameFil: 'Kwaderno', accent: '#e60039', tag: 'The Original', price: '₱4,800',
-    desc: 'Hand-embroidered alphabet, a house, stars, and a 9/10 grade. Every childhood memory in one shirt.' },
-  { id: '02', barong: BarongOcean,    name: 'Ocean',    nameFil: 'Dagat',    accent: '#4c7ef3', tag: 'Summer Collection', price: '₱4,800',
-    desc: 'Fish, seaweed, a little boat, and waves that go nowhere. The sea stitched into jusi.' },
-  { id: '03', barong: BarongGarden,   name: 'Garden',   nameFil: 'Hardin',   accent: '#3a8a20', tag: 'Best Seller', price: '₱5,200',
-    desc: 'Flowers, a butterfly, a tiny bee. Everything a neighborhood garden has — in embroidery thread.' },
-  { id: '04', barong: BarongCity,     name: 'City',     nameFil: 'Lungsod',  accent: '#1a1a3a', tag: 'New Drop', price: '₱5,200',
-    desc: 'The Manila skyline stitched on piña. Buildings you know, a jeepney, one small airplane.' },
+// ── Mascot ────────────────────────────────────────────────────────────────────
+
+function BarongMascot({ color = '#333', accent = D_ORG }: { color?: string; accent?: string }) {
+  return (
+    <svg viewBox="0 0 60 90" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <circle cx="30" cy="18" r="13" fill="#f0d8c0" stroke={color} strokeWidth="1.5"/>
+      <path d="M 18 12 Q 24 6 30 8 Q 36 6 42 12" fill={color} stroke={color} strokeWidth="1"/>
+      <circle cx="25" cy="17" r="3" fill={color}/>
+      <circle cx="35" cy="17" r="3" fill={color}/>
+      <circle cx="26" cy="16" r="1.2" fill="#fff"/>
+      <circle cx="36" cy="16" r="1.2" fill="#fff"/>
+      <path d="M 25 23 Q 30 27 35 23" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M 15 32 L 8 42 L 14 44 L 12 75 L 48 75 L 46 44 L 52 42 L 45 32 Q 38 28 30 28 Q 22 28 15 32Z" fill="#FAFAF5" stroke={color} strokeWidth="1.5"/>
+      <path d="M 24 32 L 30 40 L 36 32" fill="#FAFAF5" stroke={color} strokeWidth="1"/>
+      <path d="M 18 52 Q 22 49 26 52 Q 30 55 34 52 Q 38 49 42 52" fill="none" stroke={accent} strokeWidth="1.2" strokeLinecap="round"/>
+      <path d="M 19 60 Q 23 57 27 60 Q 31 63 35 60 Q 39 57 41 60" fill="none" stroke={accent} strokeWidth="1.2" strokeLinecap="round"/>
+      <rect x="20" y="72" width="8" height="16" rx="2" fill="#e8d4c0" stroke={color} strokeWidth="1"/>
+      <rect x="32" y="72" width="8" height="16" rx="2" fill="#e8d4c0" stroke={color} strokeWidth="1"/>
+      <ellipse cx="24" cy="89" rx="7" ry="3" fill={color}/>
+      <ellipse cx="36" cy="89" rx="7" ry="3" fill={color}/>
+    </svg>
+  );
+}
+
+
+const MASCOT_CONFIGS = [
+  { color: '#333',    accent: D_ORG   },
+  { color: '#333',    accent: D_RED   },
+  { color: '#2a5c2a', accent: D_GREEN },
+  { color: '#1a3a6a', accent: D_TEAL  },
+  { color: '#5c1a2a', accent: D_RED   },
+  { color: '#333',    accent: D_YELLOW},
 ];
 
-// ── Inline doodle SVG decorations ────────────────────────────────────────────
-
-function DoodleLightning({ style }: { style?: React.CSSProperties }) {
-  return (
-    <svg width="40" height="72" viewBox="0 0 40 72" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: 'absolute', ...style }} aria-hidden="true">
-      <path d="M28 4L8 38H22L12 68L36 28H22L28 4Z" stroke="#333" strokeWidth="3" strokeLinejoin="round" fill="none"/>
-    </svg>
-  );
-}
-
-function DoodleSpiral({ style }: { style?: React.CSSProperties }) {
-  return (
-    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: 'absolute', ...style }} aria-hidden="true">
-      <path d="M24 24 Q36 12 36 24 Q36 38 20 38 Q6 38 6 24 Q6 8 24 8 Q42 8 42 24 Q42 42 24 42" stroke="#333" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
-    </svg>
-  );
-}
-
-function DoodleStar({ style, color = '#333' }: { style?: React.CSSProperties; color?: string }) {
-  return (
-    <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: 'absolute', ...style }} aria-hidden="true">
-      <path d="M18 4L21 14H32L23 20L26 31L18 25L10 31L13 20L4 14H15Z" stroke={color} strokeWidth="2.5" strokeLinejoin="round" fill="none"/>
-    </svg>
-  );
-}
-
-function DoodleZigzag({ style }: { style?: React.CSSProperties }) {
-  return (
-    <svg width="80" height="24" viewBox="0 0 80 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: 'absolute', ...style }} aria-hidden="true">
-      <path d="M2 20L16 4L30 20L44 4L58 20L72 4" stroke="#333" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-    </svg>
-  );
-}
-
-function DoodleDots({ style }: { style?: React.CSSProperties }) {
-  return (
-    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: 'absolute', ...style }} aria-hidden="true">
-      {[6,18,30,42].map(x => [6,18,30,42].map(y => (
-        <circle key={`${x}-${y}`} cx={x} cy={y} r="3" fill="#333" opacity="0.25"/>
-      )))}
-    </svg>
-  );
-}
-
-function DoodleCircle({ style, color = '#333' }: { style?: React.CSSProperties; color?: string }) {
-  return (
-    <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: 'absolute', ...style }} aria-hidden="true">
-      <circle cx="26" cy="26" r="22" stroke={color} strokeWidth="3" fill="none" strokeDasharray="6 4"/>
-    </svg>
-  );
-}
+const SNS_LINKS = [
+  { label: 'Official Site', sub: 'likha-barong.com',  hue: 0,   icon: 'WEB' },
+  { label: 'X / Twitter',   sub: '@likha_barong',      hue: 160, icon: 'X'   },
+  { label: 'Instagram',     sub: '@likha_barong',      hue: 200, icon: 'IG'  },
+  { label: 'Shop Now',      sub: 'Browse the store →', hue: 100, icon: 'BUY' },
+  { label: 'Custom Order',  sub: 'Made just for you',  hue: 50,  icon: 'CUS' },
+  { label: 'About Us',      sub: 'Our story',          hue: 280, icon: 'US'  },
+];
 
 export default function LikhaPage() {
   return (
-    <div className={zenKaku.variable} style={{ fontFamily: 'var(--font-zen), sans-serif', background: '#FFEE00', color: '#000', minHeight: '100vh' }}>
+    <div
+      className={`${zenKaku.variable} ${notoJP.variable} ${kleeOne.variable}`}
+      style={{
+        fontFamily: 'var(--font-zen), var(--font-noto), sans-serif',
+        background: '#FFEE00',
+        color: '#000',
+        minHeight: '100vh',
+        overflowX: 'hidden',
+        backgroundImage: [
+          'repeating-linear-gradient(0deg, rgba(0,0,0,0.06) 0px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 30px)',
+          'repeating-linear-gradient(90deg, rgba(0,0,0,0.06) 0px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 30px)',
+        ].join(', '),
+      }}
+    >
 
-      {/* ── Nav (white bar) ─────────────────────────────────────────────── */}
+      {/* SVG filters */}
+      <svg width="0" height="0" aria-hidden="true" style={{ position: 'absolute', overflow: 'hidden' }}>
+        <defs>
+          <filter id="brush-stroke" x="-8%" y="-15%" width="116%" height="130%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.03 0.06" numOctaves="3" seed="8" result="noise"/>
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="4" xChannelSelector="R" yChannelSelector="G"/>
+          </filter>
+          <filter id="crayon" x="-8%" y="-8%" width="116%" height="116%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.055 0.075" numOctaves="4" seed="3" result="noise"/>
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="5" xChannelSelector="R" yChannelSelector="G" result="displaced"/>
+            <feGaussianBlur in="displaced" stdDeviation="0.6"/>
+          </filter>
+        </defs>
+      </svg>
+
+      {/* ── Nav ─────────────────────────────────────────────────────────── */}
       <nav style={{
-        position: 'sticky', top: 0, zIndex: 100,
-        background: '#fff',
-        borderBottom: '2px solid #333',
-        padding: '0 clamp(20px,5vw,64px)',
+        position: 'sticky', top: 24, zIndex: 100,
+        padding: '0 clamp(16px,4vw,48px)',
+        marginTop: 24,
+        pointerEvents: 'none',
       }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64 }}>
-          <a href="/playground" style={{ color: '#000', textDecoration: 'none', fontWeight: 900, fontSize: 'clamp(1.1rem,2.2vw,1.35rem)', letterSpacing: '-0.02em' }}>
-            LIKHÂ<span style={{ color: '#e60039' }}>.</span>
+        <div style={{
+          maxWidth: 1200, margin: '0 auto',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64,
+          background: '#fff',
+          border: '3px solid #000',
+          borderRadius: 9999,
+          padding: '0 clamp(16px,3vw,36px)',
+          boxShadow: '4px 4px 0 #111',
+          pointerEvents: 'auto',
+        }}>
+          <a href="/playground/likha" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+            <Image src="/playground/likha/logo.png" alt="Likhâ" width={120} height={60} style={{ objectFit: 'contain', height: 48, width: 'auto' }} priority />
           </a>
-          <div style={{ display: 'flex', gap: 28, alignItems: 'center' }}>
-            {['Collection', 'About', 'Custom'].map(l => (
-              <a key={l} href="#" style={{ color: '#555', textDecoration: 'none', fontSize: '0.88rem', fontWeight: 700 }}>{l}</a>
-            ))}
-          </div>
-          <a href="#collection" style={{
-            background: '#000', color: '#fff', textDecoration: 'none',
-            fontWeight: 700, fontSize: '0.82rem', borderRadius: 900,
-            padding: '10px 22px', letterSpacing: '0.04em',
+          <a href="#collection" className="nav-cta" style={{
+            display: 'inline-block',
+            background: D_RED, color: '#fff',
+            border: '2.5px solid #111', borderRadius: '5.33333vw',
+            padding: '10px 28px', fontWeight: 900, fontSize: '0.82rem',
+            textDecoration: 'none', boxShadow: '3px 3px 0 #111',
+            letterSpacing: '0.04em',
+            transition: 'transform 0.15s ease, box-shadow 0.15s ease',
           }}>
-            Shop Collection
+            View Collection
           </a>
         </div>
       </nav>
 
-      {/* ── Hero (yellow, full doodles) ──────────────────────────────────── */}
-      <section style={{ position: 'relative', padding: 'clamp(64px,10vh,120px) clamp(20px,5vw,64px) clamp(48px,6vh,80px)', overflow: 'hidden' }}>
-
-        {/* Scattered doodles */}
-        <DoodleLightning style={{ top: 40, left: '8%', opacity: 0.55 }} />
-        <DoodleSpiral style={{ top: 80, right: '12%', opacity: 0.45 }} />
-        <DoodleStar style={{ top: 20, left: '28%', opacity: 0.5 }} />
-        <DoodleStar style={{ bottom: 40, right: '22%', opacity: 0.4, width: 24, height: 24 }} />
-        <DoodleZigzag style={{ bottom: 60, left: '6%', opacity: 0.4 }} />
-        <DoodleDots style={{ top: 60, right: '30%', opacity: 0.6 }} />
-        <DoodleCircle style={{ bottom: 20, right: '5%', opacity: 0.35 }} />
-        <DoodleLightning style={{ bottom: 80, left: '40%', opacity: 0.3, width: 28, height: 52 }} />
-
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', gap: 32, position: 'relative', zIndex: 1 }}>
-          <div style={{ flex: '1 1 320px', paddingBottom: 48 }}>
-
-            {/* Section number pill */}
-            <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8,
-              background: '#e60039', color: '#fff', fontWeight: 700,
-              fontSize: '0.68rem', letterSpacing: '0.18em', padding: '6px 16px',
-              borderRadius: 900, marginBottom: 28, textTransform: 'uppercase',
-            }}>
-              <span>Barong Tagalog</span>
-              <span style={{ opacity: 0.6 }}>·</span>
-              <span>Hand-Embroidered</span>
-            </div>
-
-            <h1 style={{
-              fontWeight: 900,
-              fontSize: 'clamp(3rem,8vw,6.5rem)',
-              lineHeight: 0.9,
-              letterSpacing: '-0.04em',
-              margin: '0 0 28px',
-            }}>
-              Tradition<br />as a<br />
-              <em style={{ fontStyle: 'italic', color: '#e60039' }}>canvas.</em>
-            </h1>
-
-            <p style={{ color: '#333', fontSize: 'clamp(1rem,1.5vw,1.1rem)', lineHeight: 1.7, maxWidth: '46ch', margin: '0 0 36px' }}>
-              The barong tagalog is the most Filipino garment there is. We took that and covered it in drawings — childlike, free, impossible to ignore.
-            </p>
-
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              <a href="#collection" style={{
-                background: '#e60039', color: '#fff', textDecoration: 'none',
-                fontWeight: 700, fontSize: '0.92rem', borderRadius: 900,
-                padding: '14px 32px',
-              }}>
-                View the collection
-              </a>
-              <a href="#custom" style={{
-                color: '#000', textDecoration: 'none', fontWeight: 700,
-                fontSize: '0.92rem', borderRadius: 900, padding: '14px 26px',
-                border: '2.5px solid #333',
-              }}>
-                Custom design →
-              </a>
-            </div>
-          </div>
-
-          {/* Hero barong cluster */}
-          <div style={{ flex: '0 0 auto', display: 'flex', gap: 12, alignItems: 'flex-end', position: 'relative', zIndex: 1 }}>
-            <div style={{ width: 170, transform: 'rotate(-5deg) translateY(10px)', opacity: 0.75 }}>
-              <BarongOcean />
-            </div>
-            <div style={{ width: 210 }}>
-              <BarongNotebook />
-            </div>
-            <div style={{ width: 165, transform: 'rotate(5deg) translateY(8px)', opacity: 0.8 }}>
-              <BarongGarden />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Stats bar (black) ────────────────────────────────────────────── */}
-      <div style={{ background: '#000', color: '#fff', padding: '20px clamp(20px,5vw,64px)' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: 32, justifyContent: 'space-around' }}>
-          {[['4', 'Designs'], ['100%', 'Jusi Fabric'], ['Hand', 'Embroidered'], ['4 wks', 'Custom Lead Time']].map(([num, label]) => (
-            <div key={label} style={{ textAlign: 'center' }}>
-              <div style={{ fontWeight: 900, fontSize: 'clamp(1.5rem,3vw,2.2rem)', letterSpacing: '-0.03em', color: '#FFEE00' }}>{num}</div>
-              <div style={{ fontWeight: 700, fontSize: '0.72rem', letterSpacing: '0.14em', color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', marginTop: 4 }}>{label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Collection (white notebook grid section) ─────────────────────── */}
-      <section id="collection" style={{
-        background: '#fff',
-        backgroundImage: `
-          linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(0,0,0,0.06) 1px, transparent 1px)
-        `,
-        backgroundSize: '20px 20px',
-        padding: 'clamp(60px,8vh,100px) clamp(20px,5vw,64px)',
-        borderTop: '2px solid #333',
-        borderBottom: '2px solid #333',
+      {/* ── Hero ────────────────────────────────────────────────────────── */}
+      <section className="hero-section" style={{
+        position: 'relative', minHeight: 'calc(100vh - 67px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 'clamp(80px,10vh,120px) clamp(20px,5vw,64px)', overflow: 'hidden',
       }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
 
-          {/* Section header */}
-          <div style={{ marginBottom: 48, display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
-            <div>
-              <div style={{ fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.22em', color: '#e60039', textTransform: 'uppercase', marginBottom: 8 }}>
-                02 / Collection
-              </div>
-              <h2 style={{ fontWeight: 900, fontSize: 'clamp(2rem,5vw,3rem)', letterSpacing: '-0.04em', margin: 0 }}>
-                2025 Collection
-              </h2>
-            </div>
+        {/* Dense colorful doodles */}
+        {HERO_DOODLES.map((d, i) => (
+          <div key={i} className="hero-doodle" style={{
+            position: 'absolute',
+            top: d.top, bottom: d.bottom, left: d.left, right: d.right,
+            width: d.w, height: d.h,
+            transform: `rotate(${d.r}deg)`,
+            pointerEvents: 'none', userSelect: 'none',
+          }}>
+            {d.el}
           </div>
+        ))}
 
-          {/* Report-style cards with film-strip holes */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 24 }}>
-            {COLLECTION.map(({ id, barong: Barong, name, nameFil, accent, tag, price, desc }) => (
-              <article key={id} style={{ background: '#fff', border: '2.5px solid #333', position: 'relative' }}>
-
-                {/* Film-strip holes top */}
-                <div style={{
-                  height: 20, background: '#333',
-                  backgroundImage: 'radial-gradient(circle, #fff 6px, transparent 6px)',
-                  backgroundSize: '28px 20px',
-                  backgroundRepeat: 'repeat-x',
-                  backgroundPosition: '8px center',
-                }}/>
-
-                {/* Barong display */}
-                <div style={{
-                  background: '#FFEE00',
-                  padding: '28px 20px 16px',
-                  display: 'flex', justifyContent: 'center',
-                  position: 'relative',
-                }}>
-                  {/* Big number watermark */}
-                  <div style={{
-                    position: 'absolute', top: 12, left: 16,
-                    fontWeight: 900, fontSize: '3.5rem', lineHeight: 1,
-                    color: '#000', opacity: 0.1,
-                  }}>{id}</div>
-
-                  {/* Doodle accents per card */}
-                  {id === '01' && <DoodleStar style={{ top: 12, right: 16, opacity: 0.5, width: 28, height: 28 }} />}
-                  {id === '02' && <DoodleZigzag style={{ bottom: 8, right: 8, opacity: 0.4, width: 60, height: 18 }} />}
-                  {id === '03' && <DoodleCircle style={{ bottom: 4, right: 4, opacity: 0.3, width: 40, height: 40 }} />}
-                  {id === '04' && <DoodleLightning style={{ top: 8, right: 12, opacity: 0.4, width: 24, height: 44 }} />}
-
-                  <div style={{ width: 190 }}>
-                    <Barong />
-                  </div>
-                </div>
-
-                {/* Film-strip holes bottom */}
-                <div style={{
-                  height: 20, background: '#333',
-                  backgroundImage: 'radial-gradient(circle, #fff 6px, transparent 6px)',
-                  backgroundSize: '28px 20px',
-                  backgroundRepeat: 'repeat-x',
-                  backgroundPosition: '8px center',
-                }}/>
-
-                {/* Card body */}
-                <div style={{ padding: '20px 20px 24px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
-                    <span style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.16em', color: accent, textTransform: 'uppercase' }}>{tag}</span>
-                    <span style={{ fontWeight: 900, fontSize: '1.05rem' }}>{price}</span>
-                  </div>
-                  <h3 style={{ fontWeight: 900, fontSize: '1.3rem', margin: '0 0 2px', letterSpacing: '-0.02em' }}>{name}</h3>
-                  <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#999', letterSpacing: '0.06em', marginBottom: 10 }}>{nameFil}</div>
-                  <p style={{ color: '#555', fontSize: '0.82rem', lineHeight: 1.65, margin: '0 0 20px' }}>{desc}</p>
-                  <button style={{
-                    width: '100%', background: '#000', color: '#fff',
-                    fontFamily: 'var(--font-zen)', fontWeight: 700, fontSize: '0.82rem',
-                    border: 'none', padding: '13px 0', cursor: 'pointer',
-                    letterSpacing: '0.08em', textTransform: 'uppercase', borderRadius: 900,
-                  }}>
-                    Add to cart
-                  </button>
-                </div>
-              </article>
-            ))}
-          </div>
+        {/* Doodle barong — left  (draw@0s → float@2.5s) */}
+        <div className="barong-float" style={{
+          position: 'absolute', left: 'clamp(16px,5vw,72px)', top: '50%',
+          transform: 'translateY(-50%) rotate(-9deg)',
+          zIndex: 2, pointerEvents: 'none',
+          ['--draw-delay' as string]: '0s', animationDelay: '2.5s',
+        }}>
+          <DBarong c={D_RED} size={160} />
         </div>
-      </section>
 
-      {/* ── About / Process (yellow with doodles) ───────────────────────── */}
-      <section id="about" style={{ background: '#FFEE00', padding: 'clamp(60px,8vh,100px) clamp(20px,5vw,64px)', position: 'relative', overflow: 'hidden' }}>
-
-        <DoodleSpiral style={{ top: 24, left: '5%', opacity: 0.4 }} />
-        <DoodleDots style={{ top: 40, right: '10%', opacity: 0.5 }} />
-        <DoodleZigzag style={{ bottom: 32, right: '8%', opacity: 0.35 }} />
-        <DoodleStar style={{ bottom: 48, left: '15%', opacity: 0.4, width: 32, height: 32 }} />
-
-        <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative', zIndex: 1 }}>
-          {/* Section number */}
-          <div style={{ fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.22em', color: '#e60039', textTransform: 'uppercase', marginBottom: 12 }}>
-            03 / Process
-          </div>
-          <h2 style={{ fontWeight: 900, fontSize: 'clamp(2rem,5vw,3rem)', letterSpacing: '-0.04em', margin: '0 0 48px' }}>
-            Made by hand.
-          </h2>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 20 }}>
-            {[
-              ['01', 'Draw', 'An illustrator sketches the motif on paper.', '#e60039'],
-              ['02', 'Transfer', 'The design is traced onto the fabric.', '#4c7ef3'],
-              ['03', 'Stitch', 'Hand-embroidered by craftswomen in Pampanga.', '#3a8a20'],
-              ['04', 'Finish', 'Washed, pressed, and tagged.', '#1a1a3a'],
-            ].map(([num, head, body, color]) => (
-              <div key={num} style={{
-                background: '#fff',
-                border: '2.5px solid #333',
-                padding: '24px 20px',
-              }}>
-                <div style={{ fontWeight: 900, fontSize: '2.5rem', lineHeight: 1, color, marginBottom: 12, opacity: 0.85 }}>{num}</div>
-                <div style={{ fontWeight: 900, fontSize: '1.1rem', marginBottom: 8 }}>{head}</div>
-                <div style={{ color: '#555', fontSize: '0.82rem', lineHeight: 1.6 }}>{body}</div>
-              </div>
-            ))}
-          </div>
+        {/* Doodle barong — right top  (draw@0.4s → float@2.9s) */}
+        <div className="barong-float" style={{
+          position: 'absolute', right: 'clamp(16px,5vw,72px)', top: '12%',
+          transform: 'rotate(11deg)',
+          zIndex: 2, pointerEvents: 'none',
+          ['--draw-delay' as string]: '0.4s', animationDelay: '2.9s',
+        }}>
+          <DBarong c={D_TEAL} size={130} />
         </div>
-      </section>
 
-      {/* ── CTA (white notebook grid) ───────────────────────────────────── */}
-      <section id="custom" style={{
-        background: '#fff',
-        backgroundImage: `
-          linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px)
-        `,
-        backgroundSize: '20px 20px',
-        padding: 'clamp(60px,8vh,100px) clamp(20px,5vw,64px)',
-        borderTop: '2px solid #333',
-      }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div style={{ fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.22em', color: '#e60039', textTransform: 'uppercase', marginBottom: 12 }}>
-            04 / Custom
+        {/* Doodle barong — right bottom  (draw@0.8s → float@3.3s) */}
+        <div className="barong-float" style={{
+          position: 'absolute', right: 'clamp(16px,7vw,100px)', bottom: '10%',
+          transform: 'rotate(-7deg)',
+          zIndex: 2, pointerEvents: 'none',
+          ['--draw-delay' as string]: '0.8s', animationDelay: '3.3s',
+        }}>
+          <DBarong c={D_GREEN} size={110} />
+        </div>
+
+        {/* Doodle barong — top left  (draw@0.2s → float@2.7s) */}
+        <div className="barong-float" style={{
+          position: 'absolute', left: 'clamp(16px,8vw,120px)', top: '8%',
+          transform: 'rotate(14deg)',
+          zIndex: 2, pointerEvents: 'none',
+          ['--draw-delay' as string]: '0.2s', animationDelay: '2.7s',
+        }}>
+          <DBarong c={D_ORG} size={105} />
+        </div>
+
+        {/* Doodle barong — bottom left  (draw@0.6s → float@3.1s) */}
+        <div className="barong-float" style={{
+          position: 'absolute', left: 'clamp(16px,6vw,90px)', bottom: '8%',
+          transform: 'rotate(-12deg)',
+          zIndex: 2, pointerEvents: 'none',
+          ['--draw-delay' as string]: '0.6s', animationDelay: '3.1s',
+        }}>
+          <DBarong c={D_YELLOW} size={120} />
+        </div>
+
+        {/* Small doodles near the logo */}
+        <div className="doodle-bob" style={{ position: 'absolute', top: '28%', left: '28%', width: 36, height: 36, transform: 'rotate(-15deg)', pointerEvents: 'none', zIndex: 2, ['--draw-delay' as string]: '0.2s', animationDelay: '2.7s' }}><DStar c={D_RED} /></div>
+        <div className="doodle-bob" style={{ position: 'absolute', top: '24%', right: '28%', width: 30, height: 30, transform: 'rotate(20deg)', pointerEvents: 'none', zIndex: 2, ['--draw-delay' as string]: '0.6s', animationDelay: '3.1s' }}><DSpiral c={D_TEAL} /></div>
+        <div className="doodle-bob" style={{ position: 'absolute', top: '42%', left: '22%', width: 80, height: 26, transform: 'rotate(-8deg)', pointerEvents: 'none', zIndex: 2, ['--draw-delay' as string]: '0.4s', animationDelay: '2.9s' }}><DWave c={D_ORG} /></div>
+        <div className="doodle-bob" style={{ position: 'absolute', top: '40%', right: '22%', width: 32, height: 32, transform: 'rotate(12deg)', pointerEvents: 'none', zIndex: 2, ['--draw-delay' as string]: '0.8s', animationDelay: '3.3s' }}><DStar c={D_GREEN} outline /></div>
+        <div className="doodle-bob" style={{ position: 'absolute', bottom: '30%', left: '26%', width: 28, height: 28, transform: 'rotate(-20deg)', pointerEvents: 'none', zIndex: 2, ['--draw-delay' as string]: '0.3s', animationDelay: '2.8s' }}><DDot c={D_YELLOW} /></div>
+        <div className="doodle-bob" style={{ position: 'absolute', bottom: '26%', right: '24%', width: 70, height: 22, transform: 'rotate(6deg)', pointerEvents: 'none', zIndex: 2, ['--draw-delay' as string]: '1.0s', animationDelay: '3.5s' }}><DZigzag c={D_RED} /></div>
+
+        {/* Center logo */}
+        <div style={{ textAlign: 'center', maxWidth: 520, zIndex: 3, position: 'relative' }}>
+          <div className="hero-text-reveal" style={{ fontWeight: 900, fontSize: '0.8rem', letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 16, color: '#444', animationDelay: '0.2s' }}>
+            Made with love, for you.
           </div>
-          <h2 style={{ fontWeight: 900, fontSize: 'clamp(2rem,5vw,3rem)', letterSpacing: '-0.04em', margin: '0 0 12px' }}>
-            Commission a design
-          </h2>
-          <p style={{ color: '#444', fontSize: '1rem', lineHeight: 1.75, maxWidth: '48ch', margin: '0 0 36px' }}>
-            Each Likhâ barong starts as plain piña-jusi. An illustrator draws the motif by hand, then it's transferred to thread and stitched by craftswomen in Pampanga. No two pieces are exactly identical.
+          <Image
+            src="/playground/likha/logo.png"
+            alt="Likhâ — hand-drawn barongs"
+            width={400} height={230}
+            className="logo-pop-in"
+            style={{ objectFit: 'contain', maxWidth: 'min(400px, 58vw)', height: 'auto' }}
+            priority
+          />
+          <p className="hero-text-reveal" style={{ marginTop: 24, fontSize: 'clamp(0.9rem,1.5vw,1.08rem)', color: '#333', lineHeight: 1.75, fontWeight: 500, animationDelay: '0.5s' }}>
+            Hand-embroidered Barong Tagalog.<br />
+            Every piece tells your story.
           </p>
-
-          {/* Pill button grid */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
-            <a href="mailto:hello@likha.ph" style={{
-              background: '#87CEEB', color: '#000', textDecoration: 'none',
-              fontWeight: 700, fontSize: '0.92rem', borderRadius: 900,
-              padding: '14px 32px', border: '2px solid #333',
+          <div className="hero-text-reveal" style={{ marginTop: 32, animationDelay: '0.8s' }}>
+            <a href="#collection" className="nav-cta" style={{
+              display: 'inline-block',
+              background: D_RED, color: '#fff',
+              border: '2.5px solid #111',
+              borderRadius: '5.33333vw', padding: '14px 48px',
+              fontWeight: 900, fontSize: '0.95rem', textDecoration: 'none',
+              boxShadow: '4px 4px 0 #111', letterSpacing: '0.04em',
+              transition: 'transform 0.15s ease, box-shadow 0.15s ease',
             }}>
-              Instagram
-            </a>
-            <a href="mailto:hello@likha.ph" style={{
-              background: '#FFEE00', color: '#000', textDecoration: 'none',
-              fontWeight: 700, fontSize: '0.92rem', borderRadius: 900,
-              padding: '14px 32px', border: '2px solid #333',
-            }}>
-              Email us
-            </a>
-            <a href="mailto:hello@likha.ph" style={{
-              background: '#8DC556', color: '#000', textDecoration: 'none',
-              fontWeight: 700, fontSize: '0.92rem', borderRadius: 900,
-              padding: '14px 32px', border: '2px solid #333',
-            }}>
-              Start a commission
+              View Collection
             </a>
           </div>
         </div>
       </section>
+
+      {/* ── Mission (client, GSAP ScrollTrigger) ─────────────────────────── */}
+      <MissionSection />
+
+      {/* ── Current Collection — clothesline (client, GSAP ScrollTrigger) ── */}
+      <ClotheslineSection />
+
+      {/* ── How It Works (client, GSAP ScrollTrigger) ────────────────────── */}
+      <HowItWorksSection />
+
+      {/* ── Sample Works (client, GSAP ScrollTrigger) ───────────────────── */}
+      <SampleWorksSection />
+
+      {/* ── CTA + Socials (client, GSAP ScrollTrigger) ───────────────────── */}
+      <CtaSocialsSection />
+
+      <style>{`
+        @media (prefers-reduced-motion: reduce) {
+          * { animation-duration: 0.01ms !important; }
+        }
+
+        /* ── Button hovers ── */
+        .nav-cta:hover {
+          transform: translate(-2px, -2px);
+          box-shadow: 5px 5px 0 #111 !important;
+        }
+        .likha-btn-primary:hover {
+          transform: translate(-2px, -2px);
+          box-shadow: 7px 7px 0 #111 !important;
+        }
+        .sns-tile:hover {
+          box-shadow: 7px 7px 0 #111 !important;
+        }
+        .works-card a:hover {
+          background: #111 !important;
+          color: #fff !important;
+          transform: translate(-1px, -1px);
+          box-shadow: 4px 4px 0 #111 !important;
+        }
+        .back-btn:hover {
+          transform: translate(-2px, -2px);
+          box-shadow: 6px 6px 0 #e60039 !important;
+        }
+
+        /* ── SVG draw-in (hero only) ── */
+        @keyframes drawIn {
+          from { stroke-dashoffset: 1; opacity: 0; }
+          to   { stroke-dashoffset: 0; opacity: 1; }
+        }
+        .hero-section .draw-in {
+          animation: drawIn 1.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+          animation-delay: var(--draw-delay, 0s);
+        }
+        @keyframes textReveal {
+          from { opacity: 0; translate: 0 8px; }
+          to   { opacity: 1; translate: 0 0; }
+        }
+        .hero-section .logo-text-reveal {
+          animation: textReveal 0.5s ease both;
+          animation-delay: inherit;
+        }
+        @keyframes heroTextReveal {
+          from { opacity: 0; translate: 0 16px; }
+          to   { opacity: 1; translate: 0 0; }
+        }
+        .hero-text-reveal {
+          animation: heroTextReveal 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        @keyframes logoPop {
+          0%   { opacity: 0; scale: 0.82; rotate: -4deg; }
+          65%  { scale: 1.06; rotate: 1.5deg; }
+          100% { opacity: 1; scale: 1; rotate: 0deg; }
+        }
+        .logo-pop-in {
+          animation: logoPop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+          animation-delay: 0.1s;
+        }
+
+        /* ── Continuous hero animations ── */
+        @keyframes barongFloat {
+          0%, 100% { translate: 0 0; }
+          50%       { translate: 0 -14px; }
+        }
+        @keyframes doodleBob {
+          0%, 100% { translate: 0 0; scale: 1; }
+          50%       { translate: 0 -8px; scale: 1.08; }
+        }
+        @keyframes sunSpin {
+          to { rotate: 360deg; }
+        }
+        @keyframes cloudDrift {
+          0%, 100% { translate: 0 0; }
+          50%       { translate: 14px 0; }
+        }
+
+        .barong-float {
+          animation: barongFloat 4s ease-in-out infinite;
+        }
+        .doodle-bob {
+          animation: doodleBob 3s ease-in-out infinite;
+        }
+        .sun-spin {
+          animation: sunSpin 18s linear infinite;
+          transform-origin: center;
+        }
+        .cloud-drift {
+          animation: cloudDrift 6s ease-in-out infinite;
+        }
+
+        /* ── Rope draw-in ── */
+        @keyframes ropeDraw {
+          to { stroke-dashoffset: 0; }
+        }
+        .rope-draw {
+          animation: ropeDraw 1.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        /* ── Scroll reveals ── */
+        @keyframes scrollFadeUp {
+          from { opacity: 0; translate: 0 36px; }
+          to   { opacity: 1; translate: 0 0; }
+        }
+        @keyframes scrollFadeIn {
+          from { opacity: 0; scale: 0.96; }
+          to   { opacity: 1; scale: 1; }
+        }
+
+        @supports (animation-timeline: view()) {
+          .scroll-reveal {
+            animation-name: scrollFadeUp;
+            animation-duration: auto;
+            animation-timing-function: linear;
+            animation-fill-mode: both;
+            animation-timeline: view();
+            animation-range: entry 5% entry 35%;
+          }
+          .scroll-card {
+            animation-name: scrollFadeIn;
+            animation-duration: auto;
+            animation-timing-function: linear;
+            animation-fill-mode: both;
+            animation-timeline: view();
+            animation-range: entry 5% entry 40%;
+          }
+        }
+.exp-item {
+          transform: rotate(var(--rot, 0deg));
+          transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .exp-item:hover,
+        .exp-item:active {
+          transform: rotate(var(--rot, 0deg));
+          z-index: 20 !important;
+        }
+        .exp-item:has(~ .exp-item:hover),
+        .exp-item:has(~ .exp-item:active) {
+          transform: rotate(var(--rot, 0deg)) translateX(-70px);
+        }
+        .exp-item:hover ~ .exp-item,
+        .exp-item:active ~ .exp-item {
+          transform: rotate(var(--rot, 0deg)) translateX(70px);
+        }
+        .exp-overlay {
+          opacity: 0;
+          transition: opacity 0.2s ease;
+        }
+        .exp-item:hover .exp-overlay,
+        .exp-item:active .exp-overlay {
+          opacity: 1;
+        }
+        .exp-barong {
+          transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+          transform-origin: center;
+        }
+        .exp-item:hover .exp-barong,
+        .exp-item:active .exp-barong {
+          transform: none;
+          filter:
+            drop-shadow(4px 0 0 var(--pin-color))
+            drop-shadow(-4px 0 0 var(--pin-color))
+            drop-shadow(0 4px 0 var(--pin-color))
+            drop-shadow(0 -4px 0 var(--pin-color))
+            drop-shadow(3px 3px 0 var(--pin-color))
+            drop-shadow(-3px 3px 0 var(--pin-color))
+            drop-shadow(3px -3px 0 var(--pin-color))
+            drop-shadow(-3px -3px 0 var(--pin-color));
+        }
+        /* ── Mobile responsive ──────────────────────────────────────── */
+        @media (max-width: 640px) {
+          /* Hero: hide outer doodles + large barong floats for clean layout */
+          .hero-doodle { display: none !important; }
+          .barong-float { display: none !important; }
+
+          /* Nav CTA */
+          .nav-cta { padding: 8px 14px !important; font-size: 0.72rem !important; }
+
+          /* Social tiles: 2 columns */
+          .sns-grid { grid-template-columns: repeat(2, 1fr) !important; }
+
+          /* CTA button */
+          .cta-btn .likha-btn-primary { padding: 12px 28px !important; }
+
+          /* Cork board thinner border */
+          .works-board { border-width: 6px !important; }
+
+          /* HIW heading: wrap and hide the heart */
+          .hiw-heading { flex-wrap: wrap !important; }
+          .hiw-heart { display: none !important; }
+
+          /* Clothesline: swipeable on mobile */
+          .clothesline-inner { padding: 0 !important; }
+          .barong-scroll-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+          }
+          .barong-scroll-wrapper::-webkit-scrollbar { display: none; }
+          /* Left-align so content starts at edge, not behind overflow clip */
+          .barong-row { justify-content: flex-start !important; padding: 0 16px; }
+          /* 250px barongs + overlap showing ~130px of each */
+          .exp-barong { width: 250px !important; }
+          .barong-row .exp-item + .exp-item { margin-left: -150px !important; }
+          /* Name tag: pull closer to barong on mobile */
+          .exp-overlay-left { left: 70% !important; }
+
+          /* Back button */
+          .back-btn { bottom: 16px !important; right: 12px !important; width: 44px !important; height: 44px !important; font-size: 0.95rem !important; }
+        }
+
+        /* Tablet: 2-col social tiles */
+        @media (max-width: 768px) and (min-width: 641px) {
+          .sns-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+      `}</style>
 
       {/* ── Footer ───────────────────────────────────────────────────────── */}
-      <footer style={{ background: '#333', color: '#fff', padding: '36px clamp(20px,5vw,64px)' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
-          <span style={{ fontWeight: 900, fontSize: '1.1rem', letterSpacing: '-0.02em' }}>
-            LIKHÂ<span style={{ color: '#e60039' }}>.</span>
-          </span>
-          <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.75rem' }}>
-            A playground project by{' '}
-            <a href="/playground" style={{ color: 'rgba(255,255,255,0.55)', textDecoration: 'underline' }}>Christian Dizon</a>
-            {' '}— inspired by Kakuwaku/ZEBRA design
-          </span>
+      <footer style={{ background: '#111', padding: '28px clamp(20px,5vw,64px)' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+          <Image src="/playground/likha/logo.png" alt="Likhâ" width={100} height={50} style={{ objectFit: 'contain', height: 36, width: 'auto' }} />
+          <span style={{ color: '#444', fontSize: '0.65rem' }}>© {new Date().getFullYear()} Likhâ. All rights reserved.</span>
         </div>
       </footer>
+
+      {/* ── Fixed back button ─────────────────────────────────────────────── */}
+      <a href="/playground" aria-label="Back to playground" style={{
+        position: 'fixed', bottom: 32, right: 32, zIndex: 200,
+        width: 56, height: 56, borderRadius: '50%',
+        background: '#111', border: '3px solid #111',
+        boxShadow: '4px 4px 0 ' + D_RED,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        textDecoration: 'none', color: '#fff',
+        fontSize: '1.2rem', fontWeight: 900,
+        transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+      }}
+        className="back-btn"
+      >
+        ←
+      </a>
     </div>
   );
 }
