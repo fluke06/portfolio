@@ -115,7 +115,7 @@ export function HeroSection({ introDone }: { introDone: boolean }) {
           Christian Dizon.
         </span>
         <nav aria-label="Main navigation" className="flex items-center gap-6 sm:gap-10">
-          {([['About', '/about'], ['Works', '/works'], ['Contact', '/contact']] as const).map(([label, href]) => (
+          {([['About', '/about'], ['Works', '/works'], ['Playground', '/playground'], ['Contact', '/contact']] as const).map(([label, href]) => (
             <a
               key={label}
               href={href}
