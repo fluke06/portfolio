@@ -4,9 +4,10 @@ import { useReducedMotion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 
 const NAV_LINKS = [
-  { label: 'About',   href: '/about' },
-  { label: 'Works',   href: '/works' },
-  { label: 'Contact', href: '/contact' },
+  { label: 'About',      href: '/about' },
+  { label: 'Works',      href: '/works' },
+  { label: 'Playground', href: '/playground' },
+  { label: 'Contact',    href: '/contact' },
 ];
 
 export function StickyNav({ alwaysVisible = false }: { alwaysVisible?: boolean }) {
@@ -71,7 +72,7 @@ export function StickyNav({ alwaysVisible = false }: { alwaysVisible?: boolean }
     >
       {/* ── Bar ── */}
       <div
-        className="flex items-center justify-between px-5 sm:px-8 md:px-10 py-3 sm:py-4"
+        className="relative flex items-center justify-between px-5 sm:px-8 md:px-10 py-3 sm:py-4"
         style={{
           background: bg,
           backdropFilter: 'blur(16px)',
@@ -87,13 +88,13 @@ export function StickyNav({ alwaysVisible = false }: { alwaysVisible?: boolean }
           Christian Dizon<em className="italic">.</em>
         </a>
 
-        {/* Desktop nav links */}
-        <div className="hidden sm:flex items-center gap-5 md:gap-8">
+        {/* Desktop nav links — absolutely centered in the bar */}
+        <div className="hidden sm:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-6 md:gap-10 pointer-events-auto">
           {NAV_LINKS.map(link => (
             <a
               key={link.label}
               href={link.href}
-              className="font-inter font-medium hover:text-[#EDE8E0] transition-colors duration-200 text-sm"
+              className="font-inter font-medium text-sm hover:text-[#EDE8E0] transition-colors duration-200"
               style={{ color: '#b4ac97' }}
             >
               {link.label}

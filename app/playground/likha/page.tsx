@@ -389,6 +389,7 @@ const SNS_LINKS = [
 
 export default function LikhaPage() {
   return (
+    <>
     <div
       className={`${zenKaku.variable} ${notoJP.variable} ${kleeOne.variable}`}
       style={{
@@ -806,21 +807,23 @@ export default function LikhaPage() {
         </div>
       </footer>
 
-      {/* ── Fixed back button ─────────────────────────────────────────────── */}
-      <a href="/playground" aria-label="Back to playground" style={{
-        position: 'fixed', bottom: 32, right: 32, zIndex: 200,
-        width: 56, height: 56, borderRadius: '50%',
-        background: '#111', border: '3px solid #111',
-        boxShadow: '4px 4px 0 ' + D_RED,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        textDecoration: 'none', color: '#fff',
-        fontSize: '1.2rem', fontWeight: 900,
-        transition: 'transform 0.15s ease, box-shadow 0.15s ease',
-      }}
-        className="back-btn"
-      >
-        ←
-      </a>
     </div>
+
+    {/* ── Fixed back button — outside overflow wrapper so iOS fixed works ── */}
+    <a href="/playground" aria-label="Back to playground" style={{
+      position: 'fixed', bottom: 32, right: 32, zIndex: 9999,
+      width: 56, height: 56, borderRadius: '50%',
+      background: '#111', border: '3px solid #111',
+      boxShadow: '4px 4px 0 ' + D_RED,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      textDecoration: 'none', color: '#fff',
+      fontSize: '1.2rem', fontWeight: 900,
+      transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+    }}
+      className="back-btn"
+    >
+      ←
+    </a>
+    </>
   );
 }

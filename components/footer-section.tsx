@@ -12,17 +12,18 @@ const COLS = [
   {
     head: 'Nav',
     items: [
-      { label: 'About',   href: '/about',   external: false },
-      { label: 'Works',   href: '/works',   external: false },
-      { label: 'Contact', href: '/contact', external: false },
+      { label: 'About',      href: '/about',       external: false },
+      { label: 'Works',      href: '/works',       external: false },
+      { label: 'Playground', href: '/playground',  external: false },
+      { label: 'Contact',    href: '/contact',     external: false },
     ],
   },
   {
-    head: 'Scope',
+    head: 'Elsewhere',
     items: [
-      { label: 'Full-Stack Dev', href: null, external: false },
-      { label: 'Cloud / AWS',    href: null, external: false },
-      { label: 'UI Design',      href: null, external: false },
+      { label: 'GitHub',      href: 'https://github.com/fluke06',                                       external: true },
+      { label: 'LinkedIn',    href: 'https://www.linkedin.com/in/christian-dizon-7a1151267', external: true },
+      { label: 'Playground',  href: '/playground',                                                       external: false },
     ],
   },
 ];
