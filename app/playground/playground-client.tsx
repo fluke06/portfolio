@@ -232,14 +232,15 @@ const LANDING_PAGES = [
   },
   {
     href: '/playground/sora',
-    bg: '#0a1c30',
-    accent: '#2bdeff',
+    bg: '#2d0a3a',
+    accent: '#d400ff',
     num: '03',
     year: '2025',
-    title: 'Sora Realty',
+    title: 'PIXL',
     titleAccent: '',
-    sub: 'Premium properties. Thoughtful placement. Find your place in the sky.',
-    tags: ['Real Estate'] as const,
+    sub: 'Y2K tech-inspired jewelry and charms. Thrifted, handpicked, one of each.',
+    tags: ['Accessories'] as const,
+    previewImage: '/playground/sora/preview.png',
   },
 ];
 
