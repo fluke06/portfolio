@@ -217,6 +217,7 @@ const LANDING_PAGES = [
     titleAccent: '',
     sub: 'Custom ceramic character mugs. Six personalities, one addiction.',
     tags: ['Shop'] as const,
+    previewImage: '/playground/kaomug/preview.png',
   },
   {
     href: '/playground/likha',
