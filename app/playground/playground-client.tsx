@@ -232,16 +232,16 @@ const LANDING_PAGES = [
     previewImage: '/playground/likha/preview.png',
   },
   {
-    href: '/playground/sora',
-    bg: '#2d0a3a',
-    accent: '#d400ff',
+    href: '/playground/pixl',
+    bg: '#080012',
+    accent: '#FF1F8E',
     num: '03',
     year: '2025',
     title: 'PIXL',
     titleAccent: '',
-    sub: 'Y2K tech-inspired jewelry and charms. Thrifted, handpicked, one of each.',
-    tags: ['Accessories'] as const,
-    previewImage: '/playground/sora/preview.png',
+    sub: 'Limited-run Y2K jewelry. Chrome pendants, flip-phone keychains, pixel rings. Friday drops only.',
+    tags: ['Y2K', 'Accessories'] as const,
+    previewImage: '/playground/pixl/preview.png',
   },
 ];
 
