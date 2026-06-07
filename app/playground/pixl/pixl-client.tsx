@@ -6,7 +6,7 @@ import { Nunito } from 'next/font/google';
 const nunito = Nunito({ subsets: ['latin'], weight: ['400', '700', '900'] });
 
 const C = {
-  brand:     '#FF1F8E',  // PIXL Pink — single signature color
+  brand:     '#FF1F8E',
   brandDark: '#B8005A',
   bg:        '#080012',
   neon:      '#FF00CC',
@@ -77,10 +77,7 @@ function PixlLogo({ height = 44 }: { height?: number }) {
 }
 
 function PixlMark({ size = 16, color = '#FF1F8E' }: { size?: number; color?: string }) {
-  // pixel X — ties to the X in PIXL
-  const px = [
-    [0,0],[4,0],[1,1],[3,1],[2,2],[1,3],[3,3],[0,4],[4,4],
-  ];
+  const px = [[0,0],[4,0],[1,1],[3,1],[2,2],[1,3],[3,3],[0,4],[4,4]];
   return (
     <svg width={size} height={size} viewBox="0 0 5 5" shapeRendering="crispEdges" style={{ flexShrink: 0 }}>
       {px.map(([x, y], i) => <rect key={i} x={x} y={y} width={1} height={1} fill={color} />)}
@@ -97,7 +94,8 @@ function TitleBar({ title, icon, onTitleMouseDown, onClose }: {
     <div style={{
       background: TB_GRAD, padding: '3px 4px',
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      userSelect: 'none' as const, flexShrink: 0,
+      userSelect: 'none', WebkitUserSelect: 'none' as React.CSSProperties['WebkitUserSelect'],
+      flexShrink: 0,
       cursor: onTitleMouseDown ? 'move' : 'default',
     }} onMouseDown={onTitleMouseDown}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -119,10 +117,10 @@ function MenuBar({ items }: { items: string[] }) {
   return (
     <div style={{
       background: C.winGray, borderBottom: `1px solid ${C.winBorder}`,
-      display: 'flex', padding: '2px 4px', flexShrink: 0,
+      display: 'flex', padding: '2px 4px', flexShrink: 0, overflowX: 'auto',
     }}>
       {items.map(item => (
-        <span key={item} style={{ fontSize: 12, padding: '2px 8px', cursor: 'default', color: C.inkDark }}>
+        <span key={item} style={{ fontSize: 12, padding: '2px 8px', cursor: 'default', color: C.inkDark, whiteSpace: 'nowrap' }}>
           {item}
         </span>
       ))}
@@ -143,6 +141,7 @@ function WinBtn({ children, primary, onClick }: {
       color: primary ? '#fff' : C.inkDark,
       fontWeight: 700, fontSize: 12, padding: '4px 18px', cursor: 'pointer',
       fontFamily: 'inherit', textShadow: primary ? '1px 1px 2px rgba(0,0,0,0.5)' : 'none',
+      touchAction: 'manipulation',
     }}>
       {children}
     </button>
@@ -154,6 +153,7 @@ function StatusBar({ text }: { text: string }) {
     <div style={{
       background: C.winGray, borderTop: `1px solid ${C.winBorder}`,
       padding: '2px 8px', fontSize: 11, color: C.inkMuted, flexShrink: 0,
+      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
     }}>
       {text}
     </div>
@@ -176,7 +176,7 @@ function DesktopIcon({ icon, label, badge }: { icon: string; label: string; badg
       <span style={{
         color: '#fff', fontSize: 11, textAlign: 'center',
         textShadow: '1px 1px 3px rgba(0,0,0,0.9), -1px -1px 3px rgba(0,0,0,0.9)',
-        lineHeight: 1.3, wordBreak: 'break-word' as const,
+        lineHeight: 1.3, wordBreak: 'break-word',
       }}>{label}</span>
     </div>
   );
@@ -214,11 +214,12 @@ interface DWProps {
   onClose?: () => void;
   msnTitleBar?: boolean;
   centerX?: boolean;
+  isMobile?: boolean;
 }
 
 function DWin({
   title, icon, menuItems, children, style,
-  initXFrac, initY, zIdx, onFocus, onClose, msnTitleBar, centerX,
+  initXFrac, initY, zIdx, onFocus, onClose, msnTitleBar, centerX, isMobile,
 }: DWProps) {
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
   const dragging = useRef(false);
@@ -226,6 +227,19 @@ function DWin({
   const elRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (isMobile) {
+      setPos({ x: 8, y: 8 });
+      if (centerX) {
+        requestAnimationFrame(() => {
+          if (elRef.current) {
+            const h = elRef.current.offsetHeight;
+            const availH = window.innerHeight - 48; // minus taskbar
+            setPos({ x: 8, y: Math.max(8, Math.round((availH - h) / 2)) });
+          }
+        });
+      }
+      return;
+    }
     setPos({ x: Math.round(window.innerWidth * initXFrac), y: initY });
     if (centerX) {
       requestAnimationFrame(() => {
@@ -235,60 +249,91 @@ function DWin({
         }
       });
     }
-  }, []); // eslint-disable-line
+  }, [isMobile]); // eslint-disable-line
 
   useEffect(() => {
+    if (isMobile) return;
     const onMove = (e: MouseEvent) => {
       if (!dragging.current) return;
       setPos({ x: e.clientX - offset.current.x, y: e.clientY - offset.current.y });
     };
     const onUp = () => { dragging.current = false; };
+    const onTouchMove = (e: TouchEvent) => {
+      if (!dragging.current) return;
+      const t = e.touches[0];
+      setPos({ x: t.clientX - offset.current.x, y: t.clientY - offset.current.y });
+    };
+    const onTouchEnd = () => { dragging.current = false; };
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onUp);
+    window.addEventListener('touchmove', onTouchMove, { passive: true });
+    window.addEventListener('touchend', onTouchEnd);
     return () => {
       window.removeEventListener('mousemove', onMove);
       window.removeEventListener('mouseup', onUp);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
     };
-  }, []);
+  }, [isMobile]);
 
   if (!pos) return null;
 
+  const canDrag = !isMobile;
+
   const onTitleDown = (e: React.MouseEvent) => {
+    if (!canDrag) return;
     dragging.current = true;
     offset.current = { x: e.clientX - pos.x, y: e.clientY - pos.y };
     e.preventDefault();
   };
 
+  const onTitleTouchStart = (e: React.TouchEvent) => {
+    if (!canDrag) return;
+    const t = e.touches[0];
+    dragging.current = true;
+    offset.current = { x: t.clientX - pos.x, y: t.clientY - pos.y };
+  };
+
+  const mobileWinStyle: React.CSSProperties = isMobile ? {
+    position: 'absolute',
+    left: 8,
+    top: 8,
+    width: 'calc(100vw - 16px)',
+    maxHeight: 'calc(var(--dvh, 1vh) * 100 - 80px)',
+  } : {};
+
   const tbStyle: React.CSSProperties = msnTitleBar
-    ? { background: 'linear-gradient(90deg, #1144CC 0%, #2266EE 50%, #1144CC 100%)', padding: '3px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', userSelect: 'none' as const, cursor: 'move', flexShrink: 0 }
-    : { background: TB_GRAD, padding: '3px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', userSelect: 'none' as const, cursor: 'move', flexShrink: 0 };
+    ? { background: 'linear-gradient(90deg, #1144CC 0%, #2266EE 50%, #1144CC 100%)', padding: '3px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', userSelect: 'none', WebkitUserSelect: 'none' as React.CSSProperties['WebkitUserSelect'], cursor: canDrag ? 'move' : 'default', flexShrink: 0 }
+    : { background: TB_GRAD, padding: '3px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', userSelect: 'none', WebkitUserSelect: 'none' as React.CSSProperties['WebkitUserSelect'], cursor: canDrag ? 'move' : 'default', flexShrink: 0 };
 
   return (
     <div
       ref={elRef}
       onMouseDown={onFocus}
+      onTouchStart={onFocus}
       style={{
         position: 'absolute', left: pos.x, top: pos.y, zIndex: zIdx,
         border: '2px solid', borderColor: `#F4D8FF #4A0066 #4A0066 #F4D8FF`,
         boxShadow: `4px 4px 0 ${C.inkDark}, 0 12px 40px rgba(0,0,0,0.75)`,
         background: C.winGray, display: 'flex', flexDirection: 'column',
         overflow: 'hidden', animation: 'winEntrance 0.22s ease-out',
+        ...mobileWinStyle,
         ...style,
       }}
     >
-      <div style={tbStyle} onMouseDown={onTitleDown}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-          {icon && <span style={{ fontSize: 13 }}>{icon}</span>}
-          <span style={{ color: '#fff', fontWeight: 700, fontSize: 11, textShadow: '1px 1px 2px rgba(0,0,0,0.6)' }}>
+      <div style={tbStyle} onMouseDown={onTitleDown} onTouchStart={onTitleTouchStart}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, minWidth: 0 }}>
+          {icon && <span style={{ fontSize: 13, flexShrink: 0 }}>{icon}</span>}
+          <span style={{ color: '#fff', fontWeight: 700, fontSize: 11, textShadow: '1px 1px 2px rgba(0,0,0,0.6)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {title}
           </span>
         </div>
-        <div style={{ display: 'flex', gap: 2 }}>
-          <div style={{ ...winBtnBase, width: 16, height: 16, fontSize: 8, ...(msnTitleBar ? { background: 'linear-gradient(135deg,#4488FF,#1155DD)' } : {}) }}>─</div>
+        <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>
+          {!isMobile && <div style={{ ...winBtnBase, width: 16, height: 16, fontSize: 8, ...(msnTitleBar ? { background: 'linear-gradient(135deg,#4488FF,#1155DD)' } : {}) }}>─</div>}
           <div style={{ ...winBtnBase, width: 16, height: 16, fontSize: 8, background: 'linear-gradient(135deg,#FF6060,#DD2020)' }} onClick={onClose}>✕</div>
         </div>
       </div>
-      {menuItems && <MenuBar items={menuItems} />}
+      {menuItems && !isMobile && <MenuBar items={menuItems} />}
       {children}
     </div>
   );
@@ -299,6 +344,7 @@ function DWin({
 export function PixlClient() {
   const [scrollY, setScrollY] = useState(0);
   const [vh, setVh] = useState(800);
+  const [isMobile, setIsMobile] = useState(false);
   const [winOrder, setWinOrder] = useState(['warn', 'cd', 'msn', 'run', 'hero', 'shop', 'about', 'newsletter']);
   const [closed, setClosed] = useState<Set<string>>(new Set());
   const [cartCount, setCartCount] = useState(0);
@@ -308,14 +354,19 @@ export function PixlClient() {
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
 
   useEffect(() => {
-    setVh(window.innerHeight);
-    const onResize = () => setVh(window.innerHeight);
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
+    const check = () => {
+      const h = window.innerHeight;
+      setVh(h);
+      setIsMobile(window.innerWidth < 640);
+      document.documentElement.style.setProperty('--dvh', `${h * 0.01}px`);
+    };
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
   }, []);
 
   useEffect(() => {
-    const handler = () => setScrollY(window.scrollY);
+    const handler = () => setScrollY(window.scrollY ?? window.pageYOffset);
     window.addEventListener('scroll', handler, { passive: true });
     return () => window.removeEventListener('scroll', handler);
   }, []);
@@ -330,22 +381,21 @@ export function PixlClient() {
     setTimeout(() => setAddedProduct(null), 2400);
   };
 
-  // Scroll thresholds — windows appear sequentially
-  const showShop = scrollY > vh * 0.75 && !closed.has('shop');
-  const showAbout = scrollY > vh * 2.1 && !closed.has('about');
-  const showNewsletter = scrollY > vh * 3.6 && !closed.has('newsletter');
-  const scrollFrac = Math.min(1, scrollY / (vh * 5));
+  // Scroll thresholds — tighter on mobile so windows appear sooner
+  const threshold = isMobile ? 0.4 : 0.75;
+  const showShop       = scrollY > vh * threshold        && !closed.has('shop');
+  const showAbout      = scrollY > vh * (isMobile ? 1.2 : 2.1) && !closed.has('about');
+  const showNewsletter = scrollY > vh * (isMobile ? 2.2 : 3.6) && !closed.has('newsletter');
 
-  // Auto-front each window the moment it first appears
-  useEffect(() => { if (showShop) front('shop'); }, [showShop]);       // eslint-disable-line
-  useEffect(() => { if (showAbout) front('about'); }, [showAbout]);     // eslint-disable-line
+  useEffect(() => { if (showShop) front('shop'); }, [showShop]);           // eslint-disable-line
+  useEffect(() => { if (showAbout) front('about'); }, [showAbout]);         // eslint-disable-line
   useEffect(() => { if (showNewsletter) front('newsletter'); }, [showNewsletter]); // eslint-disable-line
 
   const taskBtns = [
-    { id: 'hero', icon: '💾', label: 'PIXL', show: !closed.has('hero') },
-    { id: 'shop', icon: '📁', label: 'Friday Drop', show: showShop },
-    { id: 'about', icon: '📝', label: 'about.txt', show: showAbout },
-    { id: 'newsletter', icon: '📬', label: 'Subscribe', show: showNewsletter },
+    { id: 'hero',       icon: '💾', label: 'PIXL',        show: !closed.has('hero') },
+    { id: 'shop',       icon: '📁', label: 'Friday Drop', show: showShop },
+    { id: 'about',      icon: '📝', label: 'about.txt',   show: showAbout },
+    { id: 'newsletter', icon: '📬', label: 'Subscribe',   show: showNewsletter },
   ].filter(b => b.show);
 
   return (
@@ -373,10 +423,6 @@ export function PixlClient() {
           to   { opacity: 1; transform: scale(1) translateY(0); }
         }
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-        @keyframes scrollHint {
-          0%,100%{opacity:0.6;transform:translateX(-50%) translateY(0)}
-          50%{opacity:1;transform:translateX(-50%) translateY(6px)}
-        }
         @keyframes scrollBounce {
           0%,100%{transform:translateY(0)}
           50%{transform:translateY(6px)}
@@ -385,6 +431,7 @@ export function PixlClient() {
           from{opacity:0;transform:translateX(-50%) scale(0.85) translateY(8px)}
           to{opacity:1;transform:translateX(-50%) scale(1) translateY(0)}
         }
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
         .d-icon { border:1px solid transparent; border-radius:2px; transition:all 0.1s; }
         .d-icon:hover { background:rgba(255,100,200,0.32); border-color:rgba(255,200,255,0.55); cursor:pointer; }
         .tb-btn { transition:background 0.1s; }
@@ -397,79 +444,80 @@ export function PixlClient() {
         input:focus { outline:2px solid ${C.neon}; outline-offset:0; }
         .back-btn { transition: transform 0.15s ease, box-shadow 0.15s ease; }
         .back-btn:hover { transform: translate(-2px, -2px) !important; box-shadow: 6px 6px 0 ${C.brand} !important; }
+        .scroll-area { overflow-y: auto; -webkit-overflow-scrolling: touch; }
       `}</style>
 
-      {/* Page height — gives the body scroll room */}
-      <div style={{ height: '600vh' }} aria-hidden="true" />
+      {/* Page height — drives scroll on both mobile and desktop */}
+      <div style={{ height: isMobile ? '400vh' : '600vh' }} aria-hidden="true" />
 
-      {/* Fixed desktop — never moves */}
+      {/* Fixed desktop — covers full viewport */}
       <div style={{
-        position: 'fixed', inset: 0, height: '100dvh',
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        height: '100dvh',
         overflow: 'hidden', display: 'flex', flexDirection: 'column',
         zIndex: 10,
       }}>
 
-          {/* ════════════════════════════════════════
-              DESKTOP AREA
-          ════════════════════════════════════════ */}
+        {/* ════════ DESKTOP AREA ════════ */}
+        <div style={{
+          flex: 1, position: 'relative', overflow: 'hidden',
+          background: 'linear-gradient(180deg,#040010 0%,#120030 10%,#2E0060 22%,#5A0080 35%,#880060 48%,#AA0050 60%,#CC1060 72%,#E83070 82%,#F87090 91%,#FFB0C8 97%)',
+        }}>
+          {/* Stars */}
+          {STARS.map((s, i) => (
+            <div key={i} style={{
+              position: 'absolute', top: s.top, left: s.left, zIndex: 1,
+              fontSize: s.size * 4, lineHeight: 1, color: '#fff',
+              animation: `twinkleStar ${2 + i * 0.13}s ${s.delay} infinite ease-in-out`,
+              textShadow: '0 0 6px rgba(255,220,255,0.8)',
+              pointerEvents: 'none',
+            }}>{s.shape}</div>
+          ))}
+
+          {/* Scanlines */}
           <div style={{
-            flex: 1, position: 'relative', overflow: 'hidden',
-            background: 'linear-gradient(180deg,#040010 0%,#120030 10%,#2E0060 22%,#5A0080 35%,#880060 48%,#AA0050 60%,#CC1060 72%,#E83070 82%,#F87090 91%,#FFB0C8 97%)',
-          }}>
-            {/* Stars */}
-            {STARS.map((s, i) => (
-              <div key={i} style={{
-                position: 'absolute', top: s.top, left: s.left, zIndex: 1,
-                fontSize: s.size * 4, lineHeight: 1, color: '#fff',
-                animation: `twinkleStar ${2 + i * 0.13}s ${s.delay} infinite ease-in-out`,
-                textShadow: '0 0 6px rgba(255,220,255,0.8)',
-                pointerEvents: 'none',
-              }}>{s.shape}</div>
-            ))}
+            position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 2, pointerEvents: 'none',
+            backgroundImage: 'repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px)',
+          }} />
 
-            {/* Scanlines */}
+          {/* Neon grid */}
+          <div style={{ position: 'absolute', bottom: 70, left: 0, right: 0, height: '42%', overflow: 'hidden', zIndex: 1 }}>
             <div style={{
-              position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none',
-              backgroundImage: 'repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px)',
+              position: 'absolute', bottom: 0, left: '-50%', right: '-50%', height: '100%',
+              backgroundImage: 'repeating-linear-gradient(90deg,rgba(255,0,204,0.55) 0px,rgba(255,0,204,0.55) 1px,transparent 1px,transparent 7%)',
+              transform: 'perspective(220px) rotateX(60deg)', transformOrigin: 'center top',
             }} />
-
-            {/* Neon grid */}
-            <div style={{ position: 'absolute', bottom: 70, left: 0, right: 0, height: '42%', overflow: 'hidden', zIndex: 1 }}>
-              <div style={{
-                position: 'absolute', bottom: 0, left: '-50%', right: '-50%', height: '100%',
-                backgroundImage: 'repeating-linear-gradient(90deg,rgba(255,0,204,0.55) 0px,rgba(255,0,204,0.55) 1px,transparent 1px,transparent 7%)',
-                transform: 'perspective(220px) rotateX(60deg)', transformOrigin: 'center top',
-              }} />
-              <div style={{
-                position: 'absolute', bottom: 0, left: '-50%', right: '-50%', height: '100%',
-                backgroundImage: 'repeating-linear-gradient(0deg,rgba(255,0,204,0.5) 0px,rgba(255,0,204,0.5) 1px,transparent 1px,transparent 48px)',
-                transform: 'perspective(220px) rotateX(60deg)', transformOrigin: 'center top',
-                animation: 'gridScroll 1.6s linear infinite',
-              }} />
-              <div style={{
-                position: 'absolute', top: 0, left: 0, right: 0, height: 3,
-                background: C.neon,
-                boxShadow: `0 0 12px ${C.neon},0 0 30px rgba(255,0,204,0.6)`,
-                animation: 'horizonPulse 2s ease-in-out infinite',
-              }} />
-            </div>
-
-            {/* Marquee ticker */}
             <div style={{
-              position: 'absolute', bottom: 48, left: 0, right: 0, height: 22, zIndex: 12,
-              background: 'rgba(40,0,70,0.9)',
-              borderTop: '1px solid rgba(255,0,204,0.4)',
-              overflow: 'hidden', display: 'flex', alignItems: 'center',
-            }}>
-              <span style={{
-                color: C.neon, fontSize: 11, whiteSpace: 'nowrap' as const,
-                fontFamily: '"Courier New",monospace', letterSpacing: 0.5,
-                animation: 'marquee 22s linear infinite',
-                textShadow: `0 0 8px ${C.neon}`,
-              }}>{TICKER}</span>
-            </div>
+              position: 'absolute', bottom: 0, left: '-50%', right: '-50%', height: '100%',
+              backgroundImage: 'repeating-linear-gradient(0deg,rgba(255,0,204,0.5) 0px,rgba(255,0,204,0.5) 1px,transparent 1px,transparent 48px)',
+              transform: 'perspective(220px) rotateX(60deg)', transformOrigin: 'center top',
+              animation: 'gridScroll 1.6s linear infinite',
+            }} />
+            <div style={{
+              position: 'absolute', top: 0, left: 0, right: 0, height: 3,
+              background: C.neon,
+              boxShadow: `0 0 12px ${C.neon},0 0 30px rgba(255,0,204,0.6)`,
+              animation: 'horizonPulse 2s ease-in-out infinite',
+            }} />
+          </div>
 
-            {/* Desktop icons */}
+          {/* Marquee ticker */}
+          <div style={{
+            position: 'absolute', bottom: 48, left: 0, right: 0, height: 22, zIndex: 12,
+            background: 'rgba(40,0,70,0.9)',
+            borderTop: '1px solid rgba(255,0,204,0.4)',
+            overflow: 'hidden', display: 'flex', alignItems: 'center',
+          }}>
+            <span style={{
+              color: C.neon, fontSize: 11, whiteSpace: 'nowrap',
+              fontFamily: '"Courier New",Courier,monospace', letterSpacing: 0.5,
+              animation: 'marquee 22s linear infinite',
+              textShadow: `0 0 8px ${C.neon}`,
+            }}>{TICKER}</span>
+          </div>
+
+          {/* Desktop icons — hidden on mobile */}
+          {!isMobile && (
             <div style={{ position: 'absolute', top: 6, left: 10, zIndex: 10, display: 'flex', flexDirection: 'column', gap: 4 }}>
               {[
                 { icon: '💻', label: 'My Computer' },
@@ -483,55 +531,53 @@ export function PixlClient() {
                 </div>
               ))}
             </div>
+          )}
 
-            {/* ── SCROLL HINT — Windows XP notification balloon ── */}
-            {scrollY < 280 && (
+          {/* Scroll hint balloon */}
+          {scrollY < 280 && (
+            <div style={{
+              position: 'absolute', bottom: 76, left: '50%',
+              zIndex: 35, pointerEvents: 'none',
+              animation: scrollY < 5 ? 'balloonIn 0.3s ease-out forwards' : undefined,
+            }}>
               <div style={{
-                position: 'absolute', bottom: 76, left: '50%',
-                zIndex: 35, pointerEvents: 'none',
-                animation: scrollY < 5 ? 'balloonIn 0.3s ease-out forwards' : undefined,
+                transform: 'translateX(-50%)',
+                background: 'linear-gradient(180deg,#ffffff 0%,#EEF4FF 100%)',
+                border: '2px solid #334',
+                padding: '8px 18px 8px 12px',
+                whiteSpace: 'nowrap',
+                boxShadow: '2px 3px 8px rgba(0,0,0,0.55)',
+                display: 'flex', alignItems: 'center', gap: 8,
+                animation: 'scrollBounce 1.6s ease-in-out infinite',
+                position: 'relative',
               }}>
-                {/* balloon body */}
-                <div style={{
-                  transform: 'translateX(-50%)',
-                  background: 'linear-gradient(180deg,#ffffff 0%,#EEF4FF 100%)',
-                  border: '2px solid #334',
-                  padding: '8px 18px 8px 12px',
-                  whiteSpace: 'nowrap' as const,
-                  boxShadow: '2px 3px 8px rgba(0,0,0,0.55)',
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  animation: 'scrollBounce 1.6s ease-in-out infinite',
-                  position: 'relative',
-                }}>
-                  {/* close X */}
-                  <span style={{ position: 'absolute', top: 2, right: 5, fontSize: 9, color: '#888', cursor: 'default' }}>✕</span>
-                  <span style={{ fontSize: 18 }}>💾</span>
-                  <div>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: '#111', lineHeight: 1.4 }}>Windows found new content!</div>
-                    <div style={{ fontSize: 10, color: '#444' }}>Scroll down ↓ to open windows</div>
-                  </div>
-                  {/* balloon tail (pointing down) */}
-                  <div style={{ position: 'absolute', bottom: -9, left: '50%', transform: 'translateX(-50%)', width: 0, height: 0, borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderTop: '9px solid #334' }} />
-                  <div style={{ position: 'absolute', bottom: -7, left: '50%', transform: 'translateX(-50%)', width: 0, height: 0, borderLeft: '7px solid transparent', borderRight: '7px solid transparent', borderTop: '8px solid #EEF4FF' }} />
+                <span style={{ position: 'absolute', top: 2, right: 5, fontSize: 9, color: '#888', cursor: 'default' }}>✕</span>
+                <span style={{ fontSize: 18 }}>💾</span>
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#111', lineHeight: 1.4 }}>Windows found new content!</div>
+                  <div style={{ fontSize: 10, color: '#444' }}>Scroll down ↓ to open windows</div>
                 </div>
+                <div style={{ position: 'absolute', bottom: -9, left: '50%', transform: 'translateX(-50%)', width: 0, height: 0, borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderTop: '9px solid #334' }} />
+                <div style={{ position: 'absolute', bottom: -7, left: '50%', transform: 'translateX(-50%)', width: 0, height: 0, borderLeft: '7px solid transparent', borderRight: '7px solid transparent', borderTop: '8px solid #EEF4FF' }} />
               </div>
-            )}
+            </div>
+          )}
 
-            {/* ══════════════════════════════════════
-                HERO WINDOW (always open)
-            ══════════════════════════════════════ */}
-            {!closed.has('hero') && (
-              <DWin
-                id="hero" title="PIXL — Y2K Tech Accessories" icon="💾"
-                menuItems={['File', 'Edit', 'View', 'Favorites', 'Help']}
-                initXFrac={0.25} initY={20}
-                centerX
-                zIdx={zOf('hero')} onFocus={() => front('hero')}
-                onClose={() => close('hero')}
-                style={{ width: 680, maxWidth: 'calc(100vw - 40px)' }}
-              >
-                {/* toolbar */}
-                <div style={{ background: C.winGray, borderBottom: `1px solid ${C.winBorder}`, padding: '3px 6px', display: 'flex', gap: 4, alignItems: 'center' }}>
+          {/* ══ HERO WINDOW ══ */}
+          {!closed.has('hero') && (
+            <DWin
+              id="hero" title="PIXL — Y2K Tech Accessories" icon="💾"
+              menuItems={['File', 'Edit', 'View', 'Favorites', 'Help']}
+              initXFrac={0.25} initY={20}
+              centerX
+              isMobile={isMobile}
+              zIdx={zOf('hero')} onFocus={() => front('hero')}
+              onClose={() => close('hero')}
+              style={{ width: 680, maxWidth: 'calc(100vw - 40px)' }}
+            >
+              {/* address bar */}
+              {!isMobile && (
+                <div style={{ background: C.winGray, borderBottom: `1px solid ${C.winBorder}`, padding: '3px 6px', display: 'flex', gap: 4, alignItems: 'center', flexShrink: 0 }}>
                   {['← Back', '→ Fwd', '↑ Up'].map(b => (
                     <button key={b} style={{ border: '2px solid', borderColor: `#F0E4F0 #8060A0 #8060A0 #F0E4F0`, background: 'linear-gradient(180deg,#EEE0F4,#CCC0DC)', fontSize: 11, padding: '1px 8px', cursor: 'pointer', color: C.inkDark, fontFamily: 'inherit' }}>{b}</button>
                   ))}
@@ -539,38 +585,39 @@ export function PixlClient() {
                     C:\PIXL\Homepage
                   </div>
                 </div>
-                {/* hero content */}
-                <div style={{ background: 'linear-gradient(160deg,#0C001E 0%,#220040 30%,#4A006A 55%,#880060 78%,#B8004A 100%)', padding: '28px 36px 24px', textAlign: 'center', position: 'relative' }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/pixl-logo.png" alt="PIXL" style={{ display: 'block', width: '80%', maxWidth: 500, height: 'auto', margin: '0 auto 8px' }} />
-                  <p style={{ color: '#FFE4F0', fontSize: 18, fontWeight: 900, margin: '0 0 8px', letterSpacing: 1 }}>
-                    MAKE YOUR PHONE JEALOUS.
-                  </p>
-                  <p style={{ color: 'rgba(220,160,200,0.85)', fontSize: 11, margin: '0 0 22px', lineHeight: 1.8 }}>
-                    Limited-run jewelry for people who peaked<br />on AIM and aren&apos;t sorry about it.
-                  </p>
-                  <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-                    <WinBtn primary onClick={() => { window.scrollTo({ top: vh * 0.9, behavior: 'smooth' }); }}>✦ Shop the Drop</WinBtn>
-                    <WinBtn onClick={() => { window.scrollTo({ top: vh * 3.8, behavior: 'smooth' }); }}>📬 Join the List</WinBtn>
-                  </div>
+              )}
+              {/* hero content */}
+              <div className="scroll-area" style={{ background: 'linear-gradient(160deg,#0C001E 0%,#220040 30%,#4A006A 55%,#880060 78%,#B8004A 100%)', padding: isMobile ? '20px 20px 18px' : '28px 36px 24px', textAlign: 'center', position: 'relative' }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/pixl-logo.png" alt="PIXL" style={{ display: 'block', width: '80%', maxWidth: 500, height: 'auto', margin: '0 auto 8px' }} />
+                <p style={{ color: '#FFE4F0', fontSize: isMobile ? 15 : 18, fontWeight: 900, margin: '0 0 8px', letterSpacing: 1 }}>
+                  MAKE YOUR PHONE JEALOUS.
+                </p>
+                <p style={{ color: 'rgba(220,160,200,0.85)', fontSize: isMobile ? 12 : 11, margin: '0 0 18px', lineHeight: 1.8 }}>
+                  Limited-run jewelry for people who peaked<br />on AIM and aren&apos;t sorry about it.
+                </p>
+                <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <WinBtn primary onClick={() => { window.scrollTo({ top: vh * (isMobile ? 0.5 : 0.9), behavior: 'smooth' }); }}>✦ Shop the Drop</WinBtn>
+                  <WinBtn onClick={() => { window.scrollTo({ top: vh * (isMobile ? 2.5 : 3.8), behavior: 'smooth' }); }}>📬 Join the List</WinBtn>
                 </div>
-                <StatusBar text="6 items in Friday Drop 06.07  •  no restocks  •  no repeats" />
-              </DWin>
-            )}
+              </div>
+              <StatusBar text="6 items in Friday Drop 06.07  •  no restocks  •  no repeats" />
+            </DWin>
+          )}
 
-            {/* ══════════════════════════════════════
-                SHOP WINDOW — opens on scroll
-            ══════════════════════════════════════ */}
-            {showShop && (
-              <DWin
-                id="shop" title="C:\PIXL\FridayDrop — Windows Explorer" icon="📁"
-                menuItems={['File', 'Edit', 'View', 'Favorites', 'Tools', 'Help']}
-                initXFrac={0.3} initY={22}
-                zIdx={zOf('shop')} onFocus={() => front('shop')}
-                onClose={() => close('shop')}
-                style={{ width: 'min(820px, calc(100vw - 20px))' }}
-              >
-                <div style={{ background: C.winGray, borderBottom: `1px solid ${C.winBorder}`, padding: '3px 6px', display: 'flex', gap: 4, alignItems: 'center' }}>
+          {/* ══ SHOP WINDOW ══ */}
+          {showShop && (
+            <DWin
+              id="shop" title="C:\PIXL\FridayDrop — Windows Explorer" icon="📁"
+              menuItems={['File', 'Edit', 'View', 'Favorites', 'Tools', 'Help']}
+              initXFrac={0.3} initY={22}
+              isMobile={isMobile}
+              zIdx={zOf('shop')} onFocus={() => front('shop')}
+              onClose={() => close('shop')}
+              style={{ width: isMobile ? undefined : 'min(820px, calc(100vw - 20px))' }}
+            >
+              {!isMobile && (
+                <div style={{ background: C.winGray, borderBottom: `1px solid ${C.winBorder}`, padding: '3px 6px', display: 'flex', gap: 4, alignItems: 'center', flexShrink: 0 }}>
                   {['← Back', '↑ Up', '🔍 Search', '📁 Folders'].map(b => (
                     <button key={b} style={{ border: '2px solid', borderColor: `#F0E4F0 #8060A0 #8060A0 #F0E4F0`, background: 'linear-gradient(180deg,#EEE0F4,#CCC0DC)', fontSize: 11, padding: '1px 8px', cursor: 'pointer', color: C.inkDark, fontFamily: 'inherit' }}>{b}</button>
                   ))}
@@ -578,9 +625,11 @@ export function PixlClient() {
                     C:\PIXL\FridayDrop
                   </div>
                 </div>
-                <div style={{ display: 'flex', maxHeight: 360, overflow: 'hidden' }}>
-                  {/* sidebar */}
-                  <div style={{ width: 156, background: '#EEE0F8', borderRight: `1px solid ${C.winBorder}`, padding: '12px 10px', flexShrink: 0, overflowY: 'auto' }}>
+              )}
+              <div style={{ display: 'flex', maxHeight: isMobile ? 'calc(100vh - 130px)' : 360, overflow: 'hidden' }}>
+                {/* sidebar — desktop only */}
+                {!isMobile && (
+                  <div style={{ width: 156, background: '#EEE0F8', borderRight: `1px solid ${C.winBorder}`, padding: '12px 10px', flexShrink: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch' as React.CSSProperties['WebkitOverflowScrolling'] }}>
                     <p style={{ fontSize: 11, fontWeight: 700, margin: '0 0 6px', background: `linear-gradient(90deg,${C.brand},#FF50C0)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>File and Folder Tasks</p>
                     {['✦ Add to cart', '🔖 Save wishlist', '🛒 View cart', '💌 Share'].map(l => (
                       <p key={l} className="win-link" style={{ margin: '5px 0' }}>{l}</p>
@@ -590,7 +639,6 @@ export function PixlClient() {
                     {selectedProduct ? (
                       <div>
                         <p style={{ fontSize: 11, color: C.inkDark, margin: '0 0 6px', fontWeight: 700 }}>{selectedProduct}</p>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <div style={{ width: '100%', aspectRatio: '1', background: '#0C0020', marginBottom: 6, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={PRODUCTS.find(p => p.name === selectedProduct)?.img} alt={selectedProduct ?? ''} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -601,77 +649,79 @@ export function PixlClient() {
                       <p style={{ fontSize: 10, color: C.inkMuted, margin: 0 }}>Select an item</p>
                     )}
                   </div>
-                  {/* grid */}
-                  <div style={{ flex: 1, padding: 16, background: '#fff', display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(190px,1fr))', gap: 10, overflowY: 'auto', alignContent: 'start' }}>
-                    {PRODUCTS.map(p => (
-                      <div
-                        key={p.name}
-                        className={`p-card${selectedProduct === p.name ? ' sel' : ''}`}
-                        style={{ border: `2px solid ${C.winBorder}`, background: C.winGray, padding: 12, position: 'relative' }}
-                        onClick={() => setSelectedProduct(p.name === selectedProduct ? null : p.name)}
-                      >
-                        {p.badge && (
-                          <span style={{ position: 'absolute', top: 6, right: 6, background: BADGE[p.badge].bg, color: '#fff', fontSize: 9, fontWeight: 900, padding: '2px 5px' }}>{p.badge}</span>
-                        )}
-                        <div style={{ width: '100%', aspectRatio: '1', background: '#0C0020', marginBottom: 8, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={p.img} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        </div>
-                        <p style={{ margin: '0 0 0', fontWeight: 900, fontSize: 13, color: C.inkDark }}>{p.name}</p>
-                        <p style={{ margin: '0 0 3px', fontSize: 10, color: C.inkMuted, fontStyle: 'italic' }}>{p.sub}</p>
-                        <p style={{ margin: '0 0 8px', fontSize: 10, color: C.inkMuted }}>{p.size}</p>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <span style={{ fontWeight: 900, color: C.brand, fontSize: 14 }}>{p.price}</span>
-                          <WinBtn primary onClick={() => addCart(p.name)}>+ Cart</WinBtn>
-                        </div>
+                )}
+                {/* product grid */}
+                <div className="scroll-area" style={{ flex: 1, padding: isMobile ? 10 : 16, background: '#fff', display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(auto-fill,minmax(190px,1fr))', gap: isMobile ? 8 : 10, overflowY: 'auto', alignContent: 'start' }}>
+                  {PRODUCTS.map(p => (
+                    <div
+                      key={p.name}
+                      className={`p-card${selectedProduct === p.name ? ' sel' : ''}`}
+                      style={{ border: `2px solid ${C.winBorder}`, background: C.winGray, padding: isMobile ? 8 : 12, position: 'relative' }}
+                      onClick={() => setSelectedProduct(p.name === selectedProduct ? null : p.name)}
+                    >
+                      {p.badge && (
+                        <span style={{ position: 'absolute', top: 6, right: 6, background: BADGE[p.badge].bg, color: '#fff', fontSize: 9, fontWeight: 900, padding: '2px 5px' }}>{p.badge}</span>
+                      )}
+                      <div style={{ width: '100%', aspectRatio: '1', background: '#0C0020', marginBottom: 8, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={p.img} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       </div>
-                    ))}
+                      <p style={{ margin: '0 0 0', fontWeight: 900, fontSize: isMobile ? 11 : 13, color: C.inkDark }}>{p.name}</p>
+                      <p style={{ margin: '0 0 3px', fontSize: 10, color: C.inkMuted, fontStyle: 'italic' }}>{p.sub}</p>
+                      {!isMobile && <p style={{ margin: '0 0 8px', fontSize: 10, color: C.inkMuted }}>{p.size}</p>}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
+                        <span style={{ fontWeight: 900, color: C.brand, fontSize: isMobile ? 12 : 14 }}>{p.price}</span>
+                        <WinBtn primary onClick={() => addCart(p.name)}>+ Cart</WinBtn>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <StatusBar text={`${PRODUCTS.length} items  •  Friday Drop 06.07  •  Sort: Date Modified`} />
+            </DWin>
+          )}
+
+          {/* ══ ABOUT WINDOW ══ */}
+          {showAbout && (
+            <DWin
+              id="about" title="about.txt — Notepad" icon="📝"
+              menuItems={['File', 'Edit', 'Format', 'View', 'Help']}
+              initXFrac={0.03} initY={50}
+              isMobile={isMobile}
+              zIdx={zOf('about')} onFocus={() => front('about')}
+              onClose={() => close('about')}
+              style={{ width: isMobile ? undefined : 'min(720px, calc(100vw - 20px))' }}
+            >
+              <div style={{ display: 'flex', maxHeight: isMobile ? 'calc(100vh - 100px)' : 320, overflow: 'hidden' }}>
+                <div className="scroll-area" style={{
+                  flex: 1, padding: isMobile ? 16 : 24, overflowY: 'auto',
+                  backgroundImage: 'repeating-linear-gradient(transparent,transparent 22px,rgba(180,130,220,0.25) 22px,rgba(180,130,220,0.25) 23px)',
+                  backgroundSize: '100% 23px', backgroundPosition: '0 4px',
+                }}>
+                  <div style={{ fontFamily: '"Courier New",Courier,monospace', fontSize: isMobile ? 12 : 13, color: C.inkDark, lineHeight: '23px' }}>
+                    <p style={{ margin: 0, color: '#B8005A', fontWeight: 700 }}>// pixl.exe — about</p>
+                    <p style={{ margin: 0 }}>&nbsp;</p>
+                    <p style={{ margin: 0 }}>PIXL started in a dorm room with a</p>
+                    <p style={{ margin: 0 }}>hot glue gun and too many CDs.</p>
+                    <p style={{ margin: 0 }}>&nbsp;</p>
+                    <p style={{ margin: 0 }}>We make limited-run Y2K jewelry</p>
+                    <p style={{ margin: 0 }}>for people who remember dial-up,</p>
+                    <p style={{ margin: 0 }}>peak AIM away messages, and</p>
+                    <p style={{ margin: 0 }}>mall photo booths.</p>
+                    <p style={{ margin: 0 }}>&nbsp;</p>
+                    <p style={{ margin: 0 }}>Everything is handpicked.</p>
+                    <p style={{ margin: 0 }}>Every drop is small.</p>
+                    <p style={{ margin: 0 }}>Once it&apos;s gone, it&apos;s gone —</p>
+                    <p style={{ margin: 0 }}>like your Neopets password.</p>
+                    <p style={{ margin: 0 }}>&nbsp;</p>
+                    <p style={{ margin: 0, color: C.inkMuted }}>✦ Drops every Friday.</p>
+                    <p style={{ margin: 0, color: C.inkMuted }}>✦ No restocks. No repeats.</p>
+                    <p style={{ margin: 0, color: C.inkMuted }}>✦ Ships from LA.</p>
+                    <p style={{ margin: 0 }}><span style={{ animation: 'blink 1s step-end infinite' }}>█</span></p>
                   </div>
                 </div>
-                <StatusBar text={`${PRODUCTS.length} items  •  Friday Drop 06.07  •  Sort: Date Modified`} />
-              </DWin>
-            )}
-
-            {/* ══════════════════════════════════════
-                ABOUT WINDOW — opens on scroll
-            ══════════════════════════════════════ */}
-            {showAbout && (
-              <DWin
-                id="about" title="about.txt — Notepad" icon="📝"
-                menuItems={['File', 'Edit', 'Format', 'View', 'Help']}
-                initXFrac={0.03} initY={50}
-                zIdx={zOf('about')} onFocus={() => front('about')}
-                onClose={() => close('about')}
-                style={{ width: 'min(720px, calc(100vw - 20px))' }}
-              >
-                <div style={{ display: 'flex', maxHeight: 320, overflow: 'hidden' }}>
-                  <div style={{
-                    flex: 1, padding: 24, overflowY: 'auto',
-                    backgroundImage: 'repeating-linear-gradient(transparent,transparent 22px,rgba(180,130,220,0.25) 22px,rgba(180,130,220,0.25) 23px)',
-                    backgroundSize: '100% 23px', backgroundPosition: '0 4px',
-                  }}>
-                    <div style={{ fontFamily: '"Courier New",monospace', fontSize: 13, color: C.inkDark, lineHeight: '23px' }}>
-                      <p style={{ margin: 0, color: '#B8005A', fontWeight: 700 }}>// pixl.exe — about</p>
-                      <p style={{ margin: 0 }}>&nbsp;</p>
-                      <p style={{ margin: 0 }}>PIXL started in a dorm room with a</p>
-                      <p style={{ margin: 0 }}>hot glue gun and too many CDs.</p>
-                      <p style={{ margin: 0 }}>&nbsp;</p>
-                      <p style={{ margin: 0 }}>We make limited-run Y2K jewelry</p>
-                      <p style={{ margin: 0 }}>for people who remember dial-up,</p>
-                      <p style={{ margin: 0 }}>peak AIM away messages, and</p>
-                      <p style={{ margin: 0 }}>mall photo booths.</p>
-                      <p style={{ margin: 0 }}>&nbsp;</p>
-                      <p style={{ margin: 0 }}>Everything is handpicked.</p>
-                      <p style={{ margin: 0 }}>Every drop is small.</p>
-                      <p style={{ margin: 0 }}>Once it&apos;s gone, it&apos;s gone —</p>
-                      <p style={{ margin: 0 }}>like your Neopets password.</p>
-                      <p style={{ margin: 0 }}>&nbsp;</p>
-                      <p style={{ margin: 0, color: C.inkMuted }}>✦ Drops every Friday.</p>
-                      <p style={{ margin: 0, color: C.inkMuted }}>✦ No restocks. No repeats.</p>
-                      <p style={{ margin: 0, color: C.inkMuted }}>✦ Ships from LA.</p>
-                      <p style={{ margin: 0 }}><span style={{ animation: 'blink 1s step-end infinite' }}>█</span></p>
-                    </div>
-                  </div>
+                {/* stats panel — desktop only */}
+                {!isMobile && (
                   <div style={{ width: 180, background: C.winGray, borderLeft: `1px solid ${C.winBorder}`, padding: '16px 12px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {[
                       { icon: '💾', stat: '12K+', label: 'Orders shipped' },
@@ -688,139 +738,144 @@ export function PixlClient() {
                       </div>
                     ))}
                   </div>
-                </div>
-                <StatusBar text="about.txt  •  512 bytes  •  UTF-8" />
-              </DWin>
-            )}
+                )}
+              </div>
+              <StatusBar text="about.txt  •  512 bytes  •  UTF-8" />
+            </DWin>
+          )}
 
-            {/* ══════════════════════════════════════
-                NEWSLETTER — opens on scroll
-            ══════════════════════════════════════ */}
-            {showNewsletter && (
-              <DWin
-                id="newsletter" title="get the drop — pixl weekly" icon="📬"
-                initXFrac={0.33} initY={35}
-                zIdx={zOf('newsletter')} onFocus={() => front('newsletter')}
-                onClose={() => close('newsletter')}
-                style={{ width: 'min(420px, calc(100vw - 20px))' }}
-              >
-                <div style={{ padding: 26, background: '#fff' }}>
-                  <div style={{ float: 'right', marginLeft: 14, background: '#000', color: '#fff', padding: '4px 6px', width: 76, textAlign: 'center', fontSize: 8, fontWeight: 900, letterSpacing: 0.5, lineHeight: 1.3, border: '2px solid #000' }}>
-                    PARENTAL<br /><span style={{ fontSize: 11, letterSpacing: 1 }}>ADVISORY</span><br /><span style={{ fontSize: 6 }}>Y2K CONTENT</span>
+          {/* ══ NEWSLETTER ══ */}
+          {showNewsletter && (
+            <DWin
+              id="newsletter" title="get the drop — pixl weekly" icon="📬"
+              initXFrac={0.33} initY={35}
+              isMobile={isMobile}
+              zIdx={zOf('newsletter')} onFocus={() => front('newsletter')}
+              onClose={() => close('newsletter')}
+              style={{ width: isMobile ? undefined : 'min(420px, calc(100vw - 20px))' }}
+            >
+              <div className="scroll-area" style={{ padding: isMobile ? 18 : 26, background: '#fff', overflowY: 'auto' }}>
+                <div style={{ float: 'right', marginLeft: 14, background: '#000', color: '#fff', padding: '4px 6px', width: 76, textAlign: 'center', fontSize: 8, fontWeight: 900, letterSpacing: 0.5, lineHeight: 1.3, border: '2px solid #000' }}>
+                  PARENTAL<br /><span style={{ fontSize: 11, letterSpacing: 1 }}>ADVISORY</span><br /><span style={{ fontSize: 6 }}>Y2K CONTENT</span>
+                </div>
+                {subscribed ? (
+                  <div style={{ textAlign: 'center', padding: '20px 0', clear: 'both' }}>
+                    <p style={{ fontSize: 32, margin: '0 0 10px' }}>✅</p>
+                    <p style={{ fontWeight: 700, color: C.brand, fontSize: 15, margin: '0 0 4px' }}>ur one of us now ✦</p>
+                    <p style={{ fontSize: 12, color: C.inkMuted, margin: 0 }}>Friday drops hit your inbox before anyone else. welcome to the club.</p>
                   </div>
-                  {subscribed ? (
-                    <div style={{ textAlign: 'center', padding: '20px 0', clear: 'both' }}>
-                      <p style={{ fontSize: 32, margin: '0 0 10px' }}>✅</p>
-                      <p style={{ fontWeight: 700, color: C.brand, fontSize: 15, margin: '0 0 4px' }}>ur one of us now ✦</p>
-                      <p style={{ fontSize: 12, color: C.inkMuted, margin: 0 }}>Friday drops hit your inbox before anyone else. welcome to the club.</p>
-                    </div>
-                  ) : (
-                    <div style={{ clear: 'both' }}>
-                      <p style={{ fontSize: 12, color: C.inkDark, margin: '0 0 16px', lineHeight: 1.6 }}>
-                        Get notified before the normies. First access to Friday drops, restocks, and stuff we&apos;re probably not supposed to tell you about.
-                      </p>
-                      <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: C.inkDark, marginBottom: 4 }}>Email address:</label>
-                      <input type="email" value={emailVal} onChange={e => setEmailVal(e.target.value)} placeholder="you@example.com" style={{ width: '100%', boxSizing: 'border-box' as const, marginBottom: 14, border: '2px solid', borderColor: `${C.inkDark} #D0B8E0 #D0B8E0 ${C.inkDark}`, padding: '6px 10px', fontSize: 12, fontFamily: 'inherit' }} />
-                      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                        <WinBtn primary onClick={() => emailVal && setSubscribed(true)}>📬 Subscribe</WinBtn>
-                        <WinBtn onClick={() => setEmailVal('')}>Cancel</WinBtn>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </DWin>
-            )}
-
-            {/* ── Small floating dialogs ── */}
-
-            {/* Warning */}
-            {!closed.has('warn') && (
-              <DWin id="warn" title="⚠ PIXL ALERT" icon="⚠️" initXFrac={0.72} initY={60} zIdx={zOf('warn')} onFocus={() => front('warn')} onClose={() => close('warn')} style={{ minWidth: 210 }}>
-                <div style={{ padding: 14, fontSize: 12, color: C.inkDark, maxWidth: 230 }}>
-                  <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 12 }}>
-                    <span style={{ fontSize: 28, lineHeight: 1 }}>⚠️</span>
-                    <div>
-                      <p style={{ margin: '0 0 4px', fontWeight: 700, color: '#AA0000' }}>Friday Drop ALERT</p>
-                      <p style={{ margin: 0, lineHeight: 1.5 }}>Only <strong>4</strong> PiXL Drop Necklaces left. these don&apos;t come back.</p>
+                ) : (
+                  <div style={{ clear: 'both' }}>
+                    <p style={{ fontSize: 12, color: C.inkDark, margin: '0 0 16px', lineHeight: 1.6 }}>
+                      Get notified before the normies. First access to Friday drops, restocks, and stuff we&apos;re probably not supposed to tell you about.
+                    </p>
+                    <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: C.inkDark, marginBottom: 4 }}>Email address:</label>
+                    <input
+                      type="email" value={emailVal}
+                      onChange={e => setEmailVal(e.target.value)}
+                      placeholder="you@example.com"
+                      style={{ width: '100%', boxSizing: 'border-box', marginBottom: 14, border: '2px solid', borderColor: `${C.inkDark} #D0B8E0 #D0B8E0 ${C.inkDark}`, padding: '6px 10px', fontSize: 12, fontFamily: 'inherit' }}
+                    />
+                    <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                      <WinBtn primary onClick={() => emailVal && setSubscribed(true)}>📬 Subscribe</WinBtn>
+                      <WinBtn onClick={() => setEmailVal('')}>Cancel</WinBtn>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
-                    <WinBtn primary onClick={() => { window.scrollTo({ top: vh * 0.9, behavior: 'smooth' }); }}>Shop Now</WinBtn>
-                    <WinBtn onClick={() => close('warn')}>Cancel</WinBtn>
+                )}
+              </div>
+            </DWin>
+          )}
+
+          {/* ── Small dialogs — desktop only ── */}
+
+          {!isMobile && !closed.has('warn') && (
+            <DWin id="warn" title="⚠ PIXL ALERT" icon="⚠️" initXFrac={0.72} initY={60} isMobile={false} zIdx={zOf('warn')} onFocus={() => front('warn')} onClose={() => close('warn')} style={{ minWidth: 210 }}>
+              <div style={{ padding: 14, fontSize: 12, color: C.inkDark, maxWidth: 230 }}>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 12 }}>
+                  <span style={{ fontSize: 28, lineHeight: 1 }}>⚠️</span>
+                  <div>
+                    <p style={{ margin: '0 0 4px', fontWeight: 700, color: '#AA0000' }}>Friday Drop ALERT</p>
+                    <p style={{ margin: 0, lineHeight: 1.5 }}>Only <strong>4</strong> PiXL Drop Necklaces left. these don&apos;t come back.</p>
                   </div>
                 </div>
-              </DWin>
-            )}
-
-            {/* CD Player */}
-            {!closed.has('cd') && (
-              <DWin id="cd" title="CD Player — Friday Vibes" icon="💿" initXFrac={0.02} initY={280} zIdx={zOf('cd')} onFocus={() => front('cd')} onClose={() => close('cd')} style={{ width: 230 }}>
-                <div style={{ padding: '10px 14px', fontSize: 12, color: C.inkDark }}>
-                  <div style={{ background: '#0A0018', color: C.neon, fontFamily: 'monospace', padding: '8px 10px', marginBottom: 10, fontSize: 11, letterSpacing: 1, border: `1px solid rgba(255,0,204,0.3)` }}>
-                    <div style={{ color: '#FF80D0', marginBottom: 2 }}>🎵 Y2K MIX VOL.4</div>
-                    <div>▶ Track 04 — Butterfly</div>
-                    <div style={{ color: '#CC80FF' }}>02:47 / 03:58</div>
-                  </div>
-                  <div style={{ height: 5, background: '#8060A0', marginBottom: 8, border: '1px solid #5A3080' }}>
-                    <div style={{ height: '100%', width: '70%', background: `linear-gradient(90deg,${C.brandDark},${C.brand})` }} />
-                  </div>
-                  <input type="range" min={0} max={100} defaultValue={70} style={{ width: '100%', accentColor: C.brand, marginBottom: 8 }} />
-                  <div style={{ display: 'flex', justifyContent: 'center', gap: 5 }}>
-                    {['⏮','⏪','⏸','⏩','⏭'].map(b => (
-                      <button key={b} style={{ background: 'linear-gradient(180deg,#EEE0F4,#CCC0DC)', border: '2px solid', borderColor: `#F0E4F0 #8060A0 #8060A0 #F0E4F0`, width: 30, height: 26, cursor: 'pointer', fontSize: 13 }}>{b}</button>
-                    ))}
-                  </div>
+                <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
+                  <WinBtn primary onClick={() => { window.scrollTo({ top: vh * 0.9, behavior: 'smooth' }); }}>Shop Now</WinBtn>
+                  <WinBtn onClick={() => close('warn')}>Cancel</WinBtn>
                 </div>
-              </DWin>
-            )}
+              </div>
+            </DWin>
+          )}
 
-            {/* MSN Messenger */}
-            {!closed.has('msn') && (
-              <DWin id="msn" title="MSN Messenger" icon="💬" initXFrac={0.02} initY={490} zIdx={zOf('msn')} onFocus={() => front('msn')} onClose={() => close('msn')} style={{ width: 210 }} msnTitleBar>
-                <div>
-                  <div style={{ background: 'linear-gradient(180deg,#EEF4FF,#D8E8FF)', padding: '8px 10px', borderBottom: `1px solid #AACCEE`, fontSize: 11, color: '#334' }}>
-                    <span style={{ color: '#1144AA', fontWeight: 700 }}>pixl_official</span><span style={{ color: '#778' }}> says:</span>
-                  </div>
-                  <div style={{ background: '#fff', padding: '10px 12px', fontSize: 12, color: C.inkDark, lineHeight: 1.6 }}>
-                    omg pixl drop necklace<br />just dropped 💿✨<br />
-                    <span style={{ color: '#FF1F8E', fontWeight: 700 }}>gone in 24hrs last time 😭</span>
-                  </div>
-                  <div style={{ borderTop: `1px solid ${C.winBorder}`, padding: '6px 10px', display: 'flex', gap: 6, background: C.winGray }}>
-                    <WinBtn primary onClick={() => { window.scrollTo({ top: vh * 0.9, behavior: 'smooth' }); }}>Reply</WinBtn>
-                    <WinBtn onClick={() => close('msn')}>Block</WinBtn>
-                  </div>
+          {!isMobile && !closed.has('cd') && (
+            <DWin id="cd" title="CD Player — Friday Vibes" icon="💿" initXFrac={0.02} initY={280} isMobile={false} zIdx={zOf('cd')} onFocus={() => front('cd')} onClose={() => close('cd')} style={{ width: 230 }}>
+              <div style={{ padding: '10px 14px', fontSize: 12, color: C.inkDark }}>
+                <div style={{ background: '#0A0018', color: C.neon, fontFamily: 'monospace', padding: '8px 10px', marginBottom: 10, fontSize: 11, letterSpacing: 1, border: `1px solid rgba(255,0,204,0.3)` }}>
+                  <div style={{ color: '#FF80D0', marginBottom: 2 }}>🎵 Y2K MIX VOL.4</div>
+                  <div>▶ Track 04 — Butterfly</div>
+                  <div style={{ color: '#CC80FF' }}>02:47 / 03:58</div>
                 </div>
-              </DWin>
-            )}
+                <div style={{ height: 5, background: '#8060A0', marginBottom: 8, border: '1px solid #5A3080' }}>
+                  <div style={{ height: '100%', width: '70%', background: `linear-gradient(90deg,${C.brandDark},${C.brand})` }} />
+                </div>
+                <input type="range" min={0} max={100} defaultValue={70} style={{ width: '100%', accentColor: C.brand, marginBottom: 8 }} />
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 5 }}>
+                  {['⏮','⏪','⏸','⏩','⏭'].map(b => (
+                    <button key={b} style={{ background: 'linear-gradient(180deg,#EEE0F4,#CCC0DC)', border: '2px solid', borderColor: `#F0E4F0 #8060A0 #8060A0 #F0E4F0`, width: 30, height: 26, cursor: 'pointer', fontSize: 13 }}>{b}</button>
+                  ))}
+                </div>
+              </div>
+            </DWin>
+          )}
 
-            {/* ── TASKBAR ── */}
-            <div style={{
-              position: 'absolute', bottom: 0, left: 0, right: 0, height: 48, zIndex: 40,
-              background: 'linear-gradient(180deg,#620099 0%,#440066 40%,#280044 100%)',
-              borderTop: '2px solid #9900CC',
-              display: 'flex', alignItems: 'center', padding: '0 6px', gap: 5,
-            }}>
-              <button style={{ background: 'linear-gradient(180deg,#55DD44,#33BB22 45%,#116611 100%)', border: '2px solid', borderColor: '#99FF88 #003300 #003300 #99FF88', borderRadius: 12, padding: '4px 16px', color: '#fff', fontWeight: 900, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'inherit', boxShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>
-                <span style={{ fontSize: 16 }}>🪟</span> start
+          {!isMobile && !closed.has('msn') && (
+            <DWin id="msn" title="MSN Messenger" icon="💬" initXFrac={0.02} initY={490} isMobile={false} zIdx={zOf('msn')} onFocus={() => front('msn')} onClose={() => close('msn')} style={{ width: 210 }} msnTitleBar>
+              <div>
+                <div style={{ background: 'linear-gradient(180deg,#EEF4FF,#D8E8FF)', padding: '8px 10px', borderBottom: `1px solid #AACCEE`, fontSize: 11, color: '#334' }}>
+                  <span style={{ color: '#1144AA', fontWeight: 700 }}>pixl_official</span><span style={{ color: '#778' }}> says:</span>
+                </div>
+                <div style={{ background: '#fff', padding: '10px 12px', fontSize: 12, color: C.inkDark, lineHeight: 1.6 }}>
+                  omg pixl drop necklace<br />just dropped 💿✨<br />
+                  <span style={{ color: '#FF1F8E', fontWeight: 700 }}>gone in 24hrs last time 😭</span>
+                </div>
+                <div style={{ borderTop: `1px solid ${C.winBorder}`, padding: '6px 10px', display: 'flex', gap: 6, background: C.winGray }}>
+                  <WinBtn primary onClick={() => { window.scrollTo({ top: vh * 0.9, behavior: 'smooth' }); }}>Reply</WinBtn>
+                  <WinBtn onClick={() => close('msn')}>Block</WinBtn>
+                </div>
+              </div>
+            </DWin>
+          )}
+
+          {/* ── TASKBAR ── */}
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0, height: 48, zIndex: 40,
+            background: 'linear-gradient(180deg,#620099 0%,#440066 40%,#280044 100%)',
+            borderTop: '2px solid #9900CC',
+            display: 'flex', alignItems: 'center', padding: '0 6px', gap: isMobile ? 3 : 5,
+          }}>
+            <button style={{ background: 'linear-gradient(180deg,#55DD44,#33BB22 45%,#116611 100%)', border: '2px solid', borderColor: '#99FF88 #003300 #003300 #99FF88', borderRadius: 12, padding: isMobile ? '4px 10px' : '4px 16px', color: '#fff', fontWeight: 900, fontSize: isMobile ? 12 : 14, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'inherit', boxShadow: '0 2px 8px rgba(0,0,0,0.5)', flexShrink: 0, touchAction: 'manipulation' }}>
+              <span style={{ fontSize: isMobile ? 13 : 16 }}>🪟</span>
+              {!isMobile && ' start'}
+            </button>
+            <div style={{ width: 1, height: 32, background: 'rgba(255,255,255,0.18)', margin: '0 2px', flexShrink: 0 }} />
+            {taskBtns.map(({ id, icon, label }) => (
+              <button key={id} className="tb-btn" onClick={() => front(id)} style={{ background: 'linear-gradient(180deg,#6600AA,#440077)', border: '2px solid', borderColor: '#BB80DD #220033 #220033 #BB80DD', color: '#F0D0FF', fontSize: 11, fontWeight: 700, cursor: 'pointer', padding: isMobile ? '3px 6px' : '3px 10px', display: 'flex', alignItems: 'center', gap: isMobile ? 3 : 5, fontFamily: 'inherit', maxWidth: isMobile ? 44 : 130, touchAction: 'manipulation' }}>
+                <span>{icon}</span>
+                {!isMobile && <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</span>}
               </button>
-              <div style={{ width: 1, height: 32, background: 'rgba(255,255,255,0.18)', margin: '0 2px' }} />
-              {taskBtns.map(({ id, icon, label }) => (
-                <button key={id} className="tb-btn" onClick={() => front(id)} style={{ background: 'linear-gradient(180deg,#6600AA,#440077)', border: '2px solid', borderColor: '#BB80DD #220033 #220033 #BB80DD', color: '#F0D0FF', fontSize: 11, fontWeight: 700, cursor: 'pointer', padding: '3px 10px', display: 'flex', alignItems: 'center', gap: 5, fontFamily: 'inherit', maxWidth: 130 }}>
-                  <span>{icon}</span>
-                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{label}</span>
-                </button>
-              ))}
-              <div style={{ flex: 1 }} />
-              <button onClick={() => {}} style={{ background: 'rgba(255,45,138,0.15)', border: `1px solid ${C.brand}`, color: C.brand, fontSize: 11, fontWeight: 700, padding: '3px 10px', cursor: 'pointer', fontFamily: 'inherit' }}>
-                🛒 {cartCount}
-              </button>
-              <div style={{ background: 'rgba(0,0,0,0.35)', border: '1px solid rgba(255,255,255,0.12)', padding: '2px 10px', display: 'flex', alignItems: 'center', gap: 8, color: '#E4CCFF', fontSize: 11 }}>
+            ))}
+            <div style={{ flex: 1 }} />
+            <button onClick={() => {}} style={{ background: 'rgba(255,45,138,0.15)', border: `1px solid ${C.brand}`, color: C.brand, fontSize: 11, fontWeight: 700, padding: '3px 8px', cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0, touchAction: 'manipulation' }}>
+              🛒 {cartCount}
+            </button>
+            {!isMobile && (
+              <div style={{ background: 'rgba(0,0,0,0.35)', border: '1px solid rgba(255,255,255,0.12)', padding: '2px 10px', display: 'flex', alignItems: 'center', gap: 8, color: '#E4CCFF', fontSize: 11, flexShrink: 0 }}>
                 <span>🔊</span><span>📶</span><span>💬</span>
                 <span style={{ borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: 8 }}><Clock /></span>
               </div>
-            </div>
+            )}
           </div>
         </div>
+      </div>
 
       {/* Back to playground */}
       <a href="/playground" aria-label="Back to playground" className="back-btn" style={{
@@ -831,11 +886,12 @@ export function PixlClient() {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         textDecoration: 'none', color: C.brand,
         fontSize: '1.2rem', fontWeight: 900,
+        touchAction: 'manipulation',
       }}>←</a>
 
       {/* Cart toast */}
       {addedProduct && (
-        <div style={{ position: 'fixed', bottom: 20, right: 20, zIndex: 999, border: '2px solid', borderColor: `#F4D8FF #4A0066 #4A0066 #F4D8FF`, background: C.winGray, boxShadow: `3px 3px 0 ${C.inkDark}`, overflow: 'hidden', maxWidth: 260, animation: 'winEntrance 0.2s ease-out' }}>
+        <div style={{ position: 'fixed', bottom: 20, right: 20, zIndex: 9998, border: '2px solid', borderColor: `#F4D8FF #4A0066 #4A0066 #F4D8FF`, background: C.winGray, boxShadow: `3px 3px 0 ${C.inkDark}`, overflow: 'hidden', maxWidth: 260, animation: 'winEntrance 0.2s ease-out' }}>
           <TitleBar title="Item Added to Cart" icon="🛒" />
           <div style={{ padding: '10px 14px', fontSize: 12, color: C.inkDark }}>
             <strong>{addedProduct}</strong> was added to your cart!
