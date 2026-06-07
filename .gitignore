@@ -44,5 +44,8 @@ next-env.d.ts
 .claude/
 .impeccable/
 
+# scraped design references (skillui output)
+*-design/
+
 # cloudflare
 .wrangler/
