@@ -39,12 +39,12 @@ const STARS = [
 ];
 
 const PRODUCTS = [
-  { icon: '💿', name: 'Mirror Mirror',  sub: 'CD Pendant',          price: '$24', size: '18 KB', type: 'Necklace', badge: 'NEW', desc: 'Chrome CD on 18" silver chain' },
-  { icon: '📱', name: 'Miss Call',      sub: 'Flip Phone Keychain',  price: '$18', size: '12 KB', type: 'Keychain', badge: 'HOT', desc: 'Y2K flip in silver & black' },
-  { icon: '💜', name: '8-Bit Babe',     sub: 'Pixel Heart Ring',     price: '$16', size: '8 KB',  type: 'Ring',     badge: null,  desc: 'Adjustable pixel heart band' },
-  { icon: '⭐', name: 'Solar',          sub: 'Starburst Charm',      price: '$14', size: '6 KB',  type: 'Charm',    badge: null,  desc: 'Six-point chrome starburst' },
-  { icon: '🌸', name: 'Flutter',        sub: 'Butterfly Pin',        price: '$12', size: '9 KB',  type: 'Pin',      badge: 'LOW', desc: 'Holographic enamel butterfly' },
-  { icon: '💾', name: 'No Space',       sub: 'Floppy Bag Charm',     price: '$20', size: '15 KB', type: 'Charm',    badge: 'NEW', desc: 'Matte black floppy on carabiner' },
+  { img: '/playground/pixl/products/necklace.png',    name: 'PiXL Drop',     sub: 'Logo Ball Chain',      price: '$28', size: '22 KB', type: 'Necklace', badge: 'NEW', desc: 'Holographic PIXL pendant on silver ball chain with heart + star charms' },
+  { img: '/playground/pixl/products/phone-charm.png', name: 'Dial Thirst',   sub: 'Phone Charm Strap',    price: '$22', size: '16 KB', type: 'Charm',    badge: 'HOT', desc: 'PIXL logo strap + pixel heart, GameBoy & orb charms' },
+  { img: '/playground/pixl/products/ring-pixl.png',   name: 'Signed In',     sub: 'PIXL Signet Ring',     price: '$26', size: '18 KB', type: 'Ring',     badge: null,  desc: 'Holographic signet ring, PIXL inset logo + floppy & GameBoy art' },
+  { img: '/playground/pixl/products/ring-heart.png',  name: '8-Bit Babe',    sub: 'Pixel Heart Ring',     price: '$24', size: '14 KB', type: 'Ring',     badge: null,  desc: 'Holographic signet ring, pixel heart + floppy & GameBoy inset' },
+  { img: '/playground/pixl/products/bracelet.png',    name: 'Ctrl+Alt+Cute', sub: 'Y2K Charm Bracelet',   price: '$32', size: '28 KB', type: 'Bracelet', badge: 'LOW', desc: 'Silver bracelet — robot, music note, pixel heart, floppy, flip phone charms' },
+  { img: '/playground/pixl/products/lighter.png',     name: 'Fire.exe',      sub: 'Holographic Lighter',  price: '$38', size: '34 KB', type: 'Collab',   badge: 'NEW', desc: 'Chrome holographic Zippo — PIXL logo + Y2K sticker sheet included' },
 ];
 
 const BADGE: Record<string, { bg: string }> = {
@@ -53,7 +53,7 @@ const BADGE: Record<string, { bg: string }> = {
   LOW: { bg: '#CC6600' },
 };
 
-const TICKER = '✦ FRIDAY DROP: Mirror Mirror Pendant — 3 LEFT ✦ NEW: Miss Call Keychain just dropped ✦ Flutter Pin restocked ✦ Free shipping $35+ ✦ PIXL — for people who peaked on AIM and aren\'t sorry ✦ No restocks. No repeats. ✦';
+const TICKER = '✦ FRIDAY DROP: PiXL Drop Necklace — 4 LEFT ✦ NEW: Fire.exe Lighter just dropped ✦ Ctrl+Alt+Cute Bracelet LOW STOCK ✦ Free shipping $35+ ✦ PIXL — for people who peaked on AIM and aren\'t sorry ✦ No restocks. No repeats. ✦';
 
 // ── Shared title-bar chrome ────────────────────────────────────────────────
 
@@ -554,7 +554,7 @@ export function PixlClient() {
                     <WinBtn onClick={() => { window.scrollTo({ top: vh * 3.8, behavior: 'smooth' }); }}>📬 Join the List</WinBtn>
                   </div>
                 </div>
-                <StatusBar text="6 items in Friday Drop  •  no restocks  •  no repeats" />
+                <StatusBar text="6 items in Friday Drop 06.07  •  no restocks  •  no repeats" />
               </DWin>
             )}
 
@@ -589,7 +589,12 @@ export function PixlClient() {
                     <p style={{ fontSize: 11, fontWeight: 700, margin: '0 0 6px', background: `linear-gradient(90deg,${C.brand},#FF50C0)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Details</p>
                     {selectedProduct ? (
                       <div>
-                        <p style={{ fontSize: 11, color: C.inkDark, margin: '0 0 4px', fontWeight: 700 }}>{PRODUCTS.find(p => p.name === selectedProduct)?.icon} {selectedProduct}</p>
+                        <p style={{ fontSize: 11, color: C.inkDark, margin: '0 0 6px', fontWeight: 700 }}>{selectedProduct}</p>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <div style={{ width: '100%', aspectRatio: '1', background: '#0C0020', marginBottom: 6, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={PRODUCTS.find(p => p.name === selectedProduct)?.img} alt={selectedProduct ?? ''} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
                         <p style={{ fontSize: 10, color: C.inkMuted, margin: 0 }}>{PRODUCTS.find(p => p.name === selectedProduct)?.desc}</p>
                       </div>
                     ) : (
@@ -608,10 +613,13 @@ export function PixlClient() {
                         {p.badge && (
                           <span style={{ position: 'absolute', top: 6, right: 6, background: BADGE[p.badge].bg, color: '#fff', fontSize: 9, fontWeight: 900, padding: '2px 5px' }}>{p.badge}</span>
                         )}
-                        <div style={{ fontSize: 38, textAlign: 'center', marginBottom: 6, lineHeight: 1 }}>{p.icon}</div>
+                        <div style={{ width: '100%', aspectRatio: '1', background: '#0C0020', marginBottom: 8, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={p.img} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
                         <p style={{ margin: '0 0 0', fontWeight: 900, fontSize: 13, color: C.inkDark }}>{p.name}</p>
                         <p style={{ margin: '0 0 3px', fontSize: 10, color: C.inkMuted, fontStyle: 'italic' }}>{p.sub}</p>
-                        <p style={{ margin: '0 0 8px', fontSize: 10, color: C.inkMuted }}>{p.desc} • {p.size}</p>
+                        <p style={{ margin: '0 0 8px', fontSize: 10, color: C.inkMuted }}>{p.size}</p>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <span style={{ fontWeight: 900, color: C.brand, fontSize: 14 }}>{p.price}</span>
                           <WinBtn primary onClick={() => addCart(p.name)}>+ Cart</WinBtn>
@@ -620,7 +628,7 @@ export function PixlClient() {
                     ))}
                   </div>
                 </div>
-                <StatusBar text={`${PRODUCTS.length} items  •  Friday Drop  •  Sort: Date Modified`} />
+                <StatusBar text={`${PRODUCTS.length} items  •  Friday Drop 06.07  •  Sort: Date Modified`} />
               </DWin>
             )}
 
@@ -733,7 +741,7 @@ export function PixlClient() {
                     <span style={{ fontSize: 28, lineHeight: 1 }}>⚠️</span>
                     <div>
                       <p style={{ margin: '0 0 4px', fontWeight: 700, color: '#AA0000' }}>Friday Drop ALERT</p>
-                      <p style={{ margin: 0, lineHeight: 1.5 }}>Only <strong>3</strong> Mirror Mirror Pendants left. these don&apos;t come back.</p>
+                      <p style={{ margin: 0, lineHeight: 1.5 }}>Only <strong>4</strong> PiXL Drop Necklaces left. these don&apos;t come back.</p>
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
@@ -774,7 +782,7 @@ export function PixlClient() {
                     <span style={{ color: '#1144AA', fontWeight: 700 }}>pixl_official</span><span style={{ color: '#778' }}> says:</span>
                   </div>
                   <div style={{ background: '#fff', padding: '10px 12px', fontSize: 12, color: C.inkDark, lineHeight: 1.6 }}>
-                    omg mirror mirror pendant<br />just dropped 💿✨<br />
+                    omg pixl drop necklace<br />just dropped 💿✨<br />
                     <span style={{ color: '#FF1F8E', fontWeight: 700 }}>gone in 24hrs last time 😭</span>
                   </div>
                   <div style={{ borderTop: `1px solid ${C.winBorder}`, padding: '6px 10px', display: 'flex', gap: 6, background: C.winGray }}>
