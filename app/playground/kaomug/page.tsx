@@ -197,7 +197,7 @@ export default function KaomugPage() {
       </nav>
 
       {/* ── Hero character grid — 2 scrolling rows ──────────────────────── */}
-      <section style={{ height: 'calc(120vh - 64px)', display: 'flex', position: 'relative', padding: '20px 20px 0' }}>
+      <section className="km-hero-section" style={{ height: 'calc(120vh - 64px)', display: 'flex', position: 'relative', padding: '20px 20px 0' }}>
         {/* Floating accents over hero */}
         <svg className="km-accent" style={{ top: '12%', right: '8%', animation: 'km-drift-a 4s ease-in-out infinite' }} width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         <svg className="km-accent" style={{ top: '60%', right: '22%', animation: 'km-drift-b 5.5s ease-in-out infinite 0.8s' }} width="20" height="20" viewBox="0 0 24 24" fill="rgba(255,255,255,0.4)" stroke="none"><circle cx="12" cy="12" r="10"/></svg>
@@ -425,7 +425,7 @@ export default function KaomugPage() {
             {MUGS.map(({ img, name, role, cardBg, soldOut }, idx) => (
               <div key={name} className="km-roster-item" style={{ '--i': idx, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flexShrink: 0 } as React.CSSProperties}>
                 <div style={{
-                  width: 'clamp(90px, 11vw, 130px)', height: 'clamp(90px, 11vw, 130px)',
+                  width: '100%', aspectRatio: '1',
                   borderRadius: 16, background: cardBg,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   overflow: 'hidden', position: 'relative',
@@ -443,8 +443,8 @@ export default function KaomugPage() {
                   )}
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontFamily: 'var(--font-outfit), sans-serif', fontWeight: 900, fontSize: 'clamp(0.6rem, 1vw, 0.75rem)', color: '#E87000', letterSpacing: '-0.01em' }}>{name}</div>
-                  <div style={{ fontFamily: 'var(--font-outfit), sans-serif', fontWeight: 400, fontSize: 'clamp(0.48rem, 0.8vw, 0.6rem)', color: 'rgba(60,30,0,0.45)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{role.split(' / ')[0]}</div>
+                  <div style={{ fontFamily: 'var(--font-outfit), sans-serif', fontWeight: 900, fontSize: 'clamp(0.68rem, 1vw, 0.75rem)', color: '#E87000', letterSpacing: '-0.01em' }}>{name}</div>
+                  <div style={{ fontFamily: 'var(--font-outfit), sans-serif', fontWeight: 400, fontSize: 'clamp(0.58rem, 0.8vw, 0.6rem)', color: 'rgba(60,30,0,0.45)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{role.split(' / ')[0]}</div>
                 </div>
               </div>
             ))}
@@ -496,7 +496,7 @@ export default function KaomugPage() {
             <div className="km-detail-text" style={{ background: cardBg, padding: 'clamp(12px, 2.5vw, 24px) clamp(14px, 3vw, 28px) clamp(16px, 3vw, 28px)' }}>
               <div style={{
                 fontFamily: 'var(--font-outfit), sans-serif', fontWeight: 400,
-                fontSize: 'clamp(0.6rem, 1.1vw, 0.75rem)', color: 'rgba(255,255,255,0.6)',
+                fontSize: 'clamp(0.72rem, 1.1vw, 0.75rem)', color: 'rgba(255,255,255,0.6)',
                 letterSpacing: '0.1em', marginBottom: 4, textTransform: 'uppercase',
               }}>{role}</div>
               <div style={{
@@ -506,7 +506,7 @@ export default function KaomugPage() {
               }}>{name}</div>
               <div style={{
                 fontFamily: 'var(--font-outfit), sans-serif', fontWeight: 700,
-                fontSize: 'clamp(0.65rem, 1.2vw, 0.88rem)', letterSpacing: '0.06em',
+                fontSize: 'clamp(0.78rem, 1.2vw, 0.88rem)', letterSpacing: '0.06em',
                 color: 'rgba(255,255,255,0.65)',
               }}>{price}</div>
             </div>
@@ -593,7 +593,7 @@ export default function KaomugPage() {
                   background: cardBg,
                   borderRadius: 9999, padding: '7px 16px',
                   fontFamily: 'var(--font-outfit), sans-serif',
-                  fontWeight: 700, fontSize: 'clamp(0.65rem, 1.1vw, 0.8rem)',
+                  fontWeight: 700, fontSize: 'clamp(0.75rem, 1.1vw, 0.8rem)',
                   color: '#fff', whiteSpace: 'nowrap',
                 } as React.CSSProperties}>
                   {name} × KAOMUG
@@ -652,6 +652,18 @@ export default function KaomugPage() {
           Copyright &copy; {new Date().getFullYear()} KAOMUG Studio. All rights reserved.
         </p>
       </footer>
+
+      {/* Back to playground */}
+      <a href="/playground" aria-label="Back to playground" style={{
+        position: 'fixed', bottom: 28, right: 28, zIndex: 9999,
+        width: 50, height: 50, borderRadius: '50%',
+        background: '#E87000', border: '3px solid #FFD100',
+        boxShadow: '4px 4px 0 #1C1410',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        textDecoration: 'none', color: '#FFD100',
+        fontSize: '1.2rem', fontWeight: 900,
+        transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+      }}>←</a>
 
       <style>{`
         /* ── Existing scroll animations ── */
@@ -838,19 +850,25 @@ export default function KaomugPage() {
 
         /* ── Responsive: mobile (≤640px) ─────────────────────────────────── */
         @media (max-width: 640px) {
+          .km-hero-section { height: calc(85vh - 64px) !important; }
           .km-hero-side-panel { display: none !important; }
           .km-hero-tile { width: 50vw !important; }
           .km-color-block { width: 25vw !important; }
           .km-roster-grid {
-            grid-template-columns: repeat(4, 1fr) !important;
-            gap: 8px !important;
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 10px !important;
           }
           .km-detail-section { grid-template-columns: repeat(2, 1fr) !important; }
           .km-oval-float {
-            width: min(80vw, 360px) !important;
-            height: min(80vw, 360px) !important;
+            width: min(80vw, 320px) !important;
+            height: min(80vw, 320px) !important;
           }
+          .km-mug-tile { width: 120px !important; height: 108px !important; }
           .km-back-top { min-height: 44px !important; }
+          a[aria-label="Back to playground"]:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 #1C1410;
+          }
         }
       `}</style>
     </div>
