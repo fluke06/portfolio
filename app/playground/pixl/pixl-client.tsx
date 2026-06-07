@@ -395,6 +395,8 @@ export function PixlClient() {
         .p-card:hover { border-color:${C.neon} !important; box-shadow:0 0 16px rgba(255,0,204,0.5) !important; background:#ECD8F4 !important; }
         .p-card.sel { border-color:#0055A4 !important; background:#D0E8FF !important; }
         input:focus { outline:2px solid ${C.neon}; outline-offset:0; }
+        .back-btn { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+        .back-btn:hover { transform: translate(-2px, -2px) !important; box-shadow: 6px 6px 0 ${C.brand} !important; }
       `}</style>
 
       {/* Page height — gives the body scroll room */}
@@ -811,6 +813,17 @@ export function PixlClient() {
             </div>
           </div>
         </div>
+
+      {/* Back to playground */}
+      <a href="/playground" aria-label="Back to playground" className="back-btn" style={{
+        position: 'fixed', bottom: 32, right: 32, zIndex: 9999,
+        width: 52, height: 52, borderRadius: '50%',
+        background: '#000', border: `3px solid ${C.brand}`,
+        boxShadow: `4px 4px 0 ${C.brand}`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        textDecoration: 'none', color: C.brand,
+        fontSize: '1.2rem', fontWeight: 900,
+      }}>←</a>
 
       {/* Cart toast */}
       {addedProduct && (
