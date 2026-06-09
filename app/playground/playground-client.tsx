@@ -243,18 +243,6 @@ const LANDING_PAGES = [
     tags: ['Y2K', 'Accessories'] as const,
     previewImage: '/playground/pixl/preview.png',
   },
-  {
-    href: '/playground/andrecipe',
-    bg: '#f0e9d8',
-    accent: '#000000',
-    num: '04',
-    year: '2026',
-    title: 'and recipe',
-    titleAccent: '',
-    sub: 'Editorial Japanese food magazine redesign. Rice-grain textures, large kanji, interview Q&A format.',
-    tags: ['Editorial', 'Japanese'] as const,
-    previewImage: undefined,
-  },
 ];
 
 function LandingTile({
