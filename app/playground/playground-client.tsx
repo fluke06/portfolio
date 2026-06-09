@@ -243,6 +243,18 @@ const LANDING_PAGES = [
     tags: ['Y2K', 'Accessories'] as const,
     previewImage: '/playground/pixl/preview.png',
   },
+  {
+    href: '/playground/andrecipe',
+    bg: '#f0e9d8',
+    accent: '#000000',
+    num: '04',
+    year: '2026',
+    title: 'and recipe',
+    titleAccent: '',
+    sub: 'Editorial Japanese food magazine redesign. Rice-grain textures, large kanji, interview Q&A format.',
+    tags: ['Editorial', 'Japanese'] as const,
+    previewImage: undefined,
+  },
 ];
 
 function LandingTile({
@@ -399,10 +411,68 @@ export function PlaygroundClient() {
         </div>
       </section>
 
+      {/* Tools */}
+      <section className="px-5 sm:px-8 md:px-10 pb-20 sm:pb-28">
+        <div className="max-w-7xl mx-auto">
+          <SectionLabel num="02" label="Tools" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16 sm:gap-y-20">
+            <FadeIn y={20}>
+              <Link href="/playground/ph-salary" className="group block">
+                <div className="flex items-baseline justify-between mb-4">
+                  <span className="font-fraunces font-black text-[#EDE8E0] leading-none" style={{ fontSize: 'clamp(1.4rem, 2.4vw, 2rem)', opacity: 0.15 }}>01</span>
+                  <span className="font-inter text-[#888280] uppercase" style={{ fontSize: '10px', letterSpacing: '0.14em' }}>2026</span>
+                </div>
+                <div className="relative overflow-hidden mb-5 rounded-sm" style={{ aspectRatio: '16/10', background: '#1B1917' }}>
+                  {/* Preview: salary numbers */}
+                  <div className="absolute inset-0 flex flex-col justify-center px-6 gap-2">
+                    <div className="flex justify-between items-baseline">
+                      <span className="font-inter text-[#888280]" style={{ fontSize: '0.65rem', letterSpacing: '0.1em' }}>SSS</span>
+                      <span className="font-fraunces font-black text-[#6B89FF]" style={{ fontSize: '0.9rem' }}>₱1,350</span>
+                    </div>
+                    <div className="flex justify-between items-baseline">
+                      <span className="font-inter text-[#888280]" style={{ fontSize: '0.65rem', letterSpacing: '0.1em' }}>PhilHealth</span>
+                      <span className="font-fraunces font-black text-[#4CAF82]" style={{ fontSize: '0.9rem' }}>₱750</span>
+                    </div>
+                    <div className="flex justify-between items-baseline">
+                      <span className="font-inter text-[#888280]" style={{ fontSize: '0.65rem', letterSpacing: '0.1em' }}>Pag-IBIG</span>
+                      <span className="font-fraunces font-black text-[#E8B33E]" style={{ fontSize: '0.9rem' }}>₱100</span>
+                    </div>
+                    <div className="flex justify-between items-baseline">
+                      <span className="font-inter text-[#888280]" style={{ fontSize: '0.65rem', letterSpacing: '0.1em' }}>Tax</span>
+                      <span className="font-fraunces font-black text-[#FF7B6B]" style={{ fontSize: '0.9rem' }}>₱1,875</span>
+                    </div>
+                    <div className="h-px bg-white/10 my-1" />
+                    <div className="flex justify-between items-baseline">
+                      <span className="font-inter text-[#888280]" style={{ fontSize: '0.65rem', letterSpacing: '0.1em' }}>Net</span>
+                      <span className="font-fraunces font-black text-[#C4B89A]" style={{ fontSize: '1.1rem' }}>₱25,925</span>
+                    </div>
+                  </div>
+                  <span className="absolute top-3 left-3 font-inter font-bold text-white rounded-full px-3 py-1 z-10 bg-[#C4B89A]" style={{ fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#100F0D' }}>
+                    Calculator
+                  </span>
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-black/[0.15] z-10" />
+                </div>
+                <h3 className="font-fraunces font-black text-[#EDE8E0] leading-tight mb-2 group-hover:text-[#C4B89A] transition-colors duration-300" style={{ fontSize: 'clamp(1.1rem, 2vw, 1.4rem)' }}>
+                  PH Salary Deductions
+                </h3>
+                <p className="font-inter font-light text-[#888280] leading-relaxed mb-3 line-clamp-2" style={{ fontSize: 'clamp(0.82rem, 1.1vw, 0.9rem)' }}>
+                  Compute monthly take-home after SSS, PhilHealth, Pag-IBIG, and BIR withholding tax.
+                </p>
+                <div className="flex flex-wrap gap-x-3 gap-y-1">
+                  {(['PH', 'Finance'] as const).map(t => (
+                    <span key={t} className="font-inter font-medium text-[#888280] uppercase" style={{ fontSize: '10px', letterSpacing: '0.08em' }}>/ {t}</span>
+                  ))}
+                </div>
+              </Link>
+            </FadeIn>
+          </div>
+        </div>
+      </section>
+
       {/* Experiments */}
       <section className="px-5 sm:px-8 md:px-10 pb-32">
         <div className="max-w-7xl mx-auto">
-          <SectionLabel num="02" label="Experiments" />
+          <SectionLabel num="03" label="Experiments" />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
             {[
               <BreatheCard key="breathe" />,
