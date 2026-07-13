@@ -5,6 +5,11 @@ export type FoodType = 'dry' | 'wet';
 export type LifeStageTarget = 'kitten' | 'adult' | 'all';
 export type PriceUnit = 'per-kg' | 'per-can';
 
+export interface WeightEntry {
+  date: string;
+  weightKg: number;
+}
+
 export interface Cat {
   id: string;
   name: string;
@@ -14,6 +19,7 @@ export interface Cat {
   neutered: boolean;
   breed: string;
   weightKg: number;
+  weightHistory?: WeightEntry[];
   idealWeightKg?: number;
   bcs: number;
   activity: Activity;

@@ -1,4 +1,4 @@
-import type { Cat, Food, LifeStage, MealPlan } from './types';
+import type { Cat, Food, LifeStage, MealPlan, WeightEntry } from './types';
 
 export function ageInMonths(dob: string, now: Date = new Date()): number {
   const d = new Date(dob);
@@ -139,6 +139,45 @@ export function growthStatus(cat: Cat, now?: Date): { status: GrowthStatus; expe
   else if (w <= expected.high * 1.15) status = 'high-normal';
   else                                status = 'above';
   return { status, expected };
+}
+
+/**
+ * Compute weight-gain trend from history entries. Returns weekly gain (g),
+ * total gain since first log, and a qualitative label. Kittens 6–14 weeks
+ * should gain ~100g/week; slowing over time is normal.
+ */
+export type TrendLabel = 'excellent' | 'good' | 'slow' | 'stalled' | 'losing' | 'insufficient-data';
+
+export function weightTrend(cat: Cat, now: Date = new Date()): {
+  entries: WeightEntry[];
+  gainG: number;
+  gainPerWeekG: number;
+  spanDays: number;
+  label: TrendLabel;
+} {
+  const history = [...(cat.weightHistory ?? [])].sort((a, b) => a.date.localeCompare(b.date));
+  if (history.length === 0) {
+    return { entries: [], gainG: 0, gainPerWeekG: 0, spanDays: 0, label: 'insufficient-data' };
+  }
+  if (history.length === 1) {
+    return { entries: history, gainG: 0, gainPerWeekG: 0, spanDays: 0, label: 'insufficient-data' };
+  }
+  const first = history[0];
+  const last = history[history.length - 1];
+  const gainKg = last.weightKg - first.weightKg;
+  const spanDays = Math.max(1, (new Date(last.date).getTime() - new Date(first.date).getTime()) / 86400000);
+  const gainPerWeekG = (gainKg / spanDays) * 7 * 1000;
+  const ageMo = ageInMonths(cat.dob, now);
+  let label: TrendLabel;
+  if (gainPerWeekG < -20)      label = 'losing';
+  else if (gainPerWeekG < 20)  label = 'stalled';
+  else if (ageMo < 6 && gainPerWeekG >= 80)  label = 'excellent';
+  else if (ageMo < 6 && gainPerWeekG >= 50)  label = 'good';
+  else if (ageMo < 12 && gainPerWeekG >= 30) label = 'good';
+  else if (ageMo >= 12 && Math.abs(gainPerWeekG) < 20) label = 'good';
+  else if (gainPerWeekG >= 20) label = 'slow';
+  else                          label = 'stalled';
+  return { entries: history, gainG: gainKg * 1000, gainPerWeekG, spanDays, label };
 }
 
 export interface MealBreakdown {

@@ -7,7 +7,7 @@ import { FooterSection } from '@/components/footer-section';
 import type { Cat, Food, IntakeLog, MealPlan } from './types';
 import {
   ageDisplay, ageInMonths, computeMealPlan, der, estimatedBcs, growthStatus, lifeStage, lifeStageLabel,
-  proteinTargetG, scoreFoodForCat, waterTargetMl,
+  proteinTargetG, scoreFoodForCat, waterTargetMl, weightTrend,
 } from './calc';
 import { load, save, reset, exportJson, importJson, type KuboStore } from './storage';
 
@@ -631,7 +631,15 @@ function CatsTab({ store, setActiveCat, updateCat, addCat, removeCat }: {
             </select>
           </div>
           <div style={{ gridColumn: '1 / -1' }}>
-            <GrowthCheck cat={active} />
+            <GrowthCheck
+              cat={active}
+              onLog={e => {
+                const existing = active.weightHistory ?? [];
+                const filtered = existing.filter(x => x.date !== e.date);
+                const merged = [...filtered, e].sort((a, b) => a.date.localeCompare(b.date));
+                updateCat({ weightHistory: merged, weightKg: merged[merged.length - 1].weightKg });
+              }}
+            />
           </div>
           <div style={{ gridColumn: '1 / -1' }}>
             <BcsSelector cat={active} onChange={v => updateCat({ bcs: v })} />
@@ -648,46 +656,64 @@ function CatsTab({ store, setActiveCat, updateCat, addCat, removeCat }: {
   );
 }
 
-function GrowthCheck({ cat }: { cat: Cat }) {
+function GrowthCheck({ cat, onLog }: { cat: Cat; onLog: (entry: { date: string; weightKg: number }) => void }) {
   const g = growthStatus(cat);
   if (!g) return null;
   const { status, expected } = g;
-  const tone = status === 'below' || status === 'above' ? COLORS.warn
-             : status === 'on-track' ? COLORS.good
-             : COLORS.cream;
-  const headline = {
-    'below':       `${cat.name}'s a bit under the typical range`,
-    'low-normal':  `${cat.name}'s at the smaller end of normal`,
-    'on-track':    `${cat.name} is right on track`,
-    'high-normal': `${cat.name}'s at the bigger end of normal`,
-    'above':       `${cat.name}'s above the typical range`,
-  }[status];
-  const body = {
-    'below':       `Kittens who eat well and are active usually catch up — but if he stalls for two weeks running, flag it with your vet. Weekly weigh-ins tell you more than any single number.`,
-    'low-normal':  `Totally normal for smaller-boned kittens. Your vet's rule of thumb — "as long as he's eating well and growing, he's okay" — applies here. Weigh weekly.`,
-    'on-track':    `He's growing right on the curve. Keep offering food freely (kittens should eat as much as they want at this age) and weigh him weekly to make sure the trend continues.`,
-    'high-normal': `Growing a bit larger than the median. Not a concern for a growing kitten — bigger breeds and males often trend up. Keep going.`,
-    'above':       `Growing well above the typical curve. Fine for large breeds, but if he seems soft or lethargic, mention it at the next vet visit.`,
-  }[status];
+  const trend = weightTrend(cat);
+  const [logOpen, setLogOpen] = useState(false);
 
-  const ageMo = ageInMonths(cat.dob);
+  // The trend takes priority over static position when telling the story.
+  // A "low-normal" kitten gaining ~90g/week is a good news story, not a warning.
+  const trendPositive = trend.label === 'excellent' || trend.label === 'good';
+  const statusTone = status === 'below' || status === 'above' ? COLORS.warn
+                   : status === 'on-track' ? COLORS.good
+                   : COLORS.cream;
+  const tone = trend.label === 'excellent' ? COLORS.good
+             : trendPositive ? COLORS.good
+             : trend.label === 'stalled' || trend.label === 'losing' ? COLORS.warn
+             : statusTone;
+
+  const trendHeadline: Record<typeof trend.label, string> = {
+    'excellent': `${cat.name}'s gaining beautifully — ${Math.round(trend.gainPerWeekG)}g/week`,
+    'good':      `${cat.name} is gaining steadily — ${Math.round(trend.gainPerWeekG)}g/week`,
+    'slow':      `${cat.name}'s gaining slowly — ${Math.round(trend.gainPerWeekG)}g/week`,
+    'stalled':   `${cat.name}'s weight has stalled`,
+    'losing':    `${cat.name}'s losing weight`,
+    'insufficient-data': `Add another weigh-in to see the trend`,
+  };
+  const trendBody: Record<typeof trend.label, string> = {
+    'excellent': `That's a textbook gain rate for a growing kitten. From ${trend.entries[0]?.weightKg.toFixed(2)}kg to ${cat.weightKg.toFixed(2)}kg over ${Math.round(trend.spanDays)} days — he's doing the work. Keep feeding on demand and log a new weight weekly.`,
+    'good':      `Healthy weekly gain. From ${trend.entries[0]?.weightKg.toFixed(2)}kg to ${cat.weightKg.toFixed(2)}kg over ${Math.round(trend.spanDays)} days. Keep it up.`,
+    'slow':      `Gaining, just slower than typical for the age. Watch the trend over the next 2 weeks. If he stays under ~30g/week, worth a vet mention.`,
+    'stalled':   `No meaningful change in ${Math.round(trend.spanDays)} days. For a kitten, that's the signal to check in with the vet — could be dental, worms, or just needing more calories.`,
+    'losing':    `Lost weight since the last log. Time to check in with the vet — kittens shouldn't lose weight during growth.`,
+    'insufficient-data': `Log a second weigh-in and the tool will show gain rate and label. Weekly weigh-ins are the single most useful thing you can do at this age.`,
+  };
+
+  const initDate = new Date().toISOString().slice(0, 10);
   return (
     <div style={{ background: COLORS.bg, border: `1px solid ${COLORS.border}`, borderRadius: 10, padding: 16, borderLeft: `3px solid ${tone}` }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8, gap: 12, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, gap: 12, flexWrap: 'wrap' }}>
         <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: COLORS.muted }}>
           Growth check &middot; {ageDisplay(cat.dob)}
         </div>
-        <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', color: COLORS.muted }}>
-          Typical range at {ageMo} mo: <strong style={{ color: COLORS.text }}>{expected.low.toFixed(1)}–{expected.high.toFixed(1)} kg</strong>
-        </div>
+        <button className="kubo-btn" onClick={() => setLogOpen(o => !o)}>{logOpen ? 'Cancel' : '+ Log weight'}</button>
       </div>
-      <div style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: '1.1rem', fontWeight: 700, color: tone, marginBottom: 6, lineHeight: 1.3 }}>{headline}</div>
+
+      <div style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: '1.15rem', fontWeight: 700, color: tone, marginBottom: 6, lineHeight: 1.3 }}>
+        {trendHeadline[trend.label]}
+      </div>
       <p style={{ margin: 0, fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.82rem', color: COLORS.text, lineHeight: 1.65 }}>
-        {body}
+        {trendBody[trend.label]}
       </p>
 
-      {/* Range bar */}
+      {/* Static position (typical range) — secondary since trend is the story */}
       <div style={{ marginTop: 14 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6, fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', color: COLORS.muted }}>
+          <span>Where he sits on the typical curve</span>
+          <span>Range at {ageInMonths(cat.dob)} mo: <strong style={{ color: COLORS.text }}>{expected.low.toFixed(1)}–{expected.high.toFixed(1)} kg</strong></span>
+        </div>
         <div style={{ height: 8, borderRadius: 99, background: COLORS.panelHi, position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: 0, bottom: 0, left: `${Math.min(100, Math.max(0, ((expected.low - expected.low * 0.85) / (expected.high * 1.15 - expected.low * 0.85)) * 100))}%`, width: `${Math.min(100, ((expected.high - expected.low) / (expected.high * 1.15 - expected.low * 0.85)) * 100)}%`, background: COLORS.good, opacity: 0.35 }} />
           <div style={{ position: 'absolute', top: -2, bottom: -2, left: `calc(${Math.min(100, Math.max(0, ((cat.weightKg - expected.low * 0.85) / (expected.high * 1.15 - expected.low * 0.85)) * 100))}% - 3px)`, width: 6, background: tone, borderRadius: 99 }} />
@@ -699,11 +725,59 @@ function GrowthCheck({ cat }: { cat: Cat }) {
         </div>
       </div>
 
+      {/* History */}
+      {trend.entries.length > 0 && (
+        <div style={{ marginTop: 14 }}>
+          <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.68rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: COLORS.muted, marginBottom: 6 }}>Weigh-ins</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {trend.entries.map((e, i) => {
+              const prev = i > 0 ? trend.entries[i - 1] : null;
+              const delta = prev ? (e.weightKg - prev.weightKg) * 1000 : 0;
+              return (
+                <div key={e.date} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 10px', background: COLORS.panelHi, borderRadius: 6, fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.78rem' }}>
+                  <span style={{ color: COLORS.muted }}>{new Date(e.date).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                  <span style={{ color: COLORS.text, fontWeight: 500 }}>
+                    {e.weightKg.toFixed(2)} kg
+                    {prev && <span style={{ marginLeft: 8, color: delta > 0 ? COLORS.good : delta < 0 ? COLORS.warn : COLORS.muted, fontSize: '0.72rem' }}>{delta > 0 ? '+' : ''}{Math.round(delta)}g</span>}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {logOpen && <LogWeightForm defaultDate={initDate} onCancel={() => setLogOpen(false)} onSave={e => { onLog(e); setLogOpen(false); }} />}
+
       <div style={{ marginTop: 12, padding: 10, background: COLORS.panelHi, borderRadius: 6 }}>
         <p style={{ margin: 0, fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', color: COLORS.muted, lineHeight: 1.6 }}>
-          <strong style={{ color: COLORS.text }}>What your vet said applies here:</strong> at this age, if he&apos;s eating well and gaining, he&apos;s okay. Feed as much as he wants of a kitten formula — you can&apos;t overfeed a healthy growing kitten. The plan on this page is a starting-point target, not a ceiling.
+          <strong style={{ color: COLORS.text }}>Your vet&apos;s rule is the right one:</strong> at this age, if he&apos;s eating and gaining, he&apos;s okay. Feed as much as he wants of a kitten formula — you can&apos;t overfeed a healthy growing kitten. Log a weight weekly and the tool will show you the trend.
         </p>
       </div>
+    </div>
+  );
+}
+
+function LogWeightForm({ defaultDate, onSave, onCancel }: { defaultDate: string; onSave: (e: { date: string; weightKg: number }) => void; onCancel: () => void }) {
+  const [date, setDate] = useState(defaultDate);
+  const [w, setW] = useState('');
+  return (
+    <div style={{ marginTop: 12, padding: 12, background: COLORS.panelHi, borderRadius: 8, display: 'grid', gridTemplateColumns: '1fr 1fr auto auto', gap: 8, alignItems: 'end' }} className="kubo-log-weight">
+      <div>
+        <Label>Date</Label>
+        <input className="kubo-input" type="date" value={date} onChange={e => setDate(e.target.value)} />
+      </div>
+      <div>
+        <Label>Weight (kg)</Label>
+        <input className="kubo-input" type="number" step="0.01" min="0" placeholder="e.g. 1.25" value={w} onChange={e => setW(e.target.value)} />
+      </div>
+      <button className="kubo-btn kubo-btn-primary" onClick={() => {
+        const val = parseFloat(w);
+        if (!isFinite(val) || val <= 0) return;
+        onSave({ date, weightKg: val });
+      }}>Save</button>
+      <button className="kubo-btn" onClick={onCancel}>Cancel</button>
+      <style>{`@media (max-width: 640px) { .kubo-log-weight { grid-template-columns: 1fr 1fr !important; } .kubo-log-weight button { grid-column: span 1 !important; } }`}</style>
     </div>
   );
 }

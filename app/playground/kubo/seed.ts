@@ -9,6 +9,10 @@ export const KUBO_CAT: Cat = {
   neutered: false,
   breed: 'Scottish Straight × Highland mix',
   weightKg: 1.18,
+  weightHistory: [
+    { date: '2026-06-10', weightKg: 0.60 },
+    { date: '2026-07-13', weightKg: 1.18 },
+  ],
   bcs: 5,
   activity: 'indoor-active',
   notes: 'On Immunopet + Emerflex vitamins until 2026-07-20. Last deworming done, first 4-in-1 vaccine done.',
