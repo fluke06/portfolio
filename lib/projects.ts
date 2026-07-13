@@ -44,7 +44,7 @@ export const PROJECTS: Project[] = [
   {
     id: 'rc-wallet',
     num: '09',
-    year: '2024',
+    year: '2025',
     title: 'RC',
     titleAccent: 'Wallet',
     blurb: 'Landing page and user guide for a crypto-to-fiat exchange wallet — clean dark aesthetic, app download CTAs.',

@@ -21,8 +21,9 @@ export function HomeClient() {
   useEffect(() => {
     const alreadyShown = sessionStorage.getItem('introShown') === '1';
     if (alreadyShown) setIntroDone(true);
-    // Remove placeholder immediately — IntroAnimation or hero takes over from here
-    document.getElementById('intro-placeholder')?.remove();
+    // Hide (don't .remove()) so React can still reconcile the node on unmount
+    const placeholder = document.getElementById('intro-placeholder');
+    if (placeholder) placeholder.style.display = 'none';
     setReady(true);
   }, []);
 
