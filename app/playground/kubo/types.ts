@@ -54,6 +54,7 @@ export interface MealPlan {
   wetRatioKcal: number;
   meals: number;
   addedWaterMlPerMeal: number;
+  mealTimes?: string[];
 }
 
 export interface MealEntry {

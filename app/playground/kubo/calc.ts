@@ -1,5 +1,44 @@
 import type { Cat, Food, LifeStage, MealPlan, WeightEntry } from './types';
 
+export function defaultMealTimes(count: number): string[] {
+  const presets: Record<number, string[]> = {
+    2: ['07:00', '18:00'],
+    3: ['07:00', '12:30', '18:00'],
+    4: ['06:30', '11:30', '16:30', '21:00'],
+    5: ['06:30', '10:30', '14:30', '18:30', '22:00'],
+    6: ['06:00', '09:30', '13:00', '16:30', '20:00', '23:00'],
+  };
+  return presets[count] ?? Array.from({ length: count }, (_, i) => {
+    const startMin = 7 * 60;
+    const endMin   = 21 * 60;
+    const t = startMin + ((endMin - startMin) * i) / Math.max(1, count - 1);
+    const h = Math.floor(t / 60).toString().padStart(2, '0');
+    const m = Math.round(t % 60).toString().padStart(2, '0');
+    return `${h}:${m}`;
+  });
+}
+
+export function normalizedMealTimes(plan: MealPlan): string[] {
+  const existing = plan.mealTimes ?? [];
+  if (existing.length === plan.meals) return existing;
+  const defaults = defaultMealTimes(plan.meals);
+  return Array.from({ length: plan.meals }, (_, i) => existing[i] ?? defaults[i]);
+}
+
+export function timeToMinutes(hhmm: string): number {
+  const [h, m] = hhmm.split(':').map(Number);
+  return (h || 0) * 60 + (m || 0);
+}
+
+export function formatTime12(hhmm: string): string {
+  const [h, m] = hhmm.split(':').map(Number);
+  if (!isFinite(h)) return hhmm;
+  const suffix = h < 12 ? 'AM' : 'PM';
+  const hh = h % 12 === 0 ? 12 : h % 12;
+  const mm = (m ?? 0).toString().padStart(2, '0');
+  return `${hh}:${mm} ${suffix}`;
+}
+
 export function ageInMonths(dob: string, now: Date = new Date()): number {
   const d = new Date(dob);
   let months = (now.getFullYear() - d.getFullYear()) * 12 + (now.getMonth() - d.getMonth());

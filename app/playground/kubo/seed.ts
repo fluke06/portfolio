@@ -116,4 +116,5 @@ export const KUBO_PLAN: MealPlan = {
   wetRatioKcal: 0.35,
   meals: 3,
   addedWaterMlPerMeal: 0,
+  mealTimes: ['07:00', '12:30', '18:00'],
 };
