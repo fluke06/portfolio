@@ -427,11 +427,14 @@ function TodayIntakeCard({ cat, plan, foods, breakdown, log, setLog, clearLog, p
     const label = defaultLabels[nextIndex] ?? `Meal ${nextIndex + 1}`;
     const now = new Date();
     const time = now.toTimeString().slice(0, 5);
+    // First meal of the day → pre-fill supplements from the cat's default.
+    const isFirstMeal = nextIndex === 0;
     const newMeal: MealEntry = {
       id: `meal-${Date.now()}`, label, time,
       dryG: Math.round(breakdown.dry.perMealG || 0),
       wetG: Math.round(breakdown.wet.perMealG || 0),
       addedWaterMl: Math.round(breakdown.addedWater.perMealMl || 0),
+      supplements: isFirstMeal ? (cat.defaultSupplements || undefined) : undefined,
     };
     setLog({ ...log, meals: [...meals, newMeal] });
     setEditingId(newMeal.id);
@@ -465,6 +468,7 @@ function TodayIntakeCard({ cat, plan, foods, breakdown, log, setLog, clearLog, p
             <MealRow key={m.id}
               meal={m} index={i} dryFood={dryFood} wetFood={wetFood}
               isEditing={editingId === m.id}
+              defaultSupplements={cat.defaultSupplements}
               onEdit={() => setEditingId(m.id)}
               onSave={() => setEditingId(null)}
               onChange={patch => updateMeal(m.id, patch)}
@@ -494,10 +498,11 @@ function TodayIntakeCard({ cat, plan, foods, breakdown, log, setLog, clearLog, p
   );
 }
 
-function MealRow({ meal, index, dryFood, wetFood, isEditing, onEdit, onSave, onChange, onDelete }: {
+function MealRow({ meal, index, dryFood, wetFood, isEditing, defaultSupplements, onEdit, onSave, onChange, onDelete }: {
   meal: MealEntry; index: number;
   dryFood: Food | null; wetFood: Food | null;
   isEditing: boolean;
+  defaultSupplements?: string;
   onEdit: () => void; onSave: () => void;
   onChange: (patch: Partial<MealEntry>) => void;
   onDelete: () => void;
@@ -518,6 +523,11 @@ function MealRow({ meal, index, dryFood, wetFood, isEditing, onEdit, onSave, onC
             {meal.wetG > 0 && <>{n1(meal.wetG)}g wet{wetFood ? ` (${wetFood.brand})` : ''}</>}
             {(meal.dryG > 0 || meal.wetG > 0) && meal.addedWaterMl > 0 && ' · '}
             {meal.addedWaterMl > 0 && <>{n0(meal.addedWaterMl)}ml water</>}
+            {meal.supplements && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginLeft: 8, padding: '1px 8px', background: 'rgba(232,179,128,0.14)', border: `1px solid rgba(232,179,128,0.3)`, borderRadius: 99, color: COLORS.cream, fontSize: '0.68rem', letterSpacing: '0.02em' }}>
+                Rx&nbsp;·&nbsp;{meal.supplements}
+              </span>
+            )}
             {meal.notes && <span style={{ display: 'block', marginTop: 2, fontStyle: 'italic' }}>&ldquo;{meal.notes}&rdquo;</span>}
           </div>
         </div>
@@ -553,6 +563,25 @@ function MealRow({ meal, index, dryFood, wetFood, isEditing, onEdit, onSave, onC
           <Label>Water (ml)</Label>
           <input className="kubo-input" type="number" min={0} step={1} value={meal.addedWaterMl || ''} placeholder="0" onChange={e => onChange({ addedWaterMl: Math.max(0, parseFloat(e.target.value) || 0) })} />
         </div>
+      </div>
+      <div style={{ marginBottom: 8 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
+          <Label>Supplements / vitamins</Label>
+          {defaultSupplements && meal.supplements !== defaultSupplements && (
+            <button
+              type="button"
+              onClick={() => onChange({ supplements: defaultSupplements })}
+              style={{
+                background: 'transparent', border: 'none', padding: 0, cursor: 'pointer',
+                color: COLORS.cream, fontFamily: 'var(--font-inter), sans-serif',
+                fontSize: '0.7rem', textDecoration: 'underline', textDecorationStyle: 'dotted',
+              }}
+            >
+              Use default ({defaultSupplements})
+            </button>
+          )}
+        </div>
+        <input className="kubo-input" value={meal.supplements ?? ''} placeholder="e.g. Immunopet · Emerflex" onChange={e => onChange({ supplements: e.target.value })} />
       </div>
       <div style={{ marginBottom: 8 }}>
         <Label>Notes (optional)</Label>
@@ -766,6 +795,18 @@ function CatsTab({ store, setActiveCat, updateCat, addCat, removeCat }: {
           </div>
           <div style={{ gridColumn: '1 / -1' }}>
             <BcsSelector cat={active} onChange={v => updateCat({ bcs: v })} />
+          </div>
+          <div style={{ gridColumn: '1 / -1' }}>
+            <Label>Daily supplements / vitamins</Label>
+            <input
+              className="kubo-input"
+              value={active.defaultSupplements ?? ''}
+              placeholder="e.g. Immunopet · Emerflex"
+              onChange={e => updateCat({ defaultSupplements: e.target.value })}
+            />
+            <p style={{ margin: '6px 2px 0', fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.7rem', color: COLORS.muted, lineHeight: 1.55 }}>
+              Suggested when logging a meal — you can add/remove per meal.
+            </p>
           </div>
           <div style={{ gridColumn: '1 / -1' }}>
             <Label>Notes</Label>

@@ -15,6 +15,7 @@ export const KUBO_CAT: Cat = {
   ],
   bcs: 5,
   activity: 'indoor-active',
+  defaultSupplements: 'Immunopet · Emerflex',
   notes: 'On Immunopet + Emerflex vitamins until 2026-07-20. Last deworming done, first 4-in-1 vaccine done.',
 };
 
