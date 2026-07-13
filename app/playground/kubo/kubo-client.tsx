@@ -7,7 +7,7 @@ import { FooterSection } from '@/components/footer-section';
 import type { Cat, Food, IntakeLog, MealPlan } from './types';
 import {
   ageDisplay, ageInMonths, computeMealPlan, der, estimatedBcs, growthStatus, lifeStage, lifeStageLabel,
-  proteinTargetG, scoreFoodForCat, waterTargetMl, weightTrend,
+  planAdvisory, proteinTargetG, scoreFoodForCat, waterTargetMl, weightTrend,
 } from './calc';
 import { load, save, reset, exportJson, importJson, type KuboStore } from './storage';
 
@@ -282,11 +282,16 @@ function OverviewTab({ cat, plan, foods, todayLog, setTodayIntake, clearTodayInt
 }) {
   const b = useMemo(() => computeMealPlan(cat, plan, foods), [cat, plan, foods]);
   const stage = lifeStage(ageInMonths(cat.dob));
+  const trend = useMemo(() => weightTrend(cat), [cat]);
+  const advisory = useMemo(() => planAdvisory(cat, b.daily.der, trend), [cat, b.daily.der, trend]);
   const proteinPct = b.totals.proteinTargetG > 0 ? Math.min(1.5, b.totals.proteinG / b.totals.proteinTargetG) : 0;
   const waterPct   = b.totals.waterTargetMl  > 0 ? Math.min(1.5, b.totals.moistureMl / b.totals.waterTargetMl) : 0;
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }} className="kubo-two">
+      <div style={{ gridColumn: '1 / -1' }}>
+        <AdvisoryCard advisory={advisory} trend={trend} planKcal={b.daily.der} />
+      </div>
       <TodayIntakeCard cat={cat} plan={plan} foods={foods} breakdown={b} log={todayLog} setLog={setTodayIntake} clearLog={clearTodayIntake} />
       <Card>
         <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: COLORS.muted, marginBottom: 14 }}>Today&apos;s numbers</div>
@@ -357,6 +362,35 @@ function OverviewTab({ cat, plan, foods, todayLog, setTodayIntake, clearTodayInt
 
       <style>{`@media (max-width: 720px) { .kubo-two { grid-template-columns: 1fr !important; } }`}</style>
     </div>
+  );
+}
+
+function AdvisoryCard({ advisory, trend, planKcal }: {
+  advisory: ReturnType<typeof planAdvisory>;
+  trend: ReturnType<typeof weightTrend>;
+  planKcal: number;
+}) {
+  const bar = advisory.tone === 'good' ? COLORS.good : advisory.tone === 'warn' ? COLORS.warn : COLORS.cream;
+  const bg  = advisory.tone === 'good' ? 'rgba(76,175,130,0.06)' : advisory.tone === 'warn' ? 'rgba(255,123,107,0.06)' : 'rgba(232,179,128,0.06)';
+  const border = advisory.tone === 'good' ? 'rgba(76,175,130,0.25)' : advisory.tone === 'warn' ? 'rgba(255,123,107,0.25)' : 'rgba(232,179,128,0.25)';
+  return (
+    <Card style={{ borderColor: border, background: bg, borderLeft: `3px solid ${bar}` }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6, gap: 12, flexWrap: 'wrap' }}>
+        <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: bar }}>Plan feedback from growth trend</div>
+        {trend.label !== 'insufficient-data' && (
+          <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', color: COLORS.muted }}>
+            Trend: <strong style={{ color: COLORS.text }}>{trend.gainPerWeekG >= 0 ? '+' : ''}{Math.round(trend.gainPerWeekG)}g/week</strong> · Textbook plan: <strong style={{ color: COLORS.text }}>{Math.round(planKcal)} kcal/day</strong>
+          </div>
+        )}
+      </div>
+      <div style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: '1.15rem', fontWeight: 700, color: bar, marginBottom: 6, lineHeight: 1.3 }}>{advisory.headline}</div>
+      <p style={{ margin: 0, fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.85rem', color: COLORS.text, lineHeight: 1.65 }}>{advisory.body}</p>
+      {advisory.suggestedKcalDelta > 0 && (
+        <div style={{ marginTop: 12, padding: '10px 12px', background: COLORS.bg, borderRadius: 8, fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.78rem', color: COLORS.text }}>
+          Suggested target for the next week: <strong style={{ color: bar }}>{Math.round(planKcal + advisory.suggestedKcalDelta)} kcal/day</strong> (plan + {advisory.suggestedKcalDelta} kcal). Then re-check the trend.
+        </div>
+      )}
+    </Card>
   );
 }
 
@@ -884,9 +918,14 @@ function PlanTab({ cat, plan, foods, updatePlan }: {
   const dryOptions = foods.filter(f => f.type === 'dry');
   const wetOptions = foods.filter(f => f.type === 'wet');
   const b = useMemo(() => computeMealPlan(cat, plan, foods), [cat, plan, foods]);
+  const trend = useMemo(() => weightTrend(cat), [cat]);
+  const advisory = useMemo(() => planAdvisory(cat, b.daily.der, trend), [cat, b.daily.der, trend]);
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }} className="kubo-two">
+      <div style={{ gridColumn: '1 / -1' }}>
+        <AdvisoryCard advisory={advisory} trend={trend} planKcal={b.daily.der} />
+      </div>
       <Card>
         <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: COLORS.muted, marginBottom: 14 }}>Blend</div>
 

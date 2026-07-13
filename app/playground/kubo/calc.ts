@@ -148,6 +148,55 @@ export function growthStatus(cat: Cat, now?: Date): { status: GrowthStatus; expe
  */
 export type TrendLabel = 'excellent' | 'good' | 'slow' | 'stalled' | 'losing' | 'insufficient-data';
 
+export interface PlanAdvisory {
+  tone: 'good' | 'cream' | 'warn';
+  headline: string;
+  body: string;
+  suggestedKcalDelta: number;
+}
+
+export function planAdvisory(cat: Cat, plannedKcal: number, trend: { label: TrendLabel; gainPerWeekG: number; spanDays: number }, now: Date = new Date()): PlanAdvisory {
+  const ageMo = ageInMonths(cat.dob, now);
+  const isKitten = ageMo < 12;
+  const name = cat.name;
+  if (trend.label === 'insufficient-data') {
+    return { tone: 'cream', headline: 'Log a second weigh-in to get plan feedback',
+      body: `The plan below is the textbook target from RER × life-stage factor. Once you log another weigh-in a week from now, the tool will tell you whether the plan matches ${name}'s real needs.`,
+      suggestedKcalDelta: 0 };
+  }
+  if (trend.label === 'excellent') {
+    return { tone: 'good', headline: `${name}'s current intake is working — don't push more`,
+      body: `He's gaining ${Math.round(trend.gainPerWeekG)}g/week, which is above the textbook 50–100g/week for a kitten. The theoretical ${Math.round(plannedKcal)} kcal target below is a ceiling, not a floor — feed to appetite, not to the number. If he stops finishing, that's the ceiling.`,
+      suggestedKcalDelta: 0 };
+  }
+  if (trend.label === 'good') {
+    return { tone: 'good', headline: `${name}'s on a healthy trajectory — hold the plan`,
+      body: `Gaining ${Math.round(trend.gainPerWeekG)}g/week — right where a growing kitten should be. The plan below is a solid match. Feed to appetite; don't ration.`,
+      suggestedKcalDelta: 0 };
+  }
+  if (trend.label === 'slow') {
+    const bump = Math.round(plannedKcal * 0.15);
+    return { tone: 'cream', headline: `Gaining, but slower than ideal — try +15%`,
+      body: `${Math.round(trend.gainPerWeekG)}g/week is below the target range for growth at this age. Try adding roughly ${bump} kcal/day — usually one extra meal, or bumping the wet ratio up. Re-check in a week.`,
+      suggestedKcalDelta: bump };
+  }
+  if (trend.label === 'stalled') {
+    const bump = Math.round(plannedKcal * 0.25);
+    return { tone: 'warn', headline: isKitten ? `Weight stall — worth a vet check` : `Weight stable — fine for maintenance`,
+      body: isKitten
+        ? `No gain over ${Math.round(trend.spanDays)} days is a signal for a kitten. Common causes: worms (worth deworming again if it's been >4 weeks), dental discomfort, not enough calories, or an illness. Try +${bump} kcal/day and mention it to your vet at the next visit.`
+        : `An adult holding weight is fine. If ${name} is at ideal body condition and eating well, no change needed.`,
+      suggestedKcalDelta: isKitten ? bump : 0 };
+  }
+  if (trend.label === 'losing') {
+    const bump = Math.round(plannedKcal * 0.30);
+    return { tone: 'warn', headline: `${name} is losing weight — check in with your vet`,
+      body: `${isKitten ? 'A growing kitten' : `${name}`} shouldn't lose weight without a reason. Worms, dental pain, urinary blockage in males, or GI upset are common causes. Increase intake by ~${bump} kcal/day and book a vet visit if there's no rebound this week.`,
+      suggestedKcalDelta: bump };
+  }
+  return { tone: 'cream', headline: 'Add more weigh-ins to see the picture', body: 'The tool needs a recent trend to give plan feedback.', suggestedKcalDelta: 0 };
+}
+
 export function weightTrend(cat: Cat, now: Date = new Date()): {
   entries: WeightEntry[];
   gainG: number;
