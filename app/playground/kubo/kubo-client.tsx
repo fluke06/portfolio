@@ -246,7 +246,7 @@ function OverviewTab({ cat, plan, foods }: { cat: Cat; plan: MealPlan; foods: Fo
           <StatRow label="Dry food" value="—" sub="Not set — pick one in Meal plan" color={COLORS.muted} />
         )}
         {b.wet.food ? (
-          <StatRow label={`Wet — ${b.wet.food.brand} ${b.wet.food.name}`} value={`${n0(b.wet.grams)} g`} sub={`${b.wet.cans.toFixed(2)} cans (${b.wet.food.canSizeG || '?'}g each) · ${n0(b.wet.kcal)} kcal`} />
+          <StatRow label={`Wet — ${b.wet.food.brand} ${b.wet.food.name}`} value={`${n0(b.wet.grams)} g`} sub={`${n0(b.wet.perMealG)} g per meal · ${b.wet.cans.toFixed(2)} cans/day · ${n0(b.wet.kcal)} kcal`} />
         ) : (
           <StatRow label="Wet food" value="—" sub="Not set — pick one in Meal plan" color={COLORS.muted} />
         )}
@@ -473,18 +473,32 @@ function PlanTab({ cat, plan, foods, updatePlan }: {
         </div>
 
         <div style={{ marginBottom: 14 }}>
-          <Label>Wet share of daily calories</Label>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <Label>Dry ↔ Wet mix</Label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+            <span style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', color: COLORS.muted, minWidth: 44 }}>Dry {100 - Math.round(plan.wetRatioKcal * 100)}%</span>
             <input type="range" min={0} max={100} value={Math.round(plan.wetRatioKcal * 100)}
               onChange={e => updatePlan({ wetRatioKcal: parseInt(e.target.value) / 100 })}
               style={{ flex: 1, accentColor: COLORS.cream }}
             />
-            <span style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: '1rem', fontWeight: 700, color: COLORS.cream, minWidth: 44, textAlign: 'right' }}>
-              {Math.round(plan.wetRatioKcal * 100)}%
-            </span>
+            <span style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', color: COLORS.cream, minWidth: 60, textAlign: 'right' }}>Wet {Math.round(plan.wetRatioKcal * 100)}%</span>
           </div>
-          <p style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', color: COLORS.muted, marginTop: 6, lineHeight: 1.6 }}>
-            For male cats, urinary specialists often suggest 50–70% wet by calories to keep hydration up.
+          <div style={{
+            background: COLORS.bg, borderRadius: 8, padding: '10px 12px',
+            display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10,
+            fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.75rem', color: COLORS.muted,
+          }}>
+            <div>
+              <div style={{ color: COLORS.faint, textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '0.6rem', marginBottom: 2 }}>Dry / day</div>
+              <div style={{ color: COLORS.text, fontFamily: 'var(--font-fraunces), serif', fontSize: '1rem', fontWeight: 700 }}>{n0(b.dry.grams)} g <span style={{ color: COLORS.muted, fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', fontWeight: 400 }}>({n0(b.dry.kcal)} kcal)</span></div>
+            </div>
+            <div>
+              <div style={{ color: COLORS.faint, textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '0.6rem', marginBottom: 2 }}>Wet / day</div>
+              <div style={{ color: COLORS.text, fontFamily: 'var(--font-fraunces), serif', fontSize: '1rem', fontWeight: 700 }}>{n0(b.wet.grams)} g <span style={{ color: COLORS.muted, fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', fontWeight: 400 }}>({n0(b.wet.kcal)} kcal)</span></div>
+            </div>
+          </div>
+          <p style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', color: COLORS.muted, marginTop: 8, lineHeight: 1.6 }}>
+            The slider splits daily <strong style={{ color: COLORS.text }}>calories</strong>. Wet food is mostly water, so 50% by calories = way more <strong style={{ color: COLORS.text }}>grams</strong> of wet than dry.<br />
+            For male cats {cat.sex === 'male' ? '(like ' + cat.name + ')' : ''}, 50–70% wet is often recommended for urinary hydration.
           </p>
         </div>
 
@@ -524,10 +538,17 @@ function PlanTab({ cat, plan, foods, updatePlan }: {
         </div>
 
         {b.dry.food && <StatRow label={`Dry — ${b.dry.food.brand}`} value={`${n0(b.dry.grams)} g/day`} sub={`${n1(b.dry.perMealG)} g × ${plan.meals} meals`} />}
-        {b.wet.food && <StatRow label={`Wet — ${b.wet.food.brand}`} value={`${n0(b.wet.grams)} g/day`} sub={`${b.wet.cans.toFixed(2)} cans/day (${b.wet.food.canSizeG || '?'}g each)`} />}
+        {b.wet.food && <StatRow label={`Wet — ${b.wet.food.brand}`} value={`${n0(b.wet.grams)} g/day`} sub={`${n1(b.wet.perMealG)} g × ${plan.meals} meals · ${b.wet.cans.toFixed(2)} cans/day`} />}
         <StatRow label="Protein" value={`${n1(b.totals.proteinG)} g`} sub={`target ${n1(b.totals.proteinTargetG)} g`} color={b.totals.proteinG >= b.totals.proteinTargetG ? COLORS.good : COLORS.warn} />
         <StatRow label="Water from food" value={`${n0(b.totals.moistureMl)} ml`} sub={`target ${n0(b.totals.waterTargetMl)} ml`} color={b.totals.moistureMl >= b.totals.waterTargetMl * 0.6 ? COLORS.good : COLORS.warn} />
         <StatRow label="Daily cost" value={peso(b.totals.dailyCost)} sub={`${peso(b.totals.weeklyCost)}/wk · ${peso(b.totals.monthlyCost)}/mo`} color={COLORS.gold} />
+      </Card>
+
+      <Card style={{ gridColumn: '1 / -1' }}>
+        <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: COLORS.muted, marginBottom: 14 }}>
+          Per-meal breakdown · {plan.meals}× per day
+        </div>
+        <PerMealTable cat={cat} plan={plan} breakdown={b} />
       </Card>
 
       {b.urinary.flags.length > 0 && (
@@ -540,6 +561,88 @@ function PlanTab({ cat, plan, foods, updatePlan }: {
       )}
 
       <style>{`@media (max-width: 720px) { .kubo-two { grid-template-columns: 1fr !important; } }`}</style>
+    </div>
+  );
+}
+
+function PerMealTable({ cat, plan, breakdown: b }: { cat: Cat; plan: MealPlan; breakdown: ReturnType<typeof computeMealPlan> }) {
+  const mealLabels = plan.meals === 2 ? ['Morning', 'Evening']
+                   : plan.meals === 3 ? ['Morning', 'Midday', 'Evening']
+                   : ['Morning', 'Midday', 'Afternoon', 'Evening'];
+  const perMealDryG = b.dry.grams / plan.meals;
+  const perMealWetG = b.wet.grams / plan.meals;
+  const perMealDryKcal = b.dry.kcal / plan.meals;
+  const perMealWetKcal = b.wet.kcal / plan.meals;
+  const perMealCans = b.wet.cans / plan.meals;
+
+  return (
+    <div>
+      <div style={{ display: 'grid', gridTemplateColumns: `1.2fr repeat(${plan.meals}, 1fr) 1fr`, gap: 8, fontFamily: 'var(--font-inter), sans-serif' }} className="kubo-per-meal">
+        <div style={{ fontSize: '0.7rem', color: COLORS.muted, textTransform: 'uppercase', letterSpacing: '0.1em', paddingBottom: 8, borderBottom: `1px solid ${COLORS.border}` }}>Food</div>
+        {mealLabels.map(m => (
+          <div key={m} style={{ fontSize: '0.7rem', color: COLORS.muted, textTransform: 'uppercase', letterSpacing: '0.1em', paddingBottom: 8, borderBottom: `1px solid ${COLORS.border}`, textAlign: 'center' }}>{m}</div>
+        ))}
+        <div style={{ fontSize: '0.7rem', color: COLORS.muted, textTransform: 'uppercase', letterSpacing: '0.1em', paddingBottom: 8, borderBottom: `1px solid ${COLORS.border}`, textAlign: 'right' }}>Daily</div>
+
+        {b.dry.food && (
+          <>
+            <div style={{ padding: '12px 0', borderBottom: `1px solid ${COLORS.border}` }}>
+              <div style={{ fontSize: '0.85rem', color: COLORS.text, fontWeight: 500 }}>Dry</div>
+              <div style={{ fontSize: '0.7rem', color: COLORS.muted }}>{b.dry.food.brand} · {b.dry.food.name}</div>
+            </div>
+            {Array.from({ length: plan.meals }).map((_, i) => (
+              <div key={i} style={{ padding: '12px 0', borderBottom: `1px solid ${COLORS.border}`, textAlign: 'center' }}>
+                <div style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: '1.1rem', fontWeight: 700, color: COLORS.cream }}>{n1(perMealDryG)}<span style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.7rem', color: COLORS.muted, fontWeight: 400, marginLeft: 2 }}>g</span></div>
+                <div style={{ fontSize: '0.68rem', color: COLORS.muted }}>{n0(perMealDryKcal)} kcal</div>
+              </div>
+            ))}
+            <div style={{ padding: '12px 0', borderBottom: `1px solid ${COLORS.border}`, textAlign: 'right' }}>
+              <div style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: '1.1rem', fontWeight: 700, color: COLORS.text }}>{n0(b.dry.grams)}<span style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.7rem', color: COLORS.muted, fontWeight: 400, marginLeft: 2 }}>g</span></div>
+              <div style={{ fontSize: '0.68rem', color: COLORS.muted }}>{n0(b.dry.kcal)} kcal</div>
+            </div>
+          </>
+        )}
+
+        {b.wet.food && (
+          <>
+            <div style={{ padding: '12px 0', borderBottom: `1px solid ${COLORS.border}` }}>
+              <div style={{ fontSize: '0.85rem', color: COLORS.text, fontWeight: 500 }}>Wet</div>
+              <div style={{ fontSize: '0.7rem', color: COLORS.muted }}>{b.wet.food.brand} · {b.wet.food.name}</div>
+            </div>
+            {Array.from({ length: plan.meals }).map((_, i) => (
+              <div key={i} style={{ padding: '12px 0', borderBottom: `1px solid ${COLORS.border}`, textAlign: 'center' }}>
+                <div style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: '1.1rem', fontWeight: 700, color: COLORS.gold }}>{n1(perMealWetG)}<span style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.7rem', color: COLORS.muted, fontWeight: 400, marginLeft: 2 }}>g</span></div>
+                <div style={{ fontSize: '0.68rem', color: COLORS.muted }}>{perMealCans.toFixed(2)} can · {n0(perMealWetKcal)} kcal</div>
+              </div>
+            ))}
+            <div style={{ padding: '12px 0', borderBottom: `1px solid ${COLORS.border}`, textAlign: 'right' }}>
+              <div style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: '1.1rem', fontWeight: 700, color: COLORS.text }}>{n0(b.wet.grams)}<span style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.7rem', color: COLORS.muted, fontWeight: 400, marginLeft: 2 }}>g</span></div>
+              <div style={{ fontSize: '0.68rem', color: COLORS.muted }}>{b.wet.cans.toFixed(2)} cans · {n0(b.wet.kcal)} kcal</div>
+            </div>
+          </>
+        )}
+
+        <div style={{ padding: '12px 0', fontSize: '0.75rem', color: COLORS.muted, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Meal total</div>
+        {Array.from({ length: plan.meals }).map((_, i) => (
+          <div key={i} style={{ padding: '12px 0', textAlign: 'center' }}>
+            <div style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: '1.1rem', fontWeight: 700, color: COLORS.text }}>{n0(perMealDryG + perMealWetG)}<span style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.7rem', color: COLORS.muted, fontWeight: 400, marginLeft: 2 }}>g</span></div>
+            <div style={{ fontSize: '0.68rem', color: COLORS.cream }}>{n0(perMealDryKcal + perMealWetKcal)} kcal</div>
+          </div>
+        ))}
+        <div style={{ padding: '12px 0', textAlign: 'right' }}>
+          <div style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: '1.1rem', fontWeight: 700, color: COLORS.text }}>{n0(b.dry.grams + b.wet.grams)}<span style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.7rem', color: COLORS.muted, fontWeight: 400, marginLeft: 2 }}>g</span></div>
+          <div style={{ fontSize: '0.68rem', color: COLORS.cream }}>{n0(b.daily.der)} kcal</div>
+        </div>
+      </div>
+      <p style={{ marginTop: 12, fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', color: COLORS.muted, lineHeight: 1.6 }}>
+        Tip: weigh with a kitchen scale for accuracy. Wet food&apos;s worth measuring at least once per can — the density varies enough that eyeballing under-feeds hydration.
+      </p>
+      <style>{`
+        @media (max-width: 720px) {
+          .kubo-per-meal { grid-template-columns: 1fr !important; gap: 4px !important; }
+          .kubo-per-meal > div { text-align: left !important; border-bottom: none !important; padding: 4px 0 !important; }
+        }
+      `}</style>
     </div>
   );
 }
