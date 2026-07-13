@@ -14,6 +14,7 @@ export interface Cat {
   neutered: boolean;
   breed: string;
   weightKg: number;
+  idealWeightKg?: number;
   bcs: number;
   activity: Activity;
   notes?: string;

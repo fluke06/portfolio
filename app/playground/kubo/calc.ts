@@ -70,6 +70,27 @@ export function waterTargetMl(cat: Cat): number {
   return cat.weightKg * 60;
 }
 
+/**
+ * Estimate BCS from actual/ideal weight ratio. Anchor points based on the
+ * Laflamme 1997 9-point scale — each BCS step ≈ 10–15% body weight change.
+ * Returns null if ideal weight isn't set. Adult-oriented; skip for kittens.
+ */
+export function estimatedBcs(cat: Cat, now?: Date): number | null {
+  if (!cat.idealWeightKg || cat.idealWeightKg <= 0) return null;
+  const m = ageInMonths(cat.dob, now);
+  if (m < 12) return null;
+  const ratio = cat.weightKg / cat.idealWeightKg;
+  if (ratio <= 0.65) return 1;
+  if (ratio <= 0.75) return 2;
+  if (ratio <= 0.85) return 3;
+  if (ratio <= 0.95) return 4;
+  if (ratio <= 1.05) return 5;
+  if (ratio <= 1.15) return 6;
+  if (ratio <= 1.25) return 7;
+  if (ratio <= 1.40) return 8;
+  return 9;
+}
+
 export interface MealBreakdown {
   daily: { kcal: number; rer: number; der: number; factor: number; label: string };
   dry: { food: Food | null; kcal: number; grams: number; perMealG: number; costPhp: number };

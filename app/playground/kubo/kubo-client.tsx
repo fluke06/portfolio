@@ -6,7 +6,7 @@ import { StickyNav } from '@/components/sticky-nav';
 import { FooterSection } from '@/components/footer-section';
 import type { Cat, Food, IntakeLog, MealPlan } from './types';
 import {
-  ageDisplay, ageInMonths, computeMealPlan, der, lifeStage, lifeStageLabel,
+  ageDisplay, ageInMonths, computeMealPlan, der, estimatedBcs, lifeStage, lifeStageLabel,
   proteinTargetG, scoreFoodForCat, waterTargetMl,
 } from './calc';
 import { load, save, reset, exportJson, importJson, type KuboStore } from './storage';
@@ -595,8 +595,12 @@ function CatsTab({ store, setActiveCat, updateCat, addCat, removeCat }: {
             <input className="kubo-input" type="date" value={active.dob} onChange={e => updateCat({ dob: e.target.value })} />
           </div>
           <div>
-            <Label>Weight (kg)</Label>
+            <Label>Current weight (kg)</Label>
             <input className="kubo-input" type="number" step="0.01" value={active.weightKg} onChange={e => updateCat({ weightKg: parseFloat(e.target.value) || 0 })} />
+          </div>
+          <div>
+            <Label>Ideal / target weight (kg) — optional</Label>
+            <input className="kubo-input" type="number" step="0.1" value={active.idealWeightKg ?? ''} placeholder="Vet-recommended target" onChange={e => updateCat({ idealWeightKg: e.target.value ? parseFloat(e.target.value) : undefined })} />
           </div>
           <div>
             <Label>Sex</Label>
@@ -620,21 +624,83 @@ function CatsTab({ store, setActiveCat, updateCat, addCat, removeCat }: {
               <option value="outdoor">Indoor + outdoor</option>
             </select>
           </div>
-          <div>
-            <Label>Body condition (1–9)</Label>
-            <input className="kubo-input" type="number" min={1} max={9} value={active.bcs} onChange={e => updateCat({ bcs: Math.max(1, Math.min(9, parseInt(e.target.value) || 5)) })} />
+          <div style={{ gridColumn: '1 / -1' }}>
+            <BcsSelector cat={active} onChange={v => updateCat({ bcs: v })} />
           </div>
           <div style={{ gridColumn: '1 / -1' }}>
             <Label>Notes</Label>
             <textarea className="kubo-input" rows={3} value={active.notes ?? ''} onChange={e => updateCat({ notes: e.target.value })} />
           </div>
         </div>
-        <div style={{ marginTop: 14, padding: 12, background: COLORS.bg, borderRadius: 8, fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.75rem', color: COLORS.muted, lineHeight: 1.6 }}>
-          BCS reference — <strong style={{ color: COLORS.text }}>4–5/9</strong> is ideal (ribs palpable, waist visible from above). <strong style={{ color: COLORS.warn }}>7+</strong> = overweight, target weight loss. <strong style={{ color: COLORS.warn }}>≤3</strong> = underweight, target gain.
-        </div>
       </Card>
 
       <style>{`@media (max-width: 720px) { .kubo-two { grid-template-columns: 1fr !important; } }`}</style>
+    </div>
+  );
+}
+
+const BCS_DESCRIPTIONS: Record<number, { label: string; desc: string; tone: 'warn' | 'good' | 'cream' }> = {
+  1: { label: 'Emaciated',     desc: 'Ribs, spine, hip bones visible from a distance. No fat, obvious muscle loss.',  tone: 'warn' },
+  2: { label: 'Very thin',     desc: 'Ribs and spine easily seen. Minimal muscle mass, no palpable fat.',              tone: 'warn' },
+  3: { label: 'Thin',          desc: 'Ribs easily felt with little fat cover. Waist very obvious from above.',        tone: 'warn' },
+  4: { label: 'Lean',          desc: 'Ribs palpable with minimal fat. Waist visible from above. Slight abdominal tuck.', tone: 'good' },
+  5: { label: 'Ideal',         desc: 'Ribs palpable with slight fat cover. Waist and abdominal tuck present. This is the target.', tone: 'good' },
+  6: { label: 'Slightly heavy',desc: 'Ribs palpable with a bit of extra fat. Waist not obvious. Belly rounded.',      tone: 'cream' },
+  7: { label: 'Overweight',    desc: 'Ribs difficult to feel. Waist barely visible. Obvious abdominal fat pad.',       tone: 'cream' },
+  8: { label: 'Obese',         desc: 'Ribs very hard to feel under fat. No waist. Prominent belly fat pad.',           tone: 'warn' },
+  9: { label: 'Grossly obese', desc: 'Massive fat deposits on chest, abdomen, spine. Waist absent. Fat swings when walking.', tone: 'warn' },
+};
+
+function BcsSelector({ cat, onChange }: { cat: Cat; onChange: (v: number) => void }) {
+  const est = estimatedBcs(cat);
+  const isKitten = ageInMonths(cat.dob) < 12;
+  const active = cat.bcs;
+  const info = BCS_DESCRIPTIONS[active];
+  const toneColor = info.tone === 'warn' ? COLORS.warn : info.tone === 'good' ? COLORS.good : COLORS.cream;
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6, gap: 12, flexWrap: 'wrap' }}>
+        <Label>Body condition (BCS 1–9)</Label>
+        {est !== null && (
+          <button className="kubo-btn" onClick={() => onChange(est)} style={{ padding: '4px 10px', fontSize: '0.72rem' }} title="Set BCS to the estimate from weight ratio">
+            Estimate: <strong style={{ color: COLORS.cream, marginLeft: 4 }}>{est}</strong>
+          </button>
+        )}
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(9, 1fr)', gap: 4, marginBottom: 10 }}>
+        {[1,2,3,4,5,6,7,8,9].map(v => {
+          const isActive = v === active;
+          const isEst = est === v;
+          const tone = BCS_DESCRIPTIONS[v].tone;
+          const bg = isActive
+            ? (tone === 'warn' ? 'rgba(255,123,107,0.2)' : tone === 'good' ? 'rgba(76,175,130,0.2)' : 'rgba(232,179,128,0.2)')
+            : COLORS.bg;
+          const border = isActive
+            ? (tone === 'warn' ? COLORS.warn : tone === 'good' ? COLORS.good : COLORS.cream)
+            : isEst ? COLORS.gold : COLORS.border;
+          return (
+            <button key={v} onClick={() => onChange(v)} className="kubo-tab" style={{
+              background: bg, border: `1px solid ${border}`, borderRadius: 6,
+              padding: '10px 4px', color: isActive ? COLORS.text : COLORS.muted,
+              fontFamily: 'var(--font-fraunces), serif', fontSize: '1rem', fontWeight: 700,
+              cursor: 'pointer', transition: 'all 0.15s ease', position: 'relative',
+            }}>
+              {v}
+              {isEst && !isActive && <span style={{ position: 'absolute', top: 2, right: 3, width: 5, height: 5, borderRadius: 999, background: COLORS.gold }} />}
+            </button>
+          );
+        })}
+      </div>
+      <div style={{ padding: 12, background: COLORS.bg, borderRadius: 8, borderLeft: `3px solid ${toneColor}` }}>
+        <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.85rem', color: COLORS.text, fontWeight: 500, marginBottom: 3 }}>{info.label}</div>
+        <p style={{ margin: 0, fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.78rem', color: COLORS.muted, lineHeight: 1.55 }}>{info.desc}</p>
+      </div>
+      <p style={{ marginTop: 8, fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', color: COLORS.muted, lineHeight: 1.6 }}>
+        BCS is a hands-on assessment — feel the ribs (should feel like the back of your hand at BCS 5), look for a waist from above, check for an abdominal tuck from the side. Weight alone can&apos;t tell you this; a muscular 5 kg cat and a soft 5 kg cat need different plans.
+        {isKitten && <> <strong style={{ color: COLORS.text }}>For a kitten like {cat.name}, aim for BCS 4–5 during growth.</strong> The BCS scale is calibrated for adults, so exact scoring under a year is less reliable — track weight gain (50–100g/week) as the primary signal.</>}
+        {!isKitten && est === null && <> Enter an ideal / target weight above to get an <strong style={{ color: COLORS.text }}>auto-estimate</strong> from the actual/ideal ratio.</>}
+        {!isKitten && est !== null && <> Estimate <strong style={{ color: COLORS.gold }}>BCS {est}</strong> comes from ratio {(cat.weightKg / (cat.idealWeightKg ?? 1)).toFixed(2)} (actual ÷ ideal) — each BCS step ≈ 10% body weight, per Laflamme 1997.</>}
+      </p>
     </div>
   );
 }
