@@ -405,9 +405,51 @@ export function PlaygroundClient() {
           <SectionLabel num="02" label="Tools" />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16 sm:gap-y-20">
             <FadeIn y={20}>
-              <Link href="/playground/ph-salary" className="group block">
+              <Link href="/playground/kubo" className="group block">
                 <div className="flex items-baseline justify-between mb-4">
                   <span className="font-fraunces font-black text-[#EDE8E0] leading-none" style={{ fontSize: 'clamp(1.4rem, 2.4vw, 2rem)', opacity: 0.15 }}>01</span>
+                  <span className="font-inter text-[#888280] uppercase" style={{ fontSize: '10px', letterSpacing: '0.14em' }}>2026</span>
+                </div>
+                <div className="relative overflow-hidden mb-5 rounded-sm" style={{ aspectRatio: '16/10', background: '#1B1917' }}>
+                  <Image
+                    src="/assets/kubo/kubo.jpg"
+                    alt="Kubo"
+                    fill
+                    className="object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                  />
+                  <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(16,15,13,0.1) 0%, rgba(16,15,13,0.75) 100%)' }} />
+                  <span className="absolute top-3 left-3 font-inter font-bold rounded-full px-3 py-1 z-10" style={{ fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase', background: '#E8B380', color: '#100F0D' }}>
+                    Calculator
+                  </span>
+                  <div className="absolute bottom-3 left-3 right-3 z-10 flex items-end justify-between gap-3">
+                    <div className="font-fraunces font-black text-[#EDE8E0]" style={{ fontSize: 'clamp(1.6rem, 3vw, 2rem)', lineHeight: 1 }}>
+                      Kubo<em className="italic text-[#E8B380]">.</em>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-inter text-[#EDE8E0]" style={{ fontSize: '0.68rem', letterSpacing: '0.14em', textTransform: 'uppercase', opacity: 0.7 }}>daily kcal</div>
+                      <div className="font-fraunces font-black text-[#E8B380]" style={{ fontSize: '1.1rem' }}>~240</div>
+                    </div>
+                  </div>
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-black/[0.15] z-10" />
+                </div>
+                <h3 className="font-fraunces font-black text-[#EDE8E0] leading-tight mb-2 group-hover:text-[#C4B89A] transition-colors duration-300" style={{ fontSize: 'clamp(1.1rem, 2vw, 1.4rem)' }}>
+                  Cat feeding planner
+                </h3>
+                <p className="font-inter font-light text-[#888280] leading-relaxed mb-3 line-clamp-2" style={{ fontSize: 'clamp(0.82rem, 1.1vw, 0.9rem)' }}>
+                  Daily kcal, wet/dry blend, macro & urinary check, budget planner. Seeded with a real kitten.
+                </p>
+                <div className="flex flex-wrap gap-x-3 gap-y-1">
+                  {(['Cats', 'Health'] as const).map(t => (
+                    <span key={t} className="font-inter font-medium text-[#888280] uppercase" style={{ fontSize: '10px', letterSpacing: '0.08em' }}>/ {t}</span>
+                  ))}
+                </div>
+              </Link>
+            </FadeIn>
+            <FadeIn y={20}>
+              <Link href="/playground/ph-salary" className="group block">
+                <div className="flex items-baseline justify-between mb-4">
+                  <span className="font-fraunces font-black text-[#EDE8E0] leading-none" style={{ fontSize: 'clamp(1.4rem, 2.4vw, 2rem)', opacity: 0.15 }}>02</span>
                   <span className="font-inter text-[#888280] uppercase" style={{ fontSize: '10px', letterSpacing: '0.14em' }}>2026</span>
                 </div>
                 <div className="relative overflow-hidden mb-5 rounded-sm" style={{ aspectRatio: '16/10', background: '#1B1917' }}>
