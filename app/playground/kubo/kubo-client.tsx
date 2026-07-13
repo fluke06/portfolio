@@ -40,6 +40,30 @@ const peso = (n: number) => '₱' + n.toLocaleString('en-PH', { minimumFractionD
 const n1 = (n: number) => n.toLocaleString('en-PH', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 const n0 = (n: number) => Math.round(n).toLocaleString('en-PH');
 
+async function resizeImageToDataUrl(file: File, maxDim: number): Promise<string | null> {
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new window.Image();
+      img.onload = () => {
+        const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return resolve(null);
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      };
+      img.onerror = () => resolve(null);
+      img.src = String(reader.result);
+    };
+    reader.onerror = () => resolve(null);
+    reader.readAsDataURL(file);
+  });
+}
+
 export function KuboClient() {
   const [store, setStore] = useState<KuboStore | null>(null);
   const [tab, setTab] = useState<Tab>('overview');
@@ -283,6 +307,13 @@ function OverviewTab({ cat, plan, foods }: { cat: Cat; plan: MealPlan; foods: Fo
         </Card>
       )}
 
+      <Card style={{ gridColumn: '1 / -1', borderColor: 'rgba(232,179,128,0.2)', background: 'rgba(232,179,128,0.04)' }}>
+        <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: COLORS.cream, marginBottom: 8 }}>Reality check</div>
+        <p style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.82rem', color: COLORS.text, lineHeight: 1.65, margin: 0 }}>
+          These numbers are a target, not a mandate. Kittens eat what they need to grow — {cat.name} won&apos;t always finish the bowl, and that&apos;s usually fine. What matters is the <strong>weekly weight trend</strong>: a healthy kitten gains roughly <strong>50–100g per week</strong> at this age. If he&apos;s trending up and playful, the diet is working. If he stalls or loses weight for two weeks running, that&apos;s the signal to check with the vet — not a single low-appetite day.
+        </p>
+      </Card>
+
       {cat.notes && (
         <Card style={{ gridColumn: '1 / -1' }}>
           <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: COLORS.muted, marginBottom: 8 }}>Notes</div>
@@ -363,6 +394,37 @@ function CatsTab({ store, setActiveCat, updateCat, addCat, removeCat }: {
             <button className="kubo-btn kubo-btn-danger" onClick={() => { if (confirm(`Remove ${active.name}?`)) removeCat(active.id); }}>Remove</button>
           )}
         </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 18, padding: 14, background: COLORS.bg, borderRadius: 10 }}>
+          <div style={{ width: 68, height: 68, borderRadius: 999, overflow: 'hidden', background: COLORS.panel, border: `1px solid ${COLORS.border}`, position: 'relative', flexShrink: 0 }}>
+            {active.photo && <Image src={active.photo} alt={active.name} fill sizes="68px" style={{ objectFit: 'cover', objectPosition: 'center 30%' }} unoptimized />}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: COLORS.muted, marginBottom: 6 }}>Photo</div>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              <label className="kubo-btn" style={{ cursor: 'pointer' }}>
+                Upload…
+                <input
+                  type="file" accept="image/*" style={{ display: 'none' }}
+                  onChange={async e => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const dataUrl = await resizeImageToDataUrl(file, 480);
+                    if (dataUrl) updateCat({ photo: dataUrl });
+                    e.target.value = '';
+                  }}
+                />
+              </label>
+              {active.photo && (
+                <button className="kubo-btn kubo-btn-danger" onClick={() => { if (confirm(`Remove ${active.name}'s photo?`)) updateCat({ photo: undefined }); }}>Remove</button>
+              )}
+            </div>
+            <p style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.7rem', color: COLORS.muted, margin: '6px 0 0', lineHeight: 1.5 }}>
+              Photo is stored locally and resized to 480px. JPG/PNG/HEIC.
+            </p>
+          </div>
+        </div>
+
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }} className="kubo-two">
           <div>
             <Label>Name</Label>

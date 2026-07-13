@@ -144,6 +144,14 @@ export function computeMealPlan(cat: Cat, plan: MealPlan, foods: Food[], now?: D
   if (proteinG < proteinTargetG(cat, now) * 0.9) flags.push('Protein intake below target — increase wet food ratio or switch to higher-protein food');
   if (moistureMl < waterTargetMl(cat) * 0.3 && cat.sex === 'male') flags.push('Food-derived water low — free water intake becomes critical');
 
+  // Per-meal stomach capacity check (kittens especially — ~20g/kg BW is a reasonable ceiling)
+  const perMealG = (dryG + wetG) / plan.meals;
+  const perMealCeilingG = cat.weightKg * 20;
+  if (perMealG > perMealCeilingG) {
+    const suggestedMeals = Math.ceil((dryG + wetG) / perMealCeilingG);
+    flags.push(`Meal size ${Math.round(perMealG)}g may exceed ${cat.name}'s stomach capacity (~${Math.round(perMealCeilingG)}g/meal for ${cat.weightKg}kg). Try splitting into ${suggestedMeals}× / day, or lower the wet ratio.`);
+  }
+
   return {
     daily: { kcal: daily.der, rer: daily.rer, der: daily.der, factor: daily.factor, label: daily.label },
     dry: { food: dryFood, kcal: dryKcal, grams: dryG, perMealG: dryG / plan.meals, costPhp: dryCost },
