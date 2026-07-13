@@ -24,14 +24,50 @@ function defaults(): KuboStore {
   };
 }
 
+interface LegacyIntakeLog {
+  date: string;
+  dryG?: number;
+  wetG?: number;
+  addedWaterMl?: number;
+  meals?: IntakeLog['meals'];
+}
+
+function migrateIntake(intake: Record<string, Record<string, LegacyIntakeLog>> | undefined): Record<string, Record<string, IntakeLog>> {
+  const out: Record<string, Record<string, IntakeLog>> = {};
+  if (!intake) return out;
+  for (const catId of Object.keys(intake)) {
+    out[catId] = {};
+    for (const date of Object.keys(intake[catId])) {
+      const raw = intake[catId][date] as LegacyIntakeLog;
+      if (Array.isArray(raw.meals)) {
+        out[catId][date] = { date, meals: raw.meals };
+      } else if (typeof raw.dryG === 'number' || typeof raw.wetG === 'number' || typeof raw.addedWaterMl === 'number') {
+        out[catId][date] = {
+          date,
+          meals: [{
+            id: `meal-${Date.parse(date) || Date.now()}`,
+            label: 'Migrated from single-log',
+            dryG: raw.dryG ?? 0,
+            wetG: raw.wetG ?? 0,
+            addedWaterMl: raw.addedWaterMl ?? 0,
+          }],
+        };
+      } else {
+        out[catId][date] = { date, meals: [] };
+      }
+    }
+  }
+  return out;
+}
+
 export function load(): KuboStore {
   if (typeof window === 'undefined') return defaults();
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return defaults();
-    const parsed = JSON.parse(raw) as KuboStore;
+    const parsed = JSON.parse(raw) as KuboStore & { intake?: Record<string, Record<string, LegacyIntakeLog>> };
     if (!parsed || parsed.version !== SCHEMA_VERSION) return defaults();
-    return parsed;
+    return { ...parsed, intake: migrateIntake(parsed.intake) };
   } catch {
     return defaults();
   }

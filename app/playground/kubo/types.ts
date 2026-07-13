@@ -56,9 +56,17 @@ export interface MealPlan {
   addedWaterMlPerMeal: number;
 }
 
-export interface IntakeLog {
-  date: string;
+export interface MealEntry {
+  id: string;
+  time?: string;
+  label?: string;
   dryG: number;
   wetG: number;
   addedWaterMl: number;
+  notes?: string;
+}
+
+export interface IntakeLog {
+  date: string;
+  meals: MealEntry[];
 }

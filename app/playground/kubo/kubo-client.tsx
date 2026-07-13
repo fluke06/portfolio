@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { StickyNav } from '@/components/sticky-nav';
 import { FooterSection } from '@/components/footer-section';
-import type { Cat, Food, IntakeLog, MealPlan } from './types';
+import type { Cat, Food, IntakeLog, MealEntry, MealPlan } from './types';
 import {
   ageDisplay, ageInMonths, computeMealPlan, der, estimatedBcs, growthStatus, lifeStage, lifeStageLabel,
   planAdvisory, proteinTargetG, scoreFoodForCat, waterTargetMl, weightTrend,
@@ -112,18 +112,14 @@ export function KuboClient() {
 
   const today = new Date().toISOString().slice(0, 10);
   const catIntake = store.intake?.[activeCat.id] ?? {};
-  const todayLog = catIntake[today];
-  const setTodayIntake = (patch: Partial<IntakeLog>) => setStore(s => {
+  const todayLog: IntakeLog = catIntake[today] ?? { date: today, meals: [] };
+  const setTodayLog = (log: IntakeLog) => setStore(s => {
     if (!s) return s;
-    const current = s.intake?.[activeCat.id]?.[today] ?? { date: today, dryG: 0, wetG: 0, addedWaterMl: 0 };
     return {
       ...s,
       intake: {
         ...(s.intake ?? {}),
-        [activeCat.id]: {
-          ...(s.intake?.[activeCat.id] ?? {}),
-          [today]: { ...current, ...patch, date: today },
-        },
+        [activeCat.id]: { ...(s.intake?.[activeCat.id] ?? {}), [today]: log },
       },
     };
   });
@@ -150,7 +146,7 @@ export function KuboClient() {
       <TabBar tab={tab} setTab={setTab} />
 
       <main style={{ maxWidth: 1080, margin: '0 auto', padding: 'clamp(20px,4vw,32px) 24px 60px' }}>
-        {tab === 'overview'  && <OverviewTab cat={activeCat} plan={activePlan} foods={store.foods} todayLog={todayLog} setTodayIntake={setTodayIntake} clearTodayIntake={clearTodayIntake} />}
+        {tab === 'overview'  && <OverviewTab cat={activeCat} plan={activePlan} foods={store.foods} todayLog={todayLog} setTodayLog={setTodayLog} clearTodayIntake={clearTodayIntake} />}
         {tab === 'cats'      && <CatsTab store={store} setActiveCat={setActiveCat} updateCat={updateCat} addCat={addCat} removeCat={removeCat} />}
         {tab === 'plan'      && <PlanTab cat={activeCat} plan={activePlan} foods={store.foods} updatePlan={updatePlan} />}
         {tab === 'foods'     && <FoodsTab foods={store.foods} upsertFood={upsertFood} removeFood={removeFood} />}
@@ -274,10 +270,10 @@ function StatRow({ label, value, sub, color }: { label: string; value: string; s
 // Overview tab
 // ────────────────────────────────────────────────────────────────────────────
 
-function OverviewTab({ cat, plan, foods, todayLog, setTodayIntake, clearTodayIntake }: {
+function OverviewTab({ cat, plan, foods, todayLog, setTodayLog, clearTodayIntake }: {
   cat: Cat; plan: MealPlan; foods: Food[];
-  todayLog: IntakeLog | undefined;
-  setTodayIntake: (patch: Partial<IntakeLog>) => void;
+  todayLog: IntakeLog;
+  setTodayLog: (log: IntakeLog) => void;
   clearTodayIntake: () => void;
 }) {
   const b = useMemo(() => computeMealPlan(cat, plan, foods), [cat, plan, foods]);
@@ -292,7 +288,7 @@ function OverviewTab({ cat, plan, foods, todayLog, setTodayIntake, clearTodayInt
       <div style={{ gridColumn: '1 / -1' }}>
         <AdvisoryCard advisory={advisory} trend={trend} planKcal={b.daily.der} />
       </div>
-      <TodayIntakeCard cat={cat} plan={plan} foods={foods} breakdown={b} log={todayLog} setLog={setTodayIntake} clearLog={clearTodayIntake} />
+      <TodayIntakeCard cat={cat} plan={plan} foods={foods} breakdown={b} log={todayLog} setLog={setTodayLog} clearLog={clearTodayIntake} plannedMeals={plan.meals} />
       <Card>
         <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: COLORS.muted, marginBottom: 14 }}>Today&apos;s numbers</div>
         <StatRow label="Daily calories" value={`${n0(b.daily.der)} kcal`} sub={b.daily.label} color={COLORS.cream} />
@@ -394,31 +390,53 @@ function AdvisoryCard({ advisory, trend, planKcal }: {
   );
 }
 
-function TodayIntakeCard({ cat, plan, foods, breakdown, log, setLog, clearLog }: {
+function TodayIntakeCard({ cat, plan, foods, breakdown, log, setLog, clearLog, plannedMeals }: {
   cat: Cat; plan: MealPlan; foods: Food[];
   breakdown: ReturnType<typeof computeMealPlan>;
-  log: IntakeLog | undefined;
-  setLog: (p: Partial<IntakeLog>) => void;
+  log: IntakeLog;
+  setLog: (log: IntakeLog) => void;
   clearLog: () => void;
+  plannedMeals: number;
 }) {
-  const dryFood = plan.dryFoodId ? foods.find(f => f.id === plan.dryFoodId) : null;
-  const wetFood = plan.wetFoodId ? foods.find(f => f.id === plan.wetFoodId) : null;
+  const dryFood: Food | null = (plan.dryFoodId ? foods.find(f => f.id === plan.dryFoodId) : null) ?? null;
+  const wetFood: Food | null = (plan.wetFoodId ? foods.find(f => f.id === plan.wetFoodId) : null) ?? null;
 
-  const dryG = log?.dryG ?? 0;
-  const wetG = log?.wetG ?? 0;
-  const addedWaterMl = log?.addedWaterMl ?? 0;
+  const meals = log.meals;
+  const totalDryG = meals.reduce((s, m) => s + m.dryG, 0);
+  const totalWetG = meals.reduce((s, m) => s + m.wetG, 0);
+  const totalWaterMl = meals.reduce((s, m) => s + m.addedWaterMl, 0);
 
-  const actualDryKcal = dryFood ? (dryG / 100) * dryFood.kcalPer100g : 0;
-  const actualWetKcal = wetFood ? (wetG / 100) * wetFood.kcalPer100g : 0;
+  const actualDryKcal = dryFood ? (totalDryG / 100) * dryFood.kcalPer100g : 0;
+  const actualWetKcal = wetFood ? (totalWetG / 100) * wetFood.kcalPer100g : 0;
   const actualKcal = actualDryKcal + actualWetKcal;
-  const actualProteinG = ((dryG * (dryFood?.protein ?? 0)) + (wetG * (wetFood?.protein ?? 0))) / 100;
-  const actualMoistureFromFood = ((dryG * (dryFood?.moisture ?? 0)) + (wetG * (wetFood?.moisture ?? 0))) / 100;
-  const actualWaterTotal = actualMoistureFromFood + addedWaterMl;
+  const actualProteinG = ((totalDryG * (dryFood?.protein ?? 0)) + (totalWetG * (wetFood?.protein ?? 0))) / 100;
+  const actualMoistureFromFood = ((totalDryG * (dryFood?.moisture ?? 0)) + (totalWetG * (wetFood?.moisture ?? 0))) / 100;
+  const actualWaterTotal = actualMoistureFromFood + totalWaterMl;
 
   const kcalDelta = actualKcal - breakdown.daily.der;
   const kcalPct = breakdown.daily.der > 0 ? actualKcal / breakdown.daily.der : 0;
 
-  const prefillFromPlan = () => setLog({ dryG: Math.round(breakdown.dry.grams), wetG: Math.round(breakdown.wet.grams), addedWaterMl: Math.round(breakdown.addedWater.dailyMl) });
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  const addMeal = () => {
+    const nextIndex = meals.length;
+    const defaultLabels = plannedMeals === 2 ? ['Morning', 'Evening']
+                        : plannedMeals === 3 ? ['Morning', 'Midday', 'Evening']
+                        : ['Morning', 'Midday', 'Afternoon', 'Evening'];
+    const label = defaultLabels[nextIndex] ?? `Meal ${nextIndex + 1}`;
+    const now = new Date();
+    const time = now.toTimeString().slice(0, 5);
+    const newMeal: MealEntry = {
+      id: `meal-${Date.now()}`, label, time,
+      dryG: Math.round(breakdown.dry.perMealG || 0),
+      wetG: Math.round(breakdown.wet.perMealG || 0),
+      addedWaterMl: Math.round(breakdown.addedWater.perMealMl || 0),
+    };
+    setLog({ ...log, meals: [...meals, newMeal] });
+    setEditingId(newMeal.id);
+  };
+  const updateMeal = (id: string, patch: Partial<MealEntry>) => setLog({ ...log, meals: meals.map(m => m.id === id ? { ...m, ...patch } : m) });
+  const deleteMeal = (id: string) => setLog({ ...log, meals: meals.filter(m => m.id !== id) });
 
   const today = new Date().toLocaleDateString('en-PH', { weekday: 'short', month: 'short', day: 'numeric' });
 
@@ -427,57 +445,127 @@ function TodayIntakeCard({ cat, plan, foods, breakdown, log, setLog, clearLog }:
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, gap: 12, flexWrap: 'wrap' }}>
         <div>
           <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: COLORS.cream, marginBottom: 4 }}>Today &middot; {today}</div>
-          <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.8rem', color: COLORS.muted }}>Log what {cat.name} actually ate. See how it compares to today&apos;s target.</div>
+          <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.8rem', color: COLORS.muted }}>Log each meal as {cat.name} finishes it. Totals update live below.</div>
         </div>
         <div style={{ display: 'flex', gap: 6 }}>
-          <button className="kubo-btn" onClick={prefillFromPlan} title="Fill with the planned amount">Prefill from plan</button>
-          {log && <button className="kubo-btn kubo-btn-danger" onClick={clearLog}>Clear today</button>}
+          <button className="kubo-btn kubo-btn-primary" onClick={addMeal}>+ Log a meal</button>
+          {meals.length > 0 && <button className="kubo-btn kubo-btn-danger" onClick={clearLog}>Clear day</button>}
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 16 }} className="kubo-intake-inputs">
-        <IntakeInput
-          label={`Dry ${dryFood ? `— ${dryFood.brand}` : ''}`}
-          unit="g" value={dryG}
-          onChange={v => setLog({ dryG: v })}
-          sub={dryFood ? `${n0(actualDryKcal)} kcal` : 'No dry food picked'}
-        />
-        <IntakeInput
-          label={`Wet ${wetFood ? `— ${wetFood.brand}` : ''}`}
-          unit="g" value={wetG}
-          onChange={v => setLog({ wetG: v })}
-          sub={wetFood ? `${n0(actualWetKcal)} kcal · ${wetFood.canSizeG ? (wetG / wetFood.canSizeG).toFixed(2) + ' cans' : ''}` : 'No wet food picked'}
-        />
-        <IntakeInput
-          label="Water added"
-          unit="ml" value={addedWaterMl}
-          onChange={v => setLog({ addedWaterMl: v })}
-          sub="Poured into the food bowl"
-        />
-      </div>
+      {/* Meal list */}
+      {meals.length === 0 ? (
+        <div style={{ padding: '24px 16px', textAlign: 'center', background: COLORS.bg, borderRadius: 10, fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.82rem', color: COLORS.muted, lineHeight: 1.6, marginBottom: 16 }}>
+          No meals logged yet. Tap <strong style={{ color: COLORS.text }}>+ Log a meal</strong> after {cat.name} eats — I&apos;ll pre-fill with the planned amount, then edit down to what he actually finished.
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+          {meals.map((m, i) => (
+            <MealRow key={m.id}
+              meal={m} index={i} dryFood={dryFood} wetFood={wetFood}
+              isEditing={editingId === m.id}
+              onEdit={() => setEditingId(m.id)}
+              onSave={() => setEditingId(null)}
+              onChange={patch => updateMeal(m.id, patch)}
+              onDelete={() => { if (confirm(`Delete ${m.label || `meal ${i + 1}`}?`)) { deleteMeal(m.id); if (editingId === m.id) setEditingId(null); } }}
+            />
+          ))}
+        </div>
+      )}
 
+      {/* Totals vs target */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }} className="kubo-intake-inputs">
         <ActualVsTarget label="Calories" now={actualKcal} target={breakdown.daily.der} unit="kcal" />
         <ActualVsTarget label="Protein"  now={actualProteinG}   target={breakdown.totals.proteinTargetG} unit="g" />
         <ActualVsTarget label="Water"    now={actualWaterTotal} target={breakdown.totals.waterTargetMl}  unit="ml" />
       </div>
 
-      {log && (
+      {meals.length > 0 && (
         <div style={{ marginTop: 14, padding: '10px 12px', background: COLORS.bg, borderRadius: 8, borderLeft: `3px solid ${kcalPct >= 0.85 && kcalPct <= 1.1 ? COLORS.good : kcalPct < 0.7 ? COLORS.warn : COLORS.cream}` }}>
           <p style={{ margin: 0, fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.78rem', color: COLORS.text, lineHeight: 1.6 }}>
-            {kcalPct >= 0.85 && kcalPct <= 1.1
-              ? <>On target today — <strong>{n0(actualKcal)} kcal</strong> vs plan <strong>{n0(breakdown.daily.der)}</strong>.</>
-              : kcalPct < 0.7
-                ? <>Short by <strong>{n0(-kcalDelta)} kcal</strong> — that&apos;s {Math.round((1 - kcalPct) * 100)}% below target. Fine occasionally; watch the weekly weight trend if it repeats.</>
-                : kcalPct < 0.85
-                  ? <>A little under — <strong>{n0(-kcalDelta)} kcal</strong> short. Growing kittens don&apos;t always finish. Track weight weekly.</>
-                  : <>Over by <strong>{n0(kcalDelta)} kcal</strong>. One-off is fine; repeated overshoot leads to weight gain.</>}
+            {meals.length} meal{meals.length === 1 ? '' : 's'} logged: <strong>{n0(totalDryG)}g dry</strong> + <strong>{n0(totalWetG)}g wet</strong>{totalWaterMl > 0 ? <> + <strong>{n0(totalWaterMl)}ml water</strong></> : null} = <strong>{n0(actualKcal)} kcal</strong> {kcalPct >= 0.85 && kcalPct <= 1.1 ? '(on target)' : kcalPct < 0.85 ? `(${Math.round((1 - kcalPct) * 100)}% short)` : `(${Math.round((kcalPct - 1) * 100)}% over)`}.
           </p>
         </div>
       )}
 
       <style>{`@media (max-width: 640px) { .kubo-intake-inputs { grid-template-columns: 1fr !important; } }`}</style>
     </Card>
+  );
+}
+
+function MealRow({ meal, index, dryFood, wetFood, isEditing, onEdit, onSave, onChange, onDelete }: {
+  meal: MealEntry; index: number;
+  dryFood: Food | null; wetFood: Food | null;
+  isEditing: boolean;
+  onEdit: () => void; onSave: () => void;
+  onChange: (patch: Partial<MealEntry>) => void;
+  onDelete: () => void;
+}) {
+  const kcal = (dryFood ? (meal.dryG / 100) * dryFood.kcalPer100g : 0) + (wetFood ? (meal.wetG / 100) * wetFood.kcalPer100g : 0);
+  const label = meal.label || `Meal ${index + 1}`;
+
+  if (!isEditing) {
+    return (
+      <div style={{ background: COLORS.bg, borderRadius: 10, padding: 12, display: 'grid', gridTemplateColumns: '1fr auto auto', gap: 12, alignItems: 'center' }}>
+        <div>
+          <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.85rem', color: COLORS.text, fontWeight: 500 }}>
+            {label}{meal.time && <span style={{ color: COLORS.muted, fontWeight: 400, marginLeft: 8, fontSize: '0.75rem' }}>{meal.time}</span>}
+          </div>
+          <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', color: COLORS.muted, marginTop: 2 }}>
+            {meal.dryG > 0 && <>{n1(meal.dryG)}g dry{dryFood ? ` (${dryFood.brand})` : ''}</>}
+            {meal.dryG > 0 && (meal.wetG > 0 || meal.addedWaterMl > 0) && ' · '}
+            {meal.wetG > 0 && <>{n1(meal.wetG)}g wet{wetFood ? ` (${wetFood.brand})` : ''}</>}
+            {(meal.dryG > 0 || meal.wetG > 0) && meal.addedWaterMl > 0 && ' · '}
+            {meal.addedWaterMl > 0 && <>{n0(meal.addedWaterMl)}ml water</>}
+            {meal.notes && <span style={{ display: 'block', marginTop: 2, fontStyle: 'italic' }}>&ldquo;{meal.notes}&rdquo;</span>}
+          </div>
+        </div>
+        <div style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: '1rem', fontWeight: 700, color: COLORS.cream, whiteSpace: 'nowrap' }}>{n0(kcal)} kcal</div>
+        <div style={{ display: 'flex', gap: 4 }}>
+          <button className="kubo-btn" onClick={onEdit} style={{ padding: '5px 10px', fontSize: '0.72rem' }}>Edit</button>
+          <button className="kubo-btn kubo-btn-danger" onClick={onDelete} style={{ padding: '5px 10px', fontSize: '0.72rem' }}>Delete</button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ background: COLORS.bg, borderRadius: 10, padding: 12, border: `1px solid ${COLORS.borderHi}` }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr 1fr 1fr', gap: 8, marginBottom: 8 }} className="kubo-meal-edit">
+        <div>
+          <Label>Label</Label>
+          <input className="kubo-input" value={meal.label ?? ''} placeholder={`Meal ${index + 1}`} onChange={e => onChange({ label: e.target.value })} />
+        </div>
+        <div>
+          <Label>Time</Label>
+          <input className="kubo-input" type="time" value={meal.time ?? ''} onChange={e => onChange({ time: e.target.value })} />
+        </div>
+        <div>
+          <Label>Dry (g)</Label>
+          <input className="kubo-input" type="number" min={0} step={0.5} value={meal.dryG || ''} placeholder="0" onChange={e => onChange({ dryG: Math.max(0, parseFloat(e.target.value) || 0) })} />
+        </div>
+        <div>
+          <Label>Wet (g)</Label>
+          <input className="kubo-input" type="number" min={0} step={0.5} value={meal.wetG || ''} placeholder="0" onChange={e => onChange({ wetG: Math.max(0, parseFloat(e.target.value) || 0) })} />
+        </div>
+        <div>
+          <Label>Water (ml)</Label>
+          <input className="kubo-input" type="number" min={0} step={1} value={meal.addedWaterMl || ''} placeholder="0" onChange={e => onChange({ addedWaterMl: Math.max(0, parseFloat(e.target.value) || 0) })} />
+        </div>
+      </div>
+      <div style={{ marginBottom: 8 }}>
+        <Label>Notes (optional)</Label>
+        <input className="kubo-input" value={meal.notes ?? ''} placeholder="e.g. Left 5g of wet, drank half of water" onChange={e => onChange({ notes: e.target.value })} />
+      </div>
+      <div style={{ display: 'flex', gap: 6, justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.75rem', color: COLORS.muted }}>{n0(kcal)} kcal</div>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button className="kubo-btn kubo-btn-primary" onClick={onSave}>Done</button>
+          <button className="kubo-btn kubo-btn-danger" onClick={onDelete}>Delete</button>
+        </div>
+      </div>
+      <style>{`@media (max-width: 640px) { .kubo-meal-edit { grid-template-columns: 1fr 1fr !important; } }`}</style>
+    </div>
   );
 }
 
