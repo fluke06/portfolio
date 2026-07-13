@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { FadeIn } from './fade-in';
 import { PROJECTS } from '@/lib/projects';
 
-const FEATURED_IDS = ['yumami', 'tenmixer', 'rc-wallet', 'bi-winning', 'wagyufive', 'dxpcorp'];
+const FEATURED_IDS = ['yumami', 'tenmixer', 'rc-wallet', 'bi-winning', 'wagyufive', 'toolplaybook'];
 const FEATURED = FEATURED_IDS.map(id => PROJECTS.find(p => p.id === id)!);
 
 export function ProjectsSection() {
