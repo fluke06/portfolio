@@ -6,7 +6,7 @@ import { StickyNav } from '@/components/sticky-nav';
 import { FooterSection } from '@/components/footer-section';
 import type { Cat, Food, IntakeLog, MealPlan } from './types';
 import {
-  ageDisplay, ageInMonths, computeMealPlan, der, estimatedBcs, lifeStage, lifeStageLabel,
+  ageDisplay, ageInMonths, computeMealPlan, der, estimatedBcs, growthStatus, lifeStage, lifeStageLabel,
   proteinTargetG, scoreFoodForCat, waterTargetMl,
 } from './calc';
 import { load, save, reset, exportJson, importJson, type KuboStore } from './storage';
@@ -340,7 +340,11 @@ function OverviewTab({ cat, plan, foods, todayLog, setTodayIntake, clearTodayInt
       <Card style={{ gridColumn: '1 / -1', borderColor: 'rgba(232,179,128,0.2)', background: 'rgba(232,179,128,0.04)' }}>
         <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: COLORS.cream, marginBottom: 8 }}>Reality check</div>
         <p style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.82rem', color: COLORS.text, lineHeight: 1.65, margin: 0 }}>
-          These numbers are a target, not a mandate. Kittens eat what they need to grow — {cat.name} won&apos;t always finish the bowl, and that&apos;s usually fine. What matters is the <strong>weekly weight trend</strong>: a healthy kitten gains roughly <strong>50–100g per week</strong> at this age. If he&apos;s trending up and playful, the diet is working. If he stalls or loses weight for two weeks running, that&apos;s the signal to check with the vet — not a single low-appetite day.
+          {stage === 'kitten' ? (
+            <>The number above is a starting-point target, not a limit. Your vet&apos;s advice — <em>&ldquo;as long as he&apos;s eating a lot and growing, he&apos;s okay&rdquo;</em> — is the right rule for a kitten. You can&apos;t overfeed a healthy growing kitten fed a proper kitten formula. Let him eat when he&apos;s hungry, offer meals often, and weigh him weekly. A gain of <strong>50–100g/week</strong> is the trend you want to see. If he stops gaining for two weeks running, that&apos;s the signal to check in — not any single missed bowl.</>
+          ) : (
+            <>These numbers are a target, not a mandate. {cat.name} may not finish every bowl and that&apos;s often fine. What matters is the <strong>weekly weight trend</strong> holding steady around ideal. If he stalls, gains fast, or loses weight for two weeks running, that&apos;s the signal to check in with your vet.</>
+          )}
         </p>
       </Card>
 
@@ -598,10 +602,12 @@ function CatsTab({ store, setActiveCat, updateCat, addCat, removeCat }: {
             <Label>Current weight (kg)</Label>
             <input className="kubo-input" type="number" step="0.01" value={active.weightKg} onChange={e => updateCat({ weightKg: parseFloat(e.target.value) || 0 })} />
           </div>
-          <div>
-            <Label>Ideal / target weight (kg) — optional</Label>
-            <input className="kubo-input" type="number" step="0.1" value={active.idealWeightKg ?? ''} placeholder="Vet-recommended target" onChange={e => updateCat({ idealWeightKg: e.target.value ? parseFloat(e.target.value) : undefined })} />
-          </div>
+          {ageInMonths(active.dob) >= 12 && (
+            <div>
+              <Label>Ideal / target weight (kg) — optional</Label>
+              <input className="kubo-input" type="number" step="0.1" value={active.idealWeightKg ?? ''} placeholder="Vet-recommended target" onChange={e => updateCat({ idealWeightKg: e.target.value ? parseFloat(e.target.value) : undefined })} />
+            </div>
+          )}
           <div>
             <Label>Sex</Label>
             <select className="kubo-select" value={active.sex} onChange={e => updateCat({ sex: e.target.value as Cat['sex'] })}>
@@ -625,6 +631,9 @@ function CatsTab({ store, setActiveCat, updateCat, addCat, removeCat }: {
             </select>
           </div>
           <div style={{ gridColumn: '1 / -1' }}>
+            <GrowthCheck cat={active} />
+          </div>
+          <div style={{ gridColumn: '1 / -1' }}>
             <BcsSelector cat={active} onChange={v => updateCat({ bcs: v })} />
           </div>
           <div style={{ gridColumn: '1 / -1' }}>
@@ -635,6 +644,66 @@ function CatsTab({ store, setActiveCat, updateCat, addCat, removeCat }: {
       </Card>
 
       <style>{`@media (max-width: 720px) { .kubo-two { grid-template-columns: 1fr !important; } }`}</style>
+    </div>
+  );
+}
+
+function GrowthCheck({ cat }: { cat: Cat }) {
+  const g = growthStatus(cat);
+  if (!g) return null;
+  const { status, expected } = g;
+  const tone = status === 'below' || status === 'above' ? COLORS.warn
+             : status === 'on-track' ? COLORS.good
+             : COLORS.cream;
+  const headline = {
+    'below':       `${cat.name}'s a bit under the typical range`,
+    'low-normal':  `${cat.name}'s at the smaller end of normal`,
+    'on-track':    `${cat.name} is right on track`,
+    'high-normal': `${cat.name}'s at the bigger end of normal`,
+    'above':       `${cat.name}'s above the typical range`,
+  }[status];
+  const body = {
+    'below':       `Kittens who eat well and are active usually catch up — but if he stalls for two weeks running, flag it with your vet. Weekly weigh-ins tell you more than any single number.`,
+    'low-normal':  `Totally normal for smaller-boned kittens. Your vet's rule of thumb — "as long as he's eating well and growing, he's okay" — applies here. Weigh weekly.`,
+    'on-track':    `He's growing right on the curve. Keep offering food freely (kittens should eat as much as they want at this age) and weigh him weekly to make sure the trend continues.`,
+    'high-normal': `Growing a bit larger than the median. Not a concern for a growing kitten — bigger breeds and males often trend up. Keep going.`,
+    'above':       `Growing well above the typical curve. Fine for large breeds, but if he seems soft or lethargic, mention it at the next vet visit.`,
+  }[status];
+
+  const ageMo = ageInMonths(cat.dob);
+  return (
+    <div style={{ background: COLORS.bg, border: `1px solid ${COLORS.border}`, borderRadius: 10, padding: 16, borderLeft: `3px solid ${tone}` }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8, gap: 12, flexWrap: 'wrap' }}>
+        <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: COLORS.muted }}>
+          Growth check &middot; {ageDisplay(cat.dob)}
+        </div>
+        <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', color: COLORS.muted }}>
+          Typical range at {ageMo} mo: <strong style={{ color: COLORS.text }}>{expected.low.toFixed(1)}–{expected.high.toFixed(1)} kg</strong>
+        </div>
+      </div>
+      <div style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: '1.1rem', fontWeight: 700, color: tone, marginBottom: 6, lineHeight: 1.3 }}>{headline}</div>
+      <p style={{ margin: 0, fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.82rem', color: COLORS.text, lineHeight: 1.65 }}>
+        {body}
+      </p>
+
+      {/* Range bar */}
+      <div style={{ marginTop: 14 }}>
+        <div style={{ height: 8, borderRadius: 99, background: COLORS.panelHi, position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: 0, bottom: 0, left: `${Math.min(100, Math.max(0, ((expected.low - expected.low * 0.85) / (expected.high * 1.15 - expected.low * 0.85)) * 100))}%`, width: `${Math.min(100, ((expected.high - expected.low) / (expected.high * 1.15 - expected.low * 0.85)) * 100)}%`, background: COLORS.good, opacity: 0.35 }} />
+          <div style={{ position: 'absolute', top: -2, bottom: -2, left: `calc(${Math.min(100, Math.max(0, ((cat.weightKg - expected.low * 0.85) / (expected.high * 1.15 - expected.low * 0.85)) * 100))}% - 3px)`, width: 6, background: tone, borderRadius: 99 }} />
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.68rem', color: COLORS.muted }}>
+          <span>{(expected.low * 0.85).toFixed(1)}kg</span>
+          <span style={{ color: COLORS.text, fontWeight: 500 }}>{cat.name}: {cat.weightKg.toFixed(2)}kg</span>
+          <span>{(expected.high * 1.15).toFixed(1)}kg</span>
+        </div>
+      </div>
+
+      <div style={{ marginTop: 12, padding: 10, background: COLORS.panelHi, borderRadius: 6 }}>
+        <p style={{ margin: 0, fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', color: COLORS.muted, lineHeight: 1.6 }}>
+          <strong style={{ color: COLORS.text }}>What your vet said applies here:</strong> at this age, if he&apos;s eating well and gaining, he&apos;s okay. Feed as much as he wants of a kitten formula — you can&apos;t overfeed a healthy growing kitten. The plan on this page is a starting-point target, not a ceiling.
+        </p>
+      </div>
     </div>
   );
 }

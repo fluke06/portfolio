@@ -91,6 +91,56 @@ export function estimatedBcs(cat: Cat, now?: Date): number | null {
   return 9;
 }
 
+/**
+ * Expected kitten weight for age, from general domestic cat growth curve.
+ * Returns typical low / mid / high range in kg. Null for cats >= 12 months.
+ * Based on published pediatric weight tables (Vogt et al. 2010, WSAVA).
+ * Individual breeds vary — smaller-boned cats trend low, large breeds trend high.
+ */
+export function expectedKittenWeight(ageMo: number): { low: number; mid: number; high: number } | null {
+  if (ageMo >= 12) return null;
+  const curve: [number, number, number, number][] = [
+    [0,   0.10, 0.12, 0.16],
+    [1,   0.40, 0.50, 0.60],
+    [2,   0.90, 1.05, 1.20],
+    [3,   1.30, 1.55, 1.80],
+    [4,   1.80, 2.10, 2.40],
+    [5,   2.30, 2.60, 2.90],
+    [6,   2.70, 3.10, 3.40],
+    [7,   3.00, 3.40, 3.80],
+    [8,   3.20, 3.60, 4.00],
+    [9,   3.40, 3.80, 4.20],
+    [10,  3.60, 4.00, 4.40],
+    [11,  3.80, 4.20, 4.60],
+    [12,  4.00, 4.40, 4.80],
+  ];
+  const lower = curve.filter(c => c[0] <= ageMo).pop() ?? curve[0];
+  const upper = curve.find(c => c[0] > ageMo) ?? lower;
+  if (lower[0] === upper[0]) return { low: lower[1], mid: lower[2], high: lower[3] };
+  const t = (ageMo - lower[0]) / (upper[0] - lower[0]);
+  return {
+    low: lower[1] + (upper[1] - lower[1]) * t,
+    mid: lower[2] + (upper[2] - lower[2]) * t,
+    high: lower[3] + (upper[3] - lower[3]) * t,
+  };
+}
+
+export type GrowthStatus = 'below' | 'low-normal' | 'on-track' | 'high-normal' | 'above';
+
+export function growthStatus(cat: Cat, now?: Date): { status: GrowthStatus; expected: { low: number; mid: number; high: number } } | null {
+  const m = ageInMonths(cat.dob, now);
+  const expected = expectedKittenWeight(m);
+  if (!expected) return null;
+  const w = cat.weightKg;
+  let status: GrowthStatus;
+  if (w < expected.low * 0.85)       status = 'below';
+  else if (w < expected.low)          status = 'low-normal';
+  else if (w <= expected.high)        status = 'on-track';
+  else if (w <= expected.high * 1.15) status = 'high-normal';
+  else                                status = 'above';
+  return { status, expected };
+}
+
 export interface MealBreakdown {
   daily: { kcal: number; rer: number; der: number; factor: number; label: string };
   dry: { food: Food | null; kcal: number; grams: number; perMealG: number; costPhp: number };
