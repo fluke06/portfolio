@@ -1,4 +1,4 @@
-import type { Cat, Food, MealPlan } from './types';
+import type { Cat, Food, IntakeLog, MealPlan } from './types';
 import { KUBO_CAT, KUBO_PLAN, SEED_FOODS } from './seed';
 
 const KEY = 'kubo:v1';
@@ -10,6 +10,7 @@ export interface KuboStore {
   foods: Food[];
   plans: Record<string, MealPlan>;
   activeCatId: string;
+  intake?: Record<string, Record<string, IntakeLog>>;
 }
 
 function defaults(): KuboStore {
@@ -19,6 +20,7 @@ function defaults(): KuboStore {
     foods: SEED_FOODS,
     plans: { [KUBO_CAT.id]: KUBO_PLAN },
     activeCatId: KUBO_CAT.id,
+    intake: {},
   };
 }
 

@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { StickyNav } from '@/components/sticky-nav';
 import { FooterSection } from '@/components/footer-section';
-import type { Cat, Food, MealPlan } from './types';
+import type { Cat, Food, IntakeLog, MealPlan } from './types';
 import {
   ageDisplay, ageInMonths, computeMealPlan, der, lifeStage, lifeStageLabel,
   proteinTargetG, scoreFoodForCat, waterTargetMl,
@@ -110,6 +110,30 @@ export function KuboClient() {
   const removeFood = (id: string) => setStore(s => s && { ...s, foods: s.foods.filter(f => f.id !== id) });
   const doReset = () => { const d = reset(); setStore(d); setTab('overview'); };
 
+  const today = new Date().toISOString().slice(0, 10);
+  const catIntake = store.intake?.[activeCat.id] ?? {};
+  const todayLog = catIntake[today];
+  const setTodayIntake = (patch: Partial<IntakeLog>) => setStore(s => {
+    if (!s) return s;
+    const current = s.intake?.[activeCat.id]?.[today] ?? { date: today, dryG: 0, wetG: 0, addedWaterMl: 0 };
+    return {
+      ...s,
+      intake: {
+        ...(s.intake ?? {}),
+        [activeCat.id]: {
+          ...(s.intake?.[activeCat.id] ?? {}),
+          [today]: { ...current, ...patch, date: today },
+        },
+      },
+    };
+  });
+  const clearTodayIntake = () => setStore(s => {
+    if (!s) return s;
+    const rest = { ...(s.intake?.[activeCat.id] ?? {}) };
+    delete rest[today];
+    return { ...s, intake: { ...(s.intake ?? {}), [activeCat.id]: rest } };
+  });
+
   return (
     <div style={{ minHeight: '100vh', background: COLORS.bg, color: COLORS.text }}>
       <StickyNav alwaysVisible />
@@ -126,7 +150,7 @@ export function KuboClient() {
       <TabBar tab={tab} setTab={setTab} />
 
       <main style={{ maxWidth: 1080, margin: '0 auto', padding: 'clamp(20px,4vw,32px) 24px 60px' }}>
-        {tab === 'overview'  && <OverviewTab cat={activeCat} plan={activePlan} foods={store.foods} />}
+        {tab === 'overview'  && <OverviewTab cat={activeCat} plan={activePlan} foods={store.foods} todayLog={todayLog} setTodayIntake={setTodayIntake} clearTodayIntake={clearTodayIntake} />}
         {tab === 'cats'      && <CatsTab store={store} setActiveCat={setActiveCat} updateCat={updateCat} addCat={addCat} removeCat={removeCat} />}
         {tab === 'plan'      && <PlanTab cat={activeCat} plan={activePlan} foods={store.foods} updatePlan={updatePlan} />}
         {tab === 'foods'     && <FoodsTab foods={store.foods} upsertFood={upsertFood} removeFood={removeFood} />}
@@ -250,7 +274,12 @@ function StatRow({ label, value, sub, color }: { label: string; value: string; s
 // Overview tab
 // ────────────────────────────────────────────────────────────────────────────
 
-function OverviewTab({ cat, plan, foods }: { cat: Cat; plan: MealPlan; foods: Food[] }) {
+function OverviewTab({ cat, plan, foods, todayLog, setTodayIntake, clearTodayIntake }: {
+  cat: Cat; plan: MealPlan; foods: Food[];
+  todayLog: IntakeLog | undefined;
+  setTodayIntake: (patch: Partial<IntakeLog>) => void;
+  clearTodayIntake: () => void;
+}) {
   const b = useMemo(() => computeMealPlan(cat, plan, foods), [cat, plan, foods]);
   const stage = lifeStage(ageInMonths(cat.dob));
   const proteinPct = b.totals.proteinTargetG > 0 ? Math.min(1.5, b.totals.proteinG / b.totals.proteinTargetG) : 0;
@@ -258,6 +287,7 @@ function OverviewTab({ cat, plan, foods }: { cat: Cat; plan: MealPlan; foods: Fo
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }} className="kubo-two">
+      <TodayIntakeCard cat={cat} plan={plan} foods={foods} breakdown={b} log={todayLog} setLog={setTodayIntake} clearLog={clearTodayIntake} />
       <Card>
         <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: COLORS.muted, marginBottom: 14 }}>Today&apos;s numbers</div>
         <StatRow label="Daily calories" value={`${n0(b.daily.der)} kcal`} sub={b.daily.label} color={COLORS.cream} />
@@ -322,6 +352,132 @@ function OverviewTab({ cat, plan, foods }: { cat: Cat; plan: MealPlan; foods: Fo
       )}
 
       <style>{`@media (max-width: 720px) { .kubo-two { grid-template-columns: 1fr !important; } }`}</style>
+    </div>
+  );
+}
+
+function TodayIntakeCard({ cat, plan, foods, breakdown, log, setLog, clearLog }: {
+  cat: Cat; plan: MealPlan; foods: Food[];
+  breakdown: ReturnType<typeof computeMealPlan>;
+  log: IntakeLog | undefined;
+  setLog: (p: Partial<IntakeLog>) => void;
+  clearLog: () => void;
+}) {
+  const dryFood = plan.dryFoodId ? foods.find(f => f.id === plan.dryFoodId) : null;
+  const wetFood = plan.wetFoodId ? foods.find(f => f.id === plan.wetFoodId) : null;
+
+  const dryG = log?.dryG ?? 0;
+  const wetG = log?.wetG ?? 0;
+  const addedWaterMl = log?.addedWaterMl ?? 0;
+
+  const actualDryKcal = dryFood ? (dryG / 100) * dryFood.kcalPer100g : 0;
+  const actualWetKcal = wetFood ? (wetG / 100) * wetFood.kcalPer100g : 0;
+  const actualKcal = actualDryKcal + actualWetKcal;
+  const actualProteinG = ((dryG * (dryFood?.protein ?? 0)) + (wetG * (wetFood?.protein ?? 0))) / 100;
+  const actualMoistureFromFood = ((dryG * (dryFood?.moisture ?? 0)) + (wetG * (wetFood?.moisture ?? 0))) / 100;
+  const actualWaterTotal = actualMoistureFromFood + addedWaterMl;
+
+  const kcalDelta = actualKcal - breakdown.daily.der;
+  const kcalPct = breakdown.daily.der > 0 ? actualKcal / breakdown.daily.der : 0;
+
+  const prefillFromPlan = () => setLog({ dryG: Math.round(breakdown.dry.grams), wetG: Math.round(breakdown.wet.grams), addedWaterMl: Math.round(breakdown.addedWater.dailyMl) });
+
+  const today = new Date().toLocaleDateString('en-PH', { weekday: 'short', month: 'short', day: 'numeric' });
+
+  return (
+    <Card style={{ gridColumn: '1 / -1', borderColor: 'rgba(232,179,128,0.25)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, gap: 12, flexWrap: 'wrap' }}>
+        <div>
+          <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: COLORS.cream, marginBottom: 4 }}>Today &middot; {today}</div>
+          <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.8rem', color: COLORS.muted }}>Log what {cat.name} actually ate. See how it compares to today&apos;s target.</div>
+        </div>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button className="kubo-btn" onClick={prefillFromPlan} title="Fill with the planned amount">Prefill from plan</button>
+          {log && <button className="kubo-btn kubo-btn-danger" onClick={clearLog}>Clear today</button>}
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 16 }} className="kubo-intake-inputs">
+        <IntakeInput
+          label={`Dry ${dryFood ? `— ${dryFood.brand}` : ''}`}
+          unit="g" value={dryG}
+          onChange={v => setLog({ dryG: v })}
+          sub={dryFood ? `${n0(actualDryKcal)} kcal` : 'No dry food picked'}
+        />
+        <IntakeInput
+          label={`Wet ${wetFood ? `— ${wetFood.brand}` : ''}`}
+          unit="g" value={wetG}
+          onChange={v => setLog({ wetG: v })}
+          sub={wetFood ? `${n0(actualWetKcal)} kcal · ${wetFood.canSizeG ? (wetG / wetFood.canSizeG).toFixed(2) + ' cans' : ''}` : 'No wet food picked'}
+        />
+        <IntakeInput
+          label="Water added"
+          unit="ml" value={addedWaterMl}
+          onChange={v => setLog({ addedWaterMl: v })}
+          sub="Poured into the food bowl"
+        />
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }} className="kubo-intake-inputs">
+        <ActualVsTarget label="Calories" now={actualKcal} target={breakdown.daily.der} unit="kcal" />
+        <ActualVsTarget label="Protein"  now={actualProteinG}   target={breakdown.totals.proteinTargetG} unit="g" />
+        <ActualVsTarget label="Water"    now={actualWaterTotal} target={breakdown.totals.waterTargetMl}  unit="ml" />
+      </div>
+
+      {log && (
+        <div style={{ marginTop: 14, padding: '10px 12px', background: COLORS.bg, borderRadius: 8, borderLeft: `3px solid ${kcalPct >= 0.85 && kcalPct <= 1.1 ? COLORS.good : kcalPct < 0.7 ? COLORS.warn : COLORS.cream}` }}>
+          <p style={{ margin: 0, fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.78rem', color: COLORS.text, lineHeight: 1.6 }}>
+            {kcalPct >= 0.85 && kcalPct <= 1.1
+              ? <>On target today — <strong>{n0(actualKcal)} kcal</strong> vs plan <strong>{n0(breakdown.daily.der)}</strong>.</>
+              : kcalPct < 0.7
+                ? <>Short by <strong>{n0(-kcalDelta)} kcal</strong> — that&apos;s {Math.round((1 - kcalPct) * 100)}% below target. Fine occasionally; watch the weekly weight trend if it repeats.</>
+                : kcalPct < 0.85
+                  ? <>A little under — <strong>{n0(-kcalDelta)} kcal</strong> short. Growing kittens don&apos;t always finish. Track weight weekly.</>
+                  : <>Over by <strong>{n0(kcalDelta)} kcal</strong>. One-off is fine; repeated overshoot leads to weight gain.</>}
+          </p>
+        </div>
+      )}
+
+      <style>{`@media (max-width: 640px) { .kubo-intake-inputs { grid-template-columns: 1fr !important; } }`}</style>
+    </Card>
+  );
+}
+
+function IntakeInput({ label, unit, value, onChange, sub }: { label: string; unit: string; value: number; onChange: (v: number) => void; sub?: string }) {
+  return (
+    <div>
+      <Label>{label}</Label>
+      <div style={{ display: 'flex', alignItems: 'center', background: COLORS.bg, border: `1px solid ${COLORS.border}`, borderRadius: 8, padding: '10px 12px' }}>
+        <input
+          type="number" min={0} step={1} value={value || ''}
+          onChange={e => onChange(Math.max(0, parseFloat(e.target.value) || 0))}
+          placeholder="0"
+          style={{
+            background: 'transparent', border: 'none', outline: 'none',
+            color: COLORS.text, fontFamily: 'var(--font-fraunces), serif',
+            fontSize: '1.25rem', fontWeight: 700, width: '100%', lineHeight: 1.1,
+          }}
+        />
+        <span style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.75rem', color: COLORS.muted, flexShrink: 0, marginLeft: 6 }}>{unit}</span>
+      </div>
+      {sub && <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.7rem', color: COLORS.muted, marginTop: 4 }}>{sub}</div>}
+    </div>
+  );
+}
+
+function ActualVsTarget({ label, now, target, unit }: { label: string; now: number; target: number; unit: string }) {
+  const pct = target > 0 ? now / target : 0;
+  const color = pct >= 0.85 && pct <= 1.1 ? COLORS.good : pct < 0.7 ? COLORS.warn : COLORS.cream;
+  return (
+    <div style={{ background: COLORS.bg, borderRadius: 8, padding: 12 }}>
+      <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.68rem', color: COLORS.muted, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 4 }}>{label}</div>
+      <div style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: '1.4rem', fontWeight: 700, color, lineHeight: 1 }}>{n0(now)} <span style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.65rem', color: COLORS.muted, fontWeight: 400 }}>{unit}</span></div>
+      <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.7rem', color: COLORS.muted, marginTop: 3 }}>
+        target {n0(target)} {unit} · <strong style={{ color }}>{Math.round(pct * 100)}%</strong>
+      </div>
+      <div style={{ height: 4, marginTop: 6, borderRadius: 99, background: COLORS.panelHi, overflow: 'hidden' }}>
+        <div style={{ height: '100%', width: `${Math.min(100, pct * 100)}%`, background: color, transition: 'width 0.3s ease' }} />
+      </div>
     </div>
   );
 }

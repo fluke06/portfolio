@@ -48,3 +48,10 @@ export interface MealPlan {
   meals: number;
   addedWaterMlPerMeal: number;
 }
+
+export interface IntakeLog {
+  date: string;
+  dryG: number;
+  wetG: number;
+  addedWaterMl: number;
+}
