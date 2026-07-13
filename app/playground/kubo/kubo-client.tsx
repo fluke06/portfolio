@@ -57,8 +57,9 @@ export function KuboClient() {
   }
 
   const activeCat = store.cats.find(c => c.id === store.activeCatId) ?? store.cats[0];
-  const activePlan = store.plans[activeCat.id] ?? {
-    catId: activeCat.id, dryFoodId: null, wetFoodId: null, wetRatioKcal: 0.5, meals: 2,
+  const activePlan: MealPlan = {
+    ...(store.plans[activeCat.id] ?? { catId: activeCat.id, dryFoodId: null, wetFoodId: null, wetRatioKcal: 0.5, meals: 2, addedWaterMlPerMeal: 0 }),
+    addedWaterMlPerMeal: store.plans[activeCat.id]?.addedWaterMlPerMeal ?? 0,
   };
 
   const updateCat = (patch: Partial<Cat>) => setStore(s => s && {
@@ -69,7 +70,7 @@ export function KuboClient() {
     ...s,
     plans: { ...s.plans, [activeCat.id]: { ...activePlan, ...patch } },
   });
-  const addCat = (c: Cat) => setStore(s => s && { ...s, cats: [...s.cats, c], activeCatId: c.id, plans: { ...s.plans, [c.id]: { catId: c.id, dryFoodId: null, wetFoodId: null, wetRatioKcal: 0.5, meals: 2 } } });
+  const addCat = (c: Cat) => setStore(s => s && { ...s, cats: [...s.cats, c], activeCatId: c.id, plans: { ...s.plans, [c.id]: { catId: c.id, dryFoodId: null, wetFoodId: null, wetRatioKcal: 0.5, meals: 2, addedWaterMlPerMeal: 0 } } });
   const removeCat = (id: string) => setStore(s => {
     if (!s || s.cats.length <= 1) return s;
     const nextCats = s.cats.filter(c => c.id !== id);
@@ -107,6 +108,10 @@ export function KuboClient() {
         {tab === 'foods'     && <FoodsTab foods={store.foods} upsertFood={upsertFood} removeFood={removeFood} />}
         {tab === 'recommend' && <RecommendTab cat={activeCat} foods={store.foods} />}
       </main>
+
+      <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 24px 20px' }}>
+        <SourcesCard />
+      </div>
 
       <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 24px 60px' }}>
         <DataControls store={store} setStore={setStore} doReset={doReset} />
@@ -258,9 +263,11 @@ function OverviewTab({ cat, plan, foods }: { cat: Cat; plan: MealPlan; foods: Fo
         <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: COLORS.muted, marginBottom: 14 }}>Nutrition delivered</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }} className="kubo-two">
           <ProgressStat label="Protein" now={b.totals.proteinG} target={b.totals.proteinTargetG} unit="g" pct={proteinPct} good={proteinPct >= 1} />
-          <ProgressStat label="Water from food" now={b.totals.moistureMl} target={b.totals.waterTargetMl} unit="ml" pct={waterPct} good={waterPct >= 0.6} />
+          <ProgressStat label="Total water intake" now={b.totals.moistureMl} target={b.totals.waterTargetMl} unit="ml" pct={waterPct} good={waterPct >= 0.6} />
         </div>
         <div style={{ marginTop: 14, fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.78rem', color: COLORS.muted, lineHeight: 1.6 }}>
+          Water breakdown: <strong style={{ color: COLORS.text }}>{n0(b.totals.moistureFromFoodMl)} ml</strong> from food + <strong style={{ color: COLORS.text }}>{n0(b.addedWater.dailyMl)} ml</strong> added to bowl.
+          Does not include free water from bowl / fountain — add that mentally.<br />
           Fat: <strong style={{ color: COLORS.text }}>{n1(b.totals.fatG)} g</strong> · Diet moisture: <strong style={{ color: COLORS.text }}>{(b.urinary.moisturePctOfDiet * 100).toFixed(0)}%</strong>
           {b.urinary.phosphorusAvg !== null && <> · Phosphorus avg: <strong style={{ color: COLORS.text }}>{b.urinary.phosphorusAvg.toFixed(2)}%</strong></>}
           {b.urinary.magnesiumAvg  !== null && <> · Magnesium avg: <strong style={{ color: COLORS.text }}>{b.urinary.magnesiumAvg.toFixed(3)}%</strong></>}
@@ -502,7 +509,7 @@ function PlanTab({ cat, plan, foods, updatePlan }: {
           </p>
         </div>
 
-        <div style={{ marginBottom: 4 }}>
+        <div style={{ marginBottom: 14 }}>
           <Label>Meals per day</Label>
           <div style={{ display: 'flex', gap: 4, background: COLORS.bg, borderRadius: 8, padding: 3 }}>
             {[2, 3, 4].map(m => (
@@ -515,6 +522,28 @@ function PlanTab({ cat, plan, foods, updatePlan }: {
               }}>{m}× / day</button>
             ))}
           </div>
+        </div>
+
+        <div style={{ marginBottom: 4 }}>
+          <Label>Water added to bowl (per meal)</Label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <input type="range" min={0} max={80} step={5} value={plan.addedWaterMlPerMeal ?? 0}
+              onChange={e => updatePlan({ addedWaterMlPerMeal: parseInt(e.target.value) })}
+              style={{ flex: 1, accentColor: COLORS.cream }}
+            />
+            <input
+              type="number" min={0} step={1}
+              value={plan.addedWaterMlPerMeal ?? 0}
+              onChange={e => updatePlan({ addedWaterMlPerMeal: Math.max(0, parseInt(e.target.value) || 0) })}
+              className="kubo-input"
+              style={{ width: 80, padding: '6px 8px', textAlign: 'right', fontFamily: 'var(--font-fraunces), serif', fontSize: '0.95rem', fontWeight: 700 }}
+            />
+            <span style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.75rem', color: COLORS.muted }}>ml</span>
+          </div>
+          <p style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', color: COLORS.muted, marginTop: 6, lineHeight: 1.6 }}>
+            Extra water you pour into the food bowl. Adds <strong style={{ color: COLORS.text }}>{n0((plan.addedWaterMlPerMeal ?? 0) * plan.meals)} ml/day</strong> to total water intake.
+            Weigh the bowl before and after pouring once — it becomes routine.
+          </p>
         </div>
       </Card>
 
@@ -539,8 +568,9 @@ function PlanTab({ cat, plan, foods, updatePlan }: {
 
         {b.dry.food && <StatRow label={`Dry — ${b.dry.food.brand}`} value={`${n0(b.dry.grams)} g/day`} sub={`${n1(b.dry.perMealG)} g × ${plan.meals} meals`} />}
         {b.wet.food && <StatRow label={`Wet — ${b.wet.food.brand}`} value={`${n0(b.wet.grams)} g/day`} sub={`${n1(b.wet.perMealG)} g × ${plan.meals} meals · ${b.wet.cans.toFixed(2)} cans/day`} />}
+        {b.addedWater.dailyMl > 0 && <StatRow label="Added water" value={`${n0(b.addedWater.dailyMl)} ml/day`} sub={`${n0(b.addedWater.perMealMl)} ml × ${plan.meals} meals`} color={COLORS.gold} />}
         <StatRow label="Protein" value={`${n1(b.totals.proteinG)} g`} sub={`target ${n1(b.totals.proteinTargetG)} g`} color={b.totals.proteinG >= b.totals.proteinTargetG ? COLORS.good : COLORS.warn} />
-        <StatRow label="Water from food" value={`${n0(b.totals.moistureMl)} ml`} sub={`target ${n0(b.totals.waterTargetMl)} ml`} color={b.totals.moistureMl >= b.totals.waterTargetMl * 0.6 ? COLORS.good : COLORS.warn} />
+        <StatRow label="Total water intake" value={`${n0(b.totals.moistureMl)} ml`} sub={`${n0(b.totals.moistureFromFoodMl)} from food + ${n0(b.addedWater.dailyMl)} added · target ${n0(b.totals.waterTargetMl)}`} color={b.totals.moistureMl >= b.totals.waterTargetMl * 0.6 ? COLORS.good : COLORS.warn} />
         <StatRow label="Daily cost" value={peso(b.totals.dailyCost)} sub={`${peso(b.totals.weeklyCost)}/wk · ${peso(b.totals.monthlyCost)}/mo`} color={COLORS.gold} />
       </Card>
 
@@ -622,15 +652,32 @@ function PerMealTable({ cat, plan, breakdown: b }: { cat: Cat; plan: MealPlan; b
           </>
         )}
 
+        {b.addedWater.dailyMl > 0 && (
+          <>
+            <div style={{ padding: '12px 0', borderBottom: `1px solid ${COLORS.border}` }}>
+              <div style={{ fontSize: '0.85rem', color: COLORS.text, fontWeight: 500 }}>Water</div>
+              <div style={{ fontSize: '0.7rem', color: COLORS.muted }}>Added to bowl</div>
+            </div>
+            {Array.from({ length: plan.meals }).map((_, i) => (
+              <div key={i} style={{ padding: '12px 0', borderBottom: `1px solid ${COLORS.border}`, textAlign: 'center' }}>
+                <div style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: '1.1rem', fontWeight: 700, color: '#6BB0FF' }}>{n0(b.addedWater.perMealMl)}<span style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.7rem', color: COLORS.muted, fontWeight: 400, marginLeft: 2 }}>ml</span></div>
+              </div>
+            ))}
+            <div style={{ padding: '12px 0', borderBottom: `1px solid ${COLORS.border}`, textAlign: 'right' }}>
+              <div style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: '1.1rem', fontWeight: 700, color: COLORS.text }}>{n0(b.addedWater.dailyMl)}<span style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.7rem', color: COLORS.muted, fontWeight: 400, marginLeft: 2 }}>ml</span></div>
+            </div>
+          </>
+        )}
+
         <div style={{ padding: '12px 0', fontSize: '0.75rem', color: COLORS.muted, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Meal total</div>
         {Array.from({ length: plan.meals }).map((_, i) => (
           <div key={i} style={{ padding: '12px 0', textAlign: 'center' }}>
-            <div style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: '1.1rem', fontWeight: 700, color: COLORS.text }}>{n0(perMealDryG + perMealWetG)}<span style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.7rem', color: COLORS.muted, fontWeight: 400, marginLeft: 2 }}>g</span></div>
+            <div style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: '1.1rem', fontWeight: 700, color: COLORS.text }}>{n0(perMealDryG + perMealWetG + b.addedWater.perMealMl)}<span style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.7rem', color: COLORS.muted, fontWeight: 400, marginLeft: 2 }}>g</span></div>
             <div style={{ fontSize: '0.68rem', color: COLORS.cream }}>{n0(perMealDryKcal + perMealWetKcal)} kcal</div>
           </div>
         ))}
         <div style={{ padding: '12px 0', textAlign: 'right' }}>
-          <div style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: '1.1rem', fontWeight: 700, color: COLORS.text }}>{n0(b.dry.grams + b.wet.grams)}<span style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.7rem', color: COLORS.muted, fontWeight: 400, marginLeft: 2 }}>g</span></div>
+          <div style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: '1.1rem', fontWeight: 700, color: COLORS.text }}>{n0(b.dry.grams + b.wet.grams + b.addedWater.dailyMl)}<span style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.7rem', color: COLORS.muted, fontWeight: 400, marginLeft: 2 }}>g</span></div>
           <div style={{ fontSize: '0.68rem', color: COLORS.cream }}>{n0(b.daily.der)} kcal</div>
         </div>
       </div>
@@ -823,6 +870,115 @@ function RecommendTab({ cat, foods }: { cat: Cat; foods: Food[] }) {
         ))}
       </div>
     </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Sources card — cites the veterinary nutrition references behind the math
+// ────────────────────────────────────────────────────────────────────────────
+
+function SourcesCard() {
+  const [open, setOpen] = useState(false);
+  const linkStyle: React.CSSProperties = { color: COLORS.gold, textDecoration: 'none', borderBottom: `1px dotted ${COLORS.gold}` };
+  return (
+    <Card>
+      <button onClick={() => setOpen(o => !o)} style={{
+        width: '100%', background: 'transparent', border: 'none', padding: 0, cursor: 'pointer',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center', textAlign: 'left',
+      }}>
+        <div>
+          <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: COLORS.muted, marginBottom: 4 }}>How the math works</div>
+          <p style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.85rem', color: COLORS.text, margin: 0, lineHeight: 1.5 }}>
+            Every number here traces to a published veterinary nutrition reference. {open ? 'Collapse to hide' : 'Tap to expand'} the citations.
+          </p>
+        </div>
+        <span style={{ color: COLORS.muted, fontFamily: 'var(--font-fraunces), serif', fontSize: '1.4rem', flexShrink: 0, marginLeft: 12 }}>{open ? '−' : '+'}</span>
+      </button>
+
+      {open && (
+        <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 18, fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.82rem', color: COLORS.text, lineHeight: 1.7 }}>
+
+          <div>
+            <div style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: '1rem', fontWeight: 700, color: COLORS.cream, marginBottom: 4 }}>Resting energy requirement (RER)</div>
+            <div style={{ color: COLORS.muted, marginBottom: 6 }}>
+              Formula: <strong style={{ color: COLORS.text }}>RER (kcal/day) = 70 × BW(kg)<sup>0.75</sup></strong>
+            </div>
+            <ul style={{ margin: 0, paddingLeft: 18, color: COLORS.muted }}>
+              <li>National Research Council. <em>Nutrient Requirements of Dogs and Cats.</em> Washington, DC: National Academies Press, 2006. <a style={linkStyle} href="https://nap.nationalacademies.org/catalog/10668/nutrient-requirements-of-dogs-and-cats" target="_blank" rel="noreferrer">nap.nationalacademies.org →</a></li>
+              <li>WSAVA Global Nutrition Committee. <em>Global Nutritional Assessment Guidelines &amp; Toolkit.</em> 2011, updated 2020. <a style={linkStyle} href="https://wsava.org/global-guidelines/global-nutrition-guidelines/" target="_blank" rel="noreferrer">wsava.org →</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <div style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: '1rem', fontWeight: 700, color: COLORS.cream, marginBottom: 4 }}>Daily energy requirement (DER) factors</div>
+            <div style={{ color: COLORS.muted, marginBottom: 6 }}>DER = RER × life-stage/activity factor. Ranges used here:</div>
+            <ul style={{ margin: 0, paddingLeft: 18, color: COLORS.muted }}>
+              <li>Growing kitten &lt;4 mo: <strong style={{ color: COLORS.text }}>3.0×</strong> — Hand, Thatcher, Remillard et al. <em>Small Animal Clinical Nutrition, 5th ed.</em> Mark Morris Institute, 2010 (chap. 20).</li>
+              <li>Kitten 4–6 mo: <strong style={{ color: COLORS.text }}>2.5×</strong> · Kitten 6–12 mo: <strong style={{ color: COLORS.text }}>2.0×</strong></li>
+              <li>Neutered adult: <strong style={{ color: COLORS.text }}>1.2×</strong> · Intact adult: <strong style={{ color: COLORS.text }}>1.4×</strong> · Outdoor active: <strong style={{ color: COLORS.text }}>1.6×</strong> — same reference.</li>
+              <li>Body-condition adjustment: BCS ≥7 uses 0.8× (weight-loss target); BCS ≤3 uses 1.2× (weight-gain target). Per WSAVA BCS 9-point system.</li>
+              <li>Bermingham, EN, Thomas, DG, Morris, PJ, et al. Energy requirements of adult cats. <em>British Journal of Nutrition</em> 2010; 103(8):1083–93. <a style={linkStyle} href="https://doi.org/10.1017/S0007114509992789" target="_blank" rel="noreferrer">doi.org/10.1017/S0007114509992789 →</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <div style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: '1rem', fontWeight: 700, color: COLORS.cream, marginBottom: 4 }}>Protein target</div>
+            <div style={{ color: COLORS.muted, marginBottom: 6 }}>
+              Kittens: <strong style={{ color: COLORS.text }}>~9 g crude protein / kg BW / day.</strong>
+              Adults: <strong style={{ color: COLORS.text }}>~4.5 g / kg BW / day</strong> (higher than dogs — cats are obligate carnivores).
+            </div>
+            <ul style={{ margin: 0, paddingLeft: 18, color: COLORS.muted }}>
+              <li>NRC 2006 (above), Table 15-4. Minimum recommended allowance: 5.2 g/kg<sup>0.67</sup> for growing kittens.</li>
+              <li>AAFCO Cat Food Nutrient Profiles 2024. Growth &amp; reproduction: 30% min crude protein DM; maintenance: 26% min. <a style={linkStyle} href="https://www.aafco.org" target="_blank" rel="noreferrer">aafco.org →</a></li>
+              <li>Laflamme, DP. Cats and carbohydrates: implications for health and disease. <em>Compendium</em> 2010.</li>
+            </ul>
+          </div>
+
+          <div>
+            <div style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: '1rem', fontWeight: 700, color: COLORS.cream, marginBottom: 4 }}>Water target</div>
+            <div style={{ color: COLORS.muted, marginBottom: 6 }}>
+              Baseline: <strong style={{ color: COLORS.text }}>~60 ml / kg BW / day</strong> total water intake (food moisture + free water).
+              Cats have a low thirst drive; wet food is the primary hydration route.
+            </div>
+            <ul style={{ margin: 0, paddingLeft: 18, color: COLORS.muted }}>
+              <li>Zoran, DL. The carnivore connection to nutrition in cats. <em>JAVMA</em> 2002; 221(11):1559–67. <a style={linkStyle} href="https://doi.org/10.2460/javma.2002.221.1559" target="_blank" rel="noreferrer">doi.org/10.2460/javma.2002.221.1559 →</a></li>
+              <li>Buffington, CAT. Idiopathic feline lower urinary tract disease. <em>Vet Clin North Am Small Anim Pract</em> 2011; 41(4):723–35.</li>
+              <li>NRC 2006, chapter on water.</li>
+            </ul>
+          </div>
+
+          <div>
+            <div style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: '1rem', fontWeight: 700, color: COLORS.cream, marginBottom: 4 }}>Urinary-health thresholds (male cats)</div>
+            <div style={{ color: COLORS.muted, marginBottom: 6 }}>
+              Flags used here — <strong style={{ color: COLORS.text }}>phosphorus &gt; 1.2% DM</strong>, <strong style={{ color: COLORS.text }}>magnesium &gt; 0.12% DM</strong>, <strong style={{ color: COLORS.text }}>diet moisture &lt; 50%</strong>.
+            </div>
+            <ul style={{ margin: 0, paddingLeft: 18, color: COLORS.muted }}>
+              <li>FEDIAF (European Pet Food Industry Federation). <em>Nutritional Guidelines for Complete and Complementary Pet Food for Cats and Dogs.</em> 2021. Recommended max phosphorus for adult cats: 1.6% DM. <a style={linkStyle} href="https://europeanpetfood.org/self-regulation/nutritional-guidelines/" target="_blank" rel="noreferrer">europeanpetfood.org →</a></li>
+              <li>Buffington, CAT; Chew, DJ. Diet therapy in cats with lower urinary tract disorders. <em>Vet Med</em> 1998.</li>
+              <li>Markwell, PJ, Buffington, CAT, Chew, DJ, et al. Clinical evaluation of commercially available urinary acidification diets. <em>JAVMA</em> 1999; 214(3):361–5.</li>
+              <li>Lulich, JP, Berent, AC, Adams, LG, et al. ACVIM small animal consensus recommendations on the treatment and prevention of uroliths in dogs and cats. <em>J Vet Intern Med</em> 2016; 30:1564–74. <a style={linkStyle} href="https://doi.org/10.1111/jvim.14559" target="_blank" rel="noreferrer">doi.org/10.1111/jvim.14559 →</a></li>
+              <li>Wet-diet recommendation for FLUTD/idiopathic cystitis: Forrester, SD; Kruger, JM. Cost/benefit and safety considerations. <em>Vet Clin Small Anim</em> 2015.</li>
+            </ul>
+          </div>
+
+          <div>
+            <div style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: '1rem', fontWeight: 700, color: COLORS.cream, marginBottom: 4 }}>Body condition scoring (BCS)</div>
+            <ul style={{ margin: 0, paddingLeft: 18, color: COLORS.muted }}>
+              <li>Laflamme, DP. Development and validation of a body condition score system for cats: a clinical tool. <em>Feline Practice</em> 1997; 25(5–6):13–18.</li>
+              <li>WSAVA Body Condition Score — 9-point chart. <a style={linkStyle} href="https://wsava.org/wp-content/uploads/2020/01/Body-Condition-Score-Cat-updated-August-2020.pdf" target="_blank" rel="noreferrer">wsava.org PDF →</a></li>
+            </ul>
+          </div>
+
+          <div style={{ padding: 12, background: COLORS.bg, borderRadius: 8, borderLeft: `3px solid ${COLORS.warn}` }}>
+            <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.78rem', color: COLORS.text, fontWeight: 500, marginBottom: 4 }}>Important caveat</div>
+            <p style={{ margin: 0, fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.78rem', color: COLORS.muted, lineHeight: 1.6 }}>
+              These formulas approximate energy needs for a <em>healthy</em> cat. Individual variation is ±20% even in the studies. Kittens with rapid growth, cats with medical conditions (CKD, diabetes, IBD, urinary crystals), and pregnant/lactating queens have distinct requirements not covered here. Always cross-check with your veterinarian, especially before switching diets. This tool is a planning aid — not medical advice.
+            </p>
+          </div>
+
+        </div>
+      )}
+    </Card>
   );
 }
 

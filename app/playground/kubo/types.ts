@@ -46,4 +46,5 @@ export interface MealPlan {
   wetFoodId: string | null;
   wetRatioKcal: number;
   meals: number;
+  addedWaterMlPerMeal: number;
 }

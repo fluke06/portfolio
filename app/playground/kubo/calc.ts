@@ -74,9 +74,11 @@ export interface MealBreakdown {
   daily: { kcal: number; rer: number; der: number; factor: number; label: string };
   dry: { food: Food | null; kcal: number; grams: number; perMealG: number; costPhp: number };
   wet: { food: Food | null; kcal: number; grams: number; cans: number; perMealG: number; costPhp: number };
+  addedWater: { perMealMl: number; dailyMl: number };
   totals: {
     proteinG: number;
     fatG: number;
+    moistureFromFoodMl: number;
     moistureMl: number;
     proteinTargetG: number;
     waterTargetMl: number;
@@ -115,9 +117,12 @@ export function computeMealPlan(cat: Cat, plan: MealPlan, foods: Food[], now?: D
 
   const proteinG = (dryG * (dryFood?.protein ?? 0) + wetG * (wetFood?.protein ?? 0)) / 100;
   const fatG     = (dryG * (dryFood?.fat     ?? 0) + wetG * (wetFood?.fat     ?? 0)) / 100;
-  const moistureMl = (dryG * (dryFood?.moisture ?? 0) + wetG * (wetFood?.moisture ?? 0)) / 100;
+  const moistureFromFoodMl = (dryG * (dryFood?.moisture ?? 0) + wetG * (wetFood?.moisture ?? 0)) / 100;
+  const addedWaterPerMeal = Math.max(0, plan.addedWaterMlPerMeal || 0);
+  const addedWaterDaily = addedWaterPerMeal * plan.meals;
+  const moistureMl = moistureFromFoodMl + addedWaterDaily;
   const totalG = dryG + wetG;
-  const moisturePctOfDiet = totalG > 0 ? moistureMl / totalG : 0;
+  const moisturePctOfDiet = (totalG + addedWaterDaily) > 0 ? moistureMl / (totalG + addedWaterDaily) : 0;
 
   const dryCost = dryFood && dryFood.priceUnit === 'per-kg' ? (dryG / 1000) * dryFood.pricePhp : 0;
   const wetCost = wetFood && wetFood.priceUnit === 'per-can' && wetFood.canSizeG
@@ -143,8 +148,9 @@ export function computeMealPlan(cat: Cat, plan: MealPlan, foods: Food[], now?: D
     daily: { kcal: daily.der, rer: daily.rer, der: daily.der, factor: daily.factor, label: daily.label },
     dry: { food: dryFood, kcal: dryKcal, grams: dryG, perMealG: dryG / plan.meals, costPhp: dryCost },
     wet: { food: wetFood, kcal: wetKcal, grams: wetG, cans: wetCans, perMealG: wetG / plan.meals, costPhp: wetCost },
+    addedWater: { perMealMl: addedWaterPerMeal, dailyMl: addedWaterDaily },
     totals: {
-      proteinG, fatG, moistureMl,
+      proteinG, fatG, moistureFromFoodMl, moistureMl,
       proteinTargetG: proteinTargetG(cat, now),
       waterTargetMl: waterTargetMl(cat),
       dailyCost, weeklyCost: dailyCost * 7, monthlyCost: dailyCost * 30,

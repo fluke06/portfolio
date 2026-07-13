@@ -111,4 +111,5 @@ export const KUBO_PLAN: MealPlan = {
   wetFoodId: 'brit-kitten-cod',
   wetRatioKcal: 0.5,
   meals: 3,
+  addedWaterMlPerMeal: 0,
 };
