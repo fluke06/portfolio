@@ -1166,9 +1166,7 @@ function MealSchedule({ cat, plan, breakdown, onChangeTimes }: {
   const dayStartMin = 5 * 60;
   const dayEndMin   = 23 * 60;
   const totalMin    = dayEndMin - dayStartMin;
-  const trackHeight = 520;
-  const perMealDryG = breakdown.dry.grams / plan.meals;
-  const perMealWetG = breakdown.wet.grams / plan.meals;
+  const trackHeight = 640;
   const perMealKcal = breakdown.daily.der / plan.meals;
 
   const [nowMin, setNowMin] = useState<number>(() => {
@@ -1192,13 +1190,6 @@ function MealSchedule({ cat, plan, breakdown, onChangeTimes }: {
   const hours: number[] = [];
   for (let h = 5; h <= 23; h++) hours.push(h);
 
-  const mealPositions = times.map((t, i) => {
-    const mins = timeToMinutes(t);
-    const clamped = Math.max(dayStartMin, Math.min(dayEndMin, mins));
-    const top = ((clamped - dayStartMin) / totalMin) * trackHeight;
-    return { i, t, mins, top };
-  });
-
   const defaultLabels = plan.meals === 2 ? ['Morning', 'Evening']
                      : plan.meals === 3 ? ['Morning', 'Midday', 'Evening']
                      : plan.meals === 4 ? ['Morning', 'Midday', 'Afternoon', 'Evening']
@@ -1206,26 +1197,27 @@ function MealSchedule({ cat, plan, breakdown, onChangeTimes }: {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
         <p style={{ margin: 0, fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.78rem', color: COLORS.muted, lineHeight: 1.6, maxWidth: 560 }}>
-          Set when each meal happens. Blocks position by time, like a Google Calendar day view. Edit any time in the list to move it.
+          Set when each meal happens. Edit any time on the right; blocks reposition live.
         </p>
         <button className="kubo-btn" onClick={resetTimes} title="Reset to evenly-spaced defaults">Auto-space</button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 20 }} className="kubo-schedule-grid">
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(260px, 1fr) minmax(280px, 320px)', gap: 24 }} className="kubo-schedule-grid">
+
         {/* Timeline */}
-        <div style={{ position: 'relative', paddingLeft: 56, background: COLORS.bg, borderRadius: 10, padding: '12px 12px 12px 56px', border: `1px solid ${COLORS.border}` }}>
+        <div style={{ background: COLORS.bg, borderRadius: 12, border: `1px solid ${COLORS.border}`, padding: '14px 14px 14px 62px', position: 'relative' }}>
           <div style={{ position: 'relative', height: trackHeight }}>
-            {/* Hour rows */}
             {hours.map((h, idx) => {
               const y = (idx / (hours.length - 1)) * trackHeight;
               return (
                 <div key={h} style={{ position: 'absolute', top: y, left: 0, right: 0, height: 1, background: COLORS.border }}>
                   <span style={{
-                    position: 'absolute', left: -52, top: -8, width: 44, textAlign: 'right',
-                    fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.68rem', color: COLORS.muted, letterSpacing: '0.05em',
-                  }}>{formatTime12(`${h.toString().padStart(2, '0')}:00`)}</span>
+                    position: 'absolute', left: -56, top: -7, width: 48, textAlign: 'right',
+                    fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.66rem', color: COLORS.muted, letterSpacing: '0.02em',
+                    whiteSpace: 'nowrap',
+                  }}>{h === 12 ? '12 PM' : h > 12 ? `${h - 12} PM` : `${h} AM`}</span>
                 </div>
               );
             })}
@@ -1234,60 +1226,85 @@ function MealSchedule({ cat, plan, breakdown, onChangeTimes }: {
             {nowMin >= dayStartMin && nowMin <= dayEndMin && (
               <div style={{
                 position: 'absolute', top: ((nowMin - dayStartMin) / totalMin) * trackHeight,
-                left: 0, right: 0, height: 1, background: COLORS.warn, boxShadow: `0 0 6px ${COLORS.warn}`,
+                left: 0, right: 0, height: 1, background: COLORS.warn,
                 zIndex: 3,
               }}>
                 <div style={{
-                  position: 'absolute', left: -52, top: -8,
-                  fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.66rem', color: COLORS.warn, fontWeight: 600,
-                  background: COLORS.bg, padding: '1px 4px', borderRadius: 4,
-                }}>now</div>
+                  position: 'absolute', left: -56, top: -8, width: 48, textAlign: 'right',
+                  fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.62rem', color: COLORS.warn, fontWeight: 700,
+                  letterSpacing: '0.1em', textTransform: 'uppercase',
+                }}>NOW</div>
+                <div style={{ position: 'absolute', left: -4, top: -3, width: 7, height: 7, borderRadius: 999, background: COLORS.warn }} />
               </div>
             )}
 
-            {/* Meal blocks */}
-            {mealPositions.map(({ i, t, top }) => (
-              <div key={i} style={{
-                position: 'absolute', top: top - 20, left: 4, right: 4,
-                height: 42, background: 'linear-gradient(180deg, rgba(232,179,128,0.16), rgba(232,179,128,0.08))',
-                border: `1px solid ${COLORS.cream}`, borderLeft: `3px solid ${COLORS.cream}`,
-                borderRadius: 8, padding: '4px 10px',
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
-                fontFamily: 'var(--font-inter), sans-serif',
-                zIndex: 2,
-              }}>
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: '0.82rem', color: COLORS.text, fontWeight: 500 }}>{defaultLabels[i]} · <span style={{ color: COLORS.cream, fontFamily: 'var(--font-fraunces), serif', fontWeight: 700 }}>{formatTime12(t)}</span></div>
-                  <div style={{ fontSize: '0.68rem', color: COLORS.muted, marginTop: 1 }}>
-                    {perMealDryG > 0 && <>{n1(perMealDryG)}g dry </>}
-                    {perMealWetG > 0 && <>· {n1(perMealWetG)}g wet </>}
-                    · {n0(perMealKcal)} kcal
+            {/* Meal blocks — clean and simple: label on top, time below, no cramped stats */}
+            {times.map((t, i) => {
+              const mins = timeToMinutes(t);
+              const clamped = Math.max(dayStartMin, Math.min(dayEndMin, mins));
+              const top = ((clamped - dayStartMin) / totalMin) * trackHeight;
+              return (
+                <div key={i} style={{
+                  position: 'absolute', top: top - 22, left: 6, right: 6,
+                  height: 44,
+                  background: 'linear-gradient(180deg, rgba(232,179,128,0.18), rgba(232,179,128,0.06))',
+                  border: `1px solid rgba(232,179,128,0.5)`, borderLeft: `3px solid ${COLORS.cream}`,
+                  borderRadius: 8, padding: '5px 12px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
+                  zIndex: 2, overflow: 'hidden',
+                }}>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{
+                      fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.82rem', color: COLORS.text, fontWeight: 600,
+                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                    }}>{defaultLabels[i]}</div>
+                    <div style={{
+                      fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.68rem', color: COLORS.muted,
+                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: 1,
+                    }}>≈ {n0(perMealKcal)} kcal</div>
                   </div>
+                  <div style={{
+                    fontFamily: 'var(--font-fraunces), serif', fontSize: '0.92rem', fontWeight: 700,
+                    color: COLORS.cream, whiteSpace: 'nowrap', flexShrink: 0,
+                  }}>{formatTime12(t)}</div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
-        {/* Time editors */}
+        {/* Right rail: clean list of time editors */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {times.map((t, i) => (
-            <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: 10, alignItems: 'center', background: COLORS.bg, borderRadius: 10, padding: '10px 12px', border: `1px solid ${COLORS.border}` }}>
-              <div>
-                <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', color: COLORS.muted, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 2 }}>Meal {i + 1}</div>
-                <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.85rem', color: COLORS.text, fontWeight: 500 }}>{defaultLabels[i]}</div>
+            <div key={i} style={{
+              background: COLORS.bg, borderRadius: 10, padding: '12px 14px', border: `1px solid ${COLORS.border}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+            }}>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{
+                  fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.66rem', color: COLORS.muted,
+                  textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 2,
+                }}>Meal {i + 1}</div>
+                <div style={{
+                  fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.88rem', color: COLORS.text, fontWeight: 500,
+                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                }}>{defaultLabels[i]}</div>
               </div>
-              <div style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: '0.9rem', fontWeight: 700, color: COLORS.cream, minWidth: 68, textAlign: 'right' }}>{formatTime12(t)}</div>
               <input
                 type="time" value={t}
                 onChange={e => setTime(i, e.target.value)}
-                className="kubo-input"
-                style={{ padding: '6px 8px', width: 100 }}
+                style={{
+                  background: COLORS.panel, border: `1px solid ${COLORS.border}`, borderRadius: 8,
+                  padding: '8px 10px', color: COLORS.text,
+                  fontFamily: 'var(--font-fraunces), serif', fontSize: '0.95rem', fontWeight: 700,
+                  outline: 'none', width: 116, flexShrink: 0,
+                  colorScheme: 'dark',
+                }}
               />
             </div>
           ))}
-          <p style={{ margin: '4px 0 0', fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', color: COLORS.muted, lineHeight: 1.55 }}>
-            Kitten meals space best 4–6 hours apart. For {cat.name} right now, that&apos;s roughly {plan.meals === 3 ? 'breakfast around 7 AM, lunch around noon, dinner around 6 PM' : plan.meals === 4 ? '~5 hours apart across the day' : 'morning and evening at fixed times'}.
+          <p style={{ margin: '6px 2px 0', fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.7rem', color: COLORS.muted, lineHeight: 1.6 }}>
+            Kitten meals space best 4–6 hours apart.
           </p>
         </div>
       </div>
