@@ -92,6 +92,14 @@ function migrateIntake(intake: Record<string, Record<string, LegacyIntakeLog>> |
   return out;
 }
 
+function mergeSeededFoods(existing: Food[]): Food[] {
+  const byId = new Map(existing.map(f => [f.id, f]));
+  for (const seed of SEED_FOODS) {
+    if (!byId.has(seed.id)) byId.set(seed.id, seed);
+  }
+  return Array.from(byId.values());
+}
+
 export function load(): KuboStore {
   if (typeof window === 'undefined') return defaults();
   try {
@@ -102,6 +110,7 @@ export function load(): KuboStore {
     return {
       ...parsed,
       cats: parsed.cats.map(migrateCat),
+      foods: mergeSeededFoods(parsed.foods ?? []),
       intake: migrateIntake(parsed.intake),
     };
   } catch {
