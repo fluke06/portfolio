@@ -121,6 +121,43 @@ export const SEED_FOODS: Food[] = [
     pricePhp: 55, priceUnit: 'per-can', lifeStage: 'all',
     seeded: true,
   },
+  // ── Licky / creamy treats ────────────────────────────────────────────────
+  {
+    id: 'petsup-licky-treat',
+    brand: 'Petsup', name: 'Creamy Licky Treat (Tuna)', type: 'treat',
+    kcalPer100g: 70, canSizeG: 15, protein: 10, fat: 0.5, moisture: 82,
+    ash: 2, phosphorus: 0.30, magnesium: 0.02, taurine: true,
+    pricePhp: 30, priceUnit: 'per-can', lifeStage: 'all',
+    notes: 'Per-tube 15g. Give as reward or to boost hydration between meals.',
+    seeded: true,
+  },
+  {
+    id: 'vitapet-licky-treat',
+    brand: 'Vitapet', name: 'Creamy Licky Treat', type: 'treat',
+    kcalPer100g: 72, canSizeG: 15, protein: 11, fat: 0.5, moisture: 80,
+    ash: 2, phosphorus: 0.30, magnesium: 0.02, taurine: true,
+    pricePhp: 28, priceUnit: 'per-can', lifeStage: 'all',
+    notes: 'PH-market creamy tube treat. ~15g per tube.',
+    seeded: true,
+  },
+  {
+    id: 'churu-licky-treat',
+    brand: 'Inaba', name: 'Churu Tuna Recipe', type: 'treat',
+    kcalPer100g: 63, canSizeG: 14, protein: 9, fat: 0.3, moisture: 85,
+    ash: 1.6, phosphorus: 0.25, magnesium: 0.02, taurine: true,
+    pricePhp: 85, priceUnit: 'per-can', lifeStage: 'all',
+    notes: 'Premium licky treat, 14g per tube. Very palatable — good for medication.',
+    seeded: true,
+  },
+  {
+    id: 'lifecat-licky-treat',
+    brand: 'Life Cat', name: 'Creamy Treat', type: 'treat',
+    kcalPer100g: 70, canSizeG: 15, protein: 10, fat: 0.5, moisture: 82,
+    ash: 2, phosphorus: 0.30, magnesium: 0.02, taurine: true,
+    pricePhp: 22, priceUnit: 'per-can', lifeStage: 'all',
+    notes: 'Budget PH licky treat.',
+    seeded: true,
+  },
 ];
 
 export const KUBO_PLAN: MealPlan = {

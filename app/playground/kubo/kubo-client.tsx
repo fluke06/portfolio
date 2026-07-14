@@ -498,17 +498,34 @@ function TodayIntakeCard({ cat, plan, foods, breakdown, log, setLog, clearLog, p
 }) {
   const dryFood: Food | null = (plan.dryFoodId ? foods.find(f => f.id === plan.dryFoodId) : null) ?? null;
   const wetFood: Food | null = (plan.wetFoodId ? foods.find(f => f.id === plan.wetFoodId) : null) ?? null;
+  const treatFoods = foods.filter(f => f.type === 'treat');
 
   const meals = log.meals;
   const totalDryG = meals.reduce((s, m) => s + m.dryG, 0);
   const totalWetG = meals.reduce((s, m) => s + m.wetG, 0);
   const totalWaterMl = meals.reduce((s, m) => s + m.addedWaterMl, 0);
+  const totalTreatKcal = meals.reduce((s, m) => {
+    if (!m.treatFoodId || !m.treatG) return s;
+    const tf = foods.find(f => f.id === m.treatFoodId);
+    return tf ? s + (m.treatG / 100) * tf.kcalPer100g : s;
+  }, 0);
+  const totalTreatG = meals.reduce((s, m) => s + (m.treatG ?? 0), 0);
+  const totalTreatProteinG = meals.reduce((s, m) => {
+    if (!m.treatFoodId || !m.treatG) return s;
+    const tf = foods.find(f => f.id === m.treatFoodId);
+    return tf ? s + (m.treatG * tf.protein) / 100 : s;
+  }, 0);
+  const totalTreatMoistureMl = meals.reduce((s, m) => {
+    if (!m.treatFoodId || !m.treatG) return s;
+    const tf = foods.find(f => f.id === m.treatFoodId);
+    return tf ? s + (m.treatG * tf.moisture) / 100 : s;
+  }, 0);
 
   const actualDryKcal = dryFood ? (totalDryG / 100) * dryFood.kcalPer100g : 0;
   const actualWetKcal = wetFood ? (totalWetG / 100) * wetFood.kcalPer100g : 0;
-  const actualKcal = actualDryKcal + actualWetKcal;
-  const actualProteinG = ((totalDryG * (dryFood?.protein ?? 0)) + (totalWetG * (wetFood?.protein ?? 0))) / 100;
-  const actualMoistureFromFood = ((totalDryG * (dryFood?.moisture ?? 0)) + (totalWetG * (wetFood?.moisture ?? 0))) / 100;
+  const actualKcal = actualDryKcal + actualWetKcal + totalTreatKcal;
+  const actualProteinG = ((totalDryG * (dryFood?.protein ?? 0)) + (totalWetG * (wetFood?.protein ?? 0))) / 100 + totalTreatProteinG;
+  const actualMoistureFromFood = ((totalDryG * (dryFood?.moisture ?? 0)) + (totalWetG * (wetFood?.moisture ?? 0))) / 100 + totalTreatMoistureMl;
   const actualWaterTotal = actualMoistureFromFood + totalWaterMl;
 
   const kcalDelta = actualKcal - breakdown.daily.der;
@@ -563,7 +580,7 @@ function TodayIntakeCard({ cat, plan, foods, breakdown, log, setLog, clearLog, p
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
           {meals.map((m, i) => (
             <MealRow key={m.id}
-              meal={m} index={i} dryFood={dryFood} wetFood={wetFood}
+              meal={m} index={i} dryFood={dryFood} wetFood={wetFood} treatFoods={treatFoods}
               isEditing={editingId === m.id}
               defaultSupplements={cat.defaultSupplements}
               onEdit={() => setEditingId(m.id)}
@@ -585,7 +602,10 @@ function TodayIntakeCard({ cat, plan, foods, breakdown, log, setLog, clearLog, p
       {meals.length > 0 && (
         <div style={{ marginTop: 14, padding: '10px 12px', background: COLORS.bg, borderRadius: 8, borderLeft: `3px solid ${kcalPct >= 0.85 && kcalPct <= 1.1 ? COLORS.good : kcalPct < 0.7 ? COLORS.warn : COLORS.cream}` }}>
           <p style={{ margin: 0, fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.78rem', color: COLORS.text, lineHeight: 1.6 }}>
-            {meals.length} meal{meals.length === 1 ? '' : 's'} logged: <strong>{n0(totalDryG)}g dry</strong> + <strong>{n0(totalWetG)}g wet</strong>{totalWaterMl > 0 ? <> + <strong>{n0(totalWaterMl)}ml water</strong></> : null} = <strong>{n0(actualKcal)} kcal</strong> {kcalPct >= 0.85 && kcalPct <= 1.1 ? '(on target)' : kcalPct < 0.85 ? `(${Math.round((1 - kcalPct) * 100)}% short)` : `(${Math.round((kcalPct - 1) * 100)}% over)`}.
+            {meals.length} meal{meals.length === 1 ? '' : 's'} logged: <strong>{n0(totalDryG)}g dry</strong> + <strong>{n0(totalWetG)}g wet</strong>
+            {totalTreatG > 0 && <> + <strong>{n0(totalTreatG)}g treats</strong></>}
+            {totalWaterMl > 0 && <> + <strong>{n0(totalWaterMl)}ml water</strong></>}
+            {' = '}<strong>{n0(actualKcal)} kcal</strong> {kcalPct >= 0.85 && kcalPct <= 1.1 ? '(on target)' : kcalPct < 0.85 ? `(${Math.round((1 - kcalPct) * 100)}% short)` : `(${Math.round((kcalPct - 1) * 100)}% over)`}.
           </p>
         </div>
       )}
@@ -595,16 +615,23 @@ function TodayIntakeCard({ cat, plan, foods, breakdown, log, setLog, clearLog, p
   );
 }
 
-function MealRow({ meal, index, dryFood, wetFood, isEditing, defaultSupplements, onEdit, onSave, onChange, onDelete }: {
+function MealRow({ meal, index, dryFood, wetFood, treatFoods, isEditing, defaultSupplements, onEdit, onSave, onChange, onDelete }: {
   meal: MealEntry; index: number;
   dryFood: Food | null; wetFood: Food | null;
+  treatFoods: Food[];
   isEditing: boolean;
   defaultSupplements?: Supplement[];
   onEdit: () => void; onSave: () => void;
   onChange: (patch: Partial<MealEntry>) => void;
   onDelete: () => void;
 }) {
-  const kcal = (dryFood ? (meal.dryG / 100) * dryFood.kcalPer100g : 0) + (wetFood ? (meal.wetG / 100) * wetFood.kcalPer100g : 0);
+  const treatFood = meal.treatFoodId ? treatFoods.find(f => f.id === meal.treatFoodId) ?? null : null;
+  const treatG = meal.treatG ?? 0;
+  const treatKcal = treatFood ? (treatG / 100) * treatFood.kcalPer100g : 0;
+  const kcal =
+    (dryFood ? (meal.dryG / 100) * dryFood.kcalPer100g : 0) +
+    (wetFood ? (meal.wetG / 100) * wetFood.kcalPer100g : 0) +
+    treatKcal;
   const label = meal.label || `Meal ${index + 1}`;
 
   if (!isEditing) {
@@ -616,9 +643,11 @@ function MealRow({ meal, index, dryFood, wetFood, isEditing, defaultSupplements,
           </div>
           <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', color: COLORS.muted, marginTop: 2 }}>
             {meal.dryG > 0 && <>{n1(meal.dryG)}g dry{dryFood ? ` (${dryFood.brand})` : ''}</>}
-            {meal.dryG > 0 && (meal.wetG > 0 || meal.addedWaterMl > 0) && ' · '}
+            {meal.dryG > 0 && (meal.wetG > 0 || meal.addedWaterMl > 0 || treatG > 0) && ' · '}
             {meal.wetG > 0 && <>{n1(meal.wetG)}g wet{wetFood ? ` (${wetFood.brand})` : ''}</>}
-            {(meal.dryG > 0 || meal.wetG > 0) && meal.addedWaterMl > 0 && ' · '}
+            {meal.wetG > 0 && (meal.addedWaterMl > 0 || treatG > 0) && ' · '}
+            {treatG > 0 && treatFood && <>{n1(treatG)}g {treatFood.brand} treat</>}
+            {treatG > 0 && meal.addedWaterMl > 0 && ' · '}
             {meal.addedWaterMl > 0 && <>{n0(meal.addedWaterMl)}ml water</>}
             {meal.supplements && meal.supplements.length > 0 && (
               <span style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: 4, marginLeft: 8 }}>
@@ -669,6 +698,25 @@ function MealRow({ meal, index, dryFood, wetFood, isEditing, defaultSupplements,
           <Label>Water (ml)</Label>
           <input className="kubo-input" type="number" min={0} step={1} value={meal.addedWaterMl || ''} placeholder="0" onChange={e => onChange({ addedWaterMl: Math.max(0, parseFloat(e.target.value) || 0) })} />
         </div>
+      </div>
+      <div style={{ marginBottom: 10, display: 'grid', gridTemplateColumns: '1.6fr 1fr auto', gap: 8, alignItems: 'end' }} className="kubo-treat-row">
+        <div>
+          <Label>Licky treat</Label>
+          <select className="kubo-select" value={meal.treatFoodId ?? ''} onChange={e => onChange({ treatFoodId: e.target.value || null, treatG: e.target.value ? (meal.treatG ?? (treatFoods.find(f => f.id === e.target.value)?.canSizeG ?? 15)) : 0 })}>
+            <option value="">— none —</option>
+            {treatFoods.map(f => <option key={f.id} value={f.id}>{f.brand} · {f.name}</option>)}
+          </select>
+        </div>
+        <div>
+          <Label>Grams</Label>
+          <input className="kubo-input" type="number" min={0} step={0.5} value={meal.treatG || ''} placeholder={treatFood?.canSizeG?.toString() ?? '0'} onChange={e => onChange({ treatG: Math.max(0, parseFloat(e.target.value) || 0) })} disabled={!meal.treatFoodId} />
+        </div>
+        {meal.treatFoodId && treatFood && (
+          <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', color: COLORS.muted, paddingBottom: 8, whiteSpace: 'nowrap' }}>
+            {treatFood.canSizeG ? `${((meal.treatG ?? 0) / treatFood.canSizeG).toFixed(2)} tube · ` : ''}{n0(treatKcal)} kcal
+          </div>
+        )}
+        <style>{`@media (max-width: 640px) { .kubo-treat-row { grid-template-columns: 1fr 1fr !important; } }`}</style>
       </div>
       <div style={{ marginBottom: 8 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6, gap: 8, flexWrap: 'wrap' }}>
@@ -1641,6 +1689,7 @@ function FoodEditor({ food, isNew, onSave, onDelete, onClose }: {
           <select className="kubo-select" value={f.type} onChange={e => patch({ type: e.target.value as Food['type'] })}>
             <option value="dry">Dry</option>
             <option value="wet">Wet</option>
+            <option value="treat">Treat / lickable</option>
           </select>
         </div>
         <div><Label>Life stage</Label>
@@ -1680,10 +1729,10 @@ function FoodEditor({ food, isNew, onSave, onDelete, onClose }: {
 // ────────────────────────────────────────────────────────────────────────────
 
 function RecommendTab({ cat, foods }: { cat: Cat; foods: Food[] }) {
-  const [filter, setFilter] = useState<'all' | 'dry' | 'wet'>('all');
+  const [filter, setFilter] = useState<'all' | 'dry' | 'wet' | 'treat'>('all');
   const ranked = useMemo(() => {
     return foods
-      .filter(f => filter === 'all' || f.type === filter)
+      .filter(f => filter === 'all' ? f.type !== 'treat' : f.type === filter)
       .map(f => ({ food: f, ...scoreFoodForCat(cat, f) }))
       .sort((a, b) => b.score - a.score);
   }, [cat, foods, filter]);
@@ -1698,7 +1747,7 @@ function RecommendTab({ cat, foods }: { cat: Cat; foods: Food[] }) {
           </p>
         </div>
         <div style={{ display: 'flex', gap: 4, background: COLORS.panel, border: `1px solid ${COLORS.border}`, borderRadius: 8, padding: 3 }}>
-          {(['all', 'dry', 'wet'] as const).map(k => (
+          {(['all', 'dry', 'wet', 'treat'] as const).map(k => (
             <button key={k} className="kubo-tab" onClick={() => setFilter(k)} style={{
               background: filter === k ? COLORS.panelHi : 'transparent',
               border: `1px solid ${filter === k ? COLORS.borderHi : 'transparent'}`,

@@ -1,7 +1,7 @@
 export type Sex = 'male' | 'female';
 export type Activity = 'indoor-low' | 'indoor-active' | 'outdoor';
 export type LifeStage = 'kitten' | 'young-adult' | 'adult' | 'senior';
-export type FoodType = 'dry' | 'wet';
+export type FoodType = 'dry' | 'wet' | 'treat';
 export type LifeStageTarget = 'kitten' | 'adult' | 'all';
 export type PriceUnit = 'per-kg' | 'per-can';
 
@@ -72,6 +72,8 @@ export interface MealEntry {
   dryG: number;
   wetG: number;
   addedWaterMl: number;
+  treatFoodId?: string | null;
+  treatG?: number;
   supplements?: Supplement[];
   notes?: string;
 }
