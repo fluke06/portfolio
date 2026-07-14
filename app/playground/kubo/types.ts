@@ -23,7 +23,7 @@ export interface Cat {
   idealWeightKg?: number;
   bcs: number;
   activity: Activity;
-  defaultSupplements?: string;
+  defaultSupplements?: Supplement[];
   notes?: string;
 }
 
@@ -58,6 +58,13 @@ export interface MealPlan {
   mealTimes?: string[];
 }
 
+export interface Supplement {
+  name: string;
+  dose: string;
+  info?: string;
+  sourceUrl?: string;
+}
+
 export interface MealEntry {
   id: string;
   time?: string;
@@ -65,7 +72,7 @@ export interface MealEntry {
   dryG: number;
   wetG: number;
   addedWaterMl: number;
-  supplements?: string;
+  supplements?: Supplement[];
   notes?: string;
 }
 

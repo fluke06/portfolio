@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { StickyNav } from '@/components/sticky-nav';
 import { FooterSection } from '@/components/footer-section';
-import type { Cat, Food, IntakeLog, MealEntry, MealPlan } from './types';
+import type { Cat, Food, IntakeLog, MealEntry, MealPlan, Supplement } from './types';
 import {
   ageDisplay, ageInMonths, computeMealPlan, defaultMealTimes, der, estimatedBcs, formatTime12, growthStatus,
   lifeStage, lifeStageLabel, normalizedMealTimes, planAdvisory, proteinTargetG, scoreFoodForCat, timeToMinutes,
@@ -255,6 +255,103 @@ function Label({ children }: { children: React.ReactNode }) {
   );
 }
 
+function SupplementList({ supplements, onChange, emptyHint }: {
+  supplements: Supplement[];
+  onChange: (list: Supplement[]) => void;
+  emptyHint?: string;
+}) {
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+  const update = (i: number, patch: Partial<Supplement>) => {
+    onChange(supplements.map((s, idx) => idx === i ? { ...s, ...patch } : s));
+  };
+  const remove = (i: number) => {
+    onChange(supplements.filter((_, idx) => idx !== i));
+    if (expandedIndex === i) setExpandedIndex(null);
+  };
+  const add = () => {
+    onChange([...supplements, { name: '', dose: '' }]);
+    setExpandedIndex(supplements.length);
+  };
+  const searchUrl = (name: string) => `https://www.google.com/search?q=${encodeURIComponent(name + ' cat supplement composition dose')}`;
+
+  return (
+    <div>
+      {supplements.length === 0 ? (
+        <div style={{
+          padding: '10px 12px', background: COLORS.bg, borderRadius: 8, border: `1px dashed ${COLORS.border}`,
+          fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.75rem', color: COLORS.muted, marginBottom: 8,
+        }}>
+          {emptyHint ?? 'No supplements listed.'}
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8 }}>
+          {supplements.map((s, i) => {
+            const isOpen = expandedIndex === i;
+            return (
+              <div key={i} style={{ background: COLORS.bg, borderRadius: 8, border: `1px solid ${COLORS.border}`, padding: 8 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr auto auto', gap: 6, alignItems: 'center' }} className="kubo-supp-row">
+                  <input
+                    className="kubo-input"
+                    placeholder="Name (e.g. Immunopet)"
+                    value={s.name}
+                    onChange={e => update(i, { name: e.target.value })}
+                    style={{ padding: '8px 10px', fontSize: '0.82rem' }}
+                  />
+                  <input
+                    className="kubo-input"
+                    placeholder="Dose (e.g. 0.5 ml)"
+                    value={s.dose}
+                    onChange={e => update(i, { dose: e.target.value })}
+                    style={{ padding: '8px 10px', fontSize: '0.82rem' }}
+                  />
+                  <button className="kubo-btn" onClick={() => setExpandedIndex(isOpen ? null : i)} style={{ padding: '6px 10px', fontSize: '0.7rem' }} title="More info">
+                    {isOpen ? '−' : 'ⓘ'}
+                  </button>
+                  <button className="kubo-btn kubo-btn-danger" onClick={() => remove(i)} style={{ padding: '6px 10px', fontSize: '0.72rem' }} title="Remove">×</button>
+                </div>
+                {isOpen && (
+                  <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <div>
+                      <Label>What is it? (composition / purpose)</Label>
+                      <textarea
+                        className="kubo-input" rows={3}
+                        placeholder={`Paste the label ingredients here, or search online.`}
+                        value={s.info ?? ''}
+                        onChange={e => update(i, { info: e.target.value })}
+                        style={{ fontSize: '0.78rem' }}
+                      />
+                    </div>
+                    <div>
+                      <Label>Reference link (optional)</Label>
+                      <input
+                        className="kubo-input"
+                        placeholder="https://..."
+                        value={s.sourceUrl ?? ''}
+                        onChange={e => update(i, { sourceUrl: e.target.value })}
+                        style={{ padding: '8px 10px', fontSize: '0.78rem' }}
+                      />
+                    </div>
+                    {s.name && (
+                      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem' }}>
+                        <a href={searchUrl(s.name)} target="_blank" rel="noreferrer" style={{ color: COLORS.cream, textDecoration: 'underline', textDecorationStyle: 'dotted' }}>
+                          Search online for {s.name} →
+                        </a>
+                        {s.sourceUrl && <a href={s.sourceUrl} target="_blank" rel="noreferrer" style={{ color: COLORS.gold, textDecoration: 'underline', textDecorationStyle: 'dotted' }}>Open saved link →</a>}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          <style>{`@media (max-width: 640px) { .kubo-supp-row { grid-template-columns: 1fr auto auto !important; } .kubo-supp-row input:nth-of-type(2) { grid-column: 1 / -1 !important; } }`}</style>
+        </div>
+      )}
+      <button className="kubo-btn" onClick={add} style={{ padding: '6px 12px', fontSize: '0.75rem' }}>+ Add supplement</button>
+    </div>
+  );
+}
+
 function StatRow({ label, value, sub, color }: { label: string; value: string; sub?: string; color?: string }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, padding: '10px 0', borderBottom: `1px solid ${COLORS.border}` }}>
@@ -502,7 +599,7 @@ function MealRow({ meal, index, dryFood, wetFood, isEditing, defaultSupplements,
   meal: MealEntry; index: number;
   dryFood: Food | null; wetFood: Food | null;
   isEditing: boolean;
-  defaultSupplements?: string;
+  defaultSupplements?: Supplement[];
   onEdit: () => void; onSave: () => void;
   onChange: (patch: Partial<MealEntry>) => void;
   onDelete: () => void;
@@ -523,9 +620,18 @@ function MealRow({ meal, index, dryFood, wetFood, isEditing, defaultSupplements,
             {meal.wetG > 0 && <>{n1(meal.wetG)}g wet{wetFood ? ` (${wetFood.brand})` : ''}</>}
             {(meal.dryG > 0 || meal.wetG > 0) && meal.addedWaterMl > 0 && ' · '}
             {meal.addedWaterMl > 0 && <>{n0(meal.addedWaterMl)}ml water</>}
-            {meal.supplements && (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginLeft: 8, padding: '1px 8px', background: 'rgba(232,179,128,0.14)', border: `1px solid rgba(232,179,128,0.3)`, borderRadius: 99, color: COLORS.cream, fontSize: '0.68rem', letterSpacing: '0.02em' }}>
-                Rx&nbsp;·&nbsp;{meal.supplements}
+            {meal.supplements && meal.supplements.length > 0 && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: 4, marginLeft: 8 }}>
+                {meal.supplements.map((s, si) => (
+                  <span key={si} style={{
+                    display: 'inline-flex', alignItems: 'baseline', gap: 4, padding: '1px 8px',
+                    background: 'rgba(232,179,128,0.14)', border: `1px solid rgba(232,179,128,0.3)`,
+                    borderRadius: 99, color: COLORS.cream, fontSize: '0.68rem', letterSpacing: '0.02em',
+                  }}>
+                    <strong style={{ color: COLORS.text }}>{s.name}</strong>
+                    {s.dose && <span>{s.dose}</span>}
+                  </span>
+                ))}
               </span>
             )}
             {meal.notes && <span style={{ display: 'block', marginTop: 2, fontStyle: 'italic' }}>&ldquo;{meal.notes}&rdquo;</span>}
@@ -565,23 +671,27 @@ function MealRow({ meal, index, dryFood, wetFood, isEditing, defaultSupplements,
         </div>
       </div>
       <div style={{ marginBottom: 8 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6, gap: 8, flexWrap: 'wrap' }}>
           <Label>Supplements / vitamins</Label>
-          {defaultSupplements && meal.supplements !== defaultSupplements && (
+          {defaultSupplements && defaultSupplements.length > 0 && (
             <button
               type="button"
-              onClick={() => onChange({ supplements: defaultSupplements })}
+              onClick={() => onChange({ supplements: defaultSupplements.map(s => ({ ...s })) })}
               style={{
                 background: 'transparent', border: 'none', padding: 0, cursor: 'pointer',
                 color: COLORS.cream, fontFamily: 'var(--font-inter), sans-serif',
                 fontSize: '0.7rem', textDecoration: 'underline', textDecorationStyle: 'dotted',
               }}
             >
-              Use default ({defaultSupplements})
+              Use default ({defaultSupplements.map(s => s.name).join(' · ')})
             </button>
           )}
         </div>
-        <input className="kubo-input" value={meal.supplements ?? ''} placeholder="e.g. Immunopet · Emerflex" onChange={e => onChange({ supplements: e.target.value })} />
+        <SupplementList
+          supplements={meal.supplements ?? []}
+          onChange={list => onChange({ supplements: list.length ? list : undefined })}
+          emptyHint="No supplements this meal. Add one if he took Immunopet, Emerflex, etc."
+        />
       </div>
       <div style={{ marginBottom: 8 }}>
         <Label>Notes (optional)</Label>
@@ -798,14 +908,13 @@ function CatsTab({ store, setActiveCat, updateCat, addCat, removeCat }: {
           </div>
           <div style={{ gridColumn: '1 / -1' }}>
             <Label>Daily supplements / vitamins</Label>
-            <input
-              className="kubo-input"
-              value={active.defaultSupplements ?? ''}
-              placeholder="e.g. Immunopet · Emerflex"
-              onChange={e => updateCat({ defaultSupplements: e.target.value })}
+            <SupplementList
+              supplements={active.defaultSupplements ?? []}
+              onChange={list => updateCat({ defaultSupplements: list.length ? list : undefined })}
+              emptyHint="No supplements yet. Add ones you give daily (e.g. Immunopet 0.5 ml)."
             />
             <p style={{ margin: '6px 2px 0', fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.7rem', color: COLORS.muted, lineHeight: 1.55 }}>
-              Suggested when logging a meal — you can add/remove per meal.
+              These auto-fill on the first meal of the day. Edit doses freely — &ldquo;0.5 ml&rdquo;, &ldquo;1 pump&rdquo;, &ldquo;half tablet&rdquo;, whatever fits.
             </p>
           </div>
           <div style={{ gridColumn: '1 / -1' }}>

@@ -1,4 +1,4 @@
-import type { Cat, Food, IntakeLog, MealPlan } from './types';
+import type { Cat, Food, IntakeLog, MealPlan, Supplement } from './types';
 import { KUBO_CAT, KUBO_PLAN, SEED_FOODS } from './seed';
 
 const KEY = 'kubo:v1';
@@ -24,12 +24,38 @@ function defaults(): KuboStore {
   };
 }
 
+function parseSupplementString(s: string): Supplement[] {
+  if (!s) return [];
+  return s.split(/\s*[·,;]\s*/).filter(Boolean).map(part => {
+    // Split into "Name" + "dose". Dose is the tail that starts with a digit.
+    const match = part.match(/^(.+?)\s+(\d.*)$/);
+    if (match) return { name: match[1].trim(), dose: match[2].trim() };
+    return { name: part.trim(), dose: '' };
+  });
+}
+
+function normalizeSupplements(raw: unknown): Supplement[] | undefined {
+  if (raw == null) return undefined;
+  if (typeof raw === 'string') return raw.trim() ? parseSupplementString(raw) : undefined;
+  if (Array.isArray(raw)) {
+    return raw
+      .filter((r): r is { name?: unknown; dose?: unknown } => typeof r === 'object' && r !== null)
+      .map(r => ({ name: String(r.name ?? '').trim(), dose: String(r.dose ?? '').trim() }))
+      .filter(s => s.name);
+  }
+  return undefined;
+}
+
+function migrateCat(cat: Cat & { defaultSupplements?: unknown }): Cat {
+  return { ...cat, defaultSupplements: normalizeSupplements(cat.defaultSupplements) };
+}
+
 interface LegacyIntakeLog {
   date: string;
   dryG?: number;
   wetG?: number;
   addedWaterMl?: number;
-  meals?: IntakeLog['meals'];
+  meals?: (IntakeLog['meals'][number] & { supplements?: unknown })[];
 }
 
 function migrateIntake(intake: Record<string, Record<string, LegacyIntakeLog>> | undefined): Record<string, Record<string, IntakeLog>> {
@@ -40,7 +66,13 @@ function migrateIntake(intake: Record<string, Record<string, LegacyIntakeLog>> |
     for (const date of Object.keys(intake[catId])) {
       const raw = intake[catId][date] as LegacyIntakeLog;
       if (Array.isArray(raw.meals)) {
-        out[catId][date] = { date, meals: raw.meals };
+        out[catId][date] = {
+          date,
+          meals: raw.meals.map(m => ({
+            ...m,
+            supplements: normalizeSupplements(m.supplements),
+          })),
+        };
       } else if (typeof raw.dryG === 'number' || typeof raw.wetG === 'number' || typeof raw.addedWaterMl === 'number') {
         out[catId][date] = {
           date,
@@ -67,7 +99,11 @@ export function load(): KuboStore {
     if (!raw) return defaults();
     const parsed = JSON.parse(raw) as KuboStore & { intake?: Record<string, Record<string, LegacyIntakeLog>> };
     if (!parsed || parsed.version !== SCHEMA_VERSION) return defaults();
-    return { ...parsed, intake: migrateIntake(parsed.intake) };
+    return {
+      ...parsed,
+      cats: parsed.cats.map(migrateCat),
+      intake: migrateIntake(parsed.intake),
+    };
   } catch {
     return defaults();
   }

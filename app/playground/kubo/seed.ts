@@ -15,7 +15,20 @@ export const KUBO_CAT: Cat = {
   ],
   bcs: 5,
   activity: 'indoor-active',
-  defaultSupplements: 'Immunopet · Emerflex',
+  defaultSupplements: [
+    {
+      name: 'Immunopet Probiotic Vita-Paste',
+      dose: '4.4 g',
+      info: 'Probiotic + vitamin oral paste for cats and dogs (PH veterinary market). Typical formulation: live probiotics (Bacillus / Lactobacillus strains), vitamins A, D3, E, B-complex · amino acids · malt-based palatable paste. Supports gut flora and immunity — often given post-deworming and during the vaccination window. 4.4g = one full syringe dose typical for a kitten. Verify exact composition from the package label.',
+      sourceUrl: 'https://www.google.com/search?q=Immunopet+Probiotic+Vita-Paste+cat+composition',
+    },
+    {
+      name: 'Emerflex',
+      dose: '0.5 ml',
+      info: 'Oral vitamin-mineral liquid for cats and dogs (PH veterinary market). Typical formulation: vitamins A, D, E, K, B-complex, C · amino acids lysine, methionine, taurine · iron, calcium. Given as a general nutritional-support supplement, often during recovery or growth. Verify exact composition and dosage from the bottle label.',
+      sourceUrl: 'https://www.google.com/search?q=Emerflex+cat+supplement+composition',
+    },
+  ],
   notes: 'On Immunopet + Emerflex vitamins until 2026-07-20. Last deworming done, first 4-in-1 vaccine done.',
 };
 
