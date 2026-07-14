@@ -1729,21 +1729,107 @@ function FoodsTab({ foods, upsertFood, removeFood }: {
 }) {
   const [editing, setEditing] = useState<Food | null>(null);
   const [creating, setCreating] = useState(false);
+  const [typeFilter, setTypeFilter] = useState<'all' | 'dry' | 'wet' | 'treat'>('all');
+  const [stageFilter, setStageFilter] = useState<'all' | 'kitten' | 'adult' | 'all-stages'>('all');
+  const [query, setQuery] = useState('');
+  const [sort, setSort] = useState<'brand' | 'kcal' | 'price' | 'protein'>('brand');
+
   const blank = (): Food => ({
     id: `food-${Date.now()}`, brand: '', name: '', type: 'dry',
     kcalPer100g: 380, protein: 30, fat: 12, moisture: 10,
     pricePhp: 500, priceUnit: 'per-kg', lifeStage: 'all',
   });
 
+  const typeColor: Record<Food['type'], string> = { dry: COLORS.cream, wet: COLORS.gold, treat: COLORS.good };
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    let list = foods.filter(f => {
+      if (typeFilter !== 'all' && f.type !== typeFilter) return false;
+      if (stageFilter !== 'all') {
+        if (stageFilter === 'all-stages' && f.lifeStage !== 'all') return false;
+        if (stageFilter === 'kitten'     && f.lifeStage !== 'kitten') return false;
+        if (stageFilter === 'adult'      && f.lifeStage !== 'adult')  return false;
+      }
+      if (!q) return true;
+      return (f.brand + ' ' + f.name).toLowerCase().includes(q);
+    });
+    list = [...list].sort((a, b) => {
+      if (sort === 'brand')   return (a.brand + a.name).localeCompare(b.brand + b.name);
+      if (sort === 'kcal')    return b.kcalPer100g - a.kcalPer100g;
+      if (sort === 'protein') return b.protein - a.protein;
+      if (sort === 'price')   return a.pricePhp - b.pricePhp;
+      return 0;
+    });
+    return list;
+  }, [foods, typeFilter, stageFilter, query, sort]);
+
+  const counts = {
+    all:   foods.length,
+    dry:   foods.filter(f => f.type === 'dry').length,
+    wet:   foods.filter(f => f.type === 'wet').length,
+    treat: foods.filter(f => f.type === 'treat').length,
+  };
+
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'clamp(300px, 45%, 460px) 1fr', gap: 20 }} className="kubo-two">
+    <div style={{ display: 'grid', gridTemplateColumns: 'clamp(320px, 45%, 480px) 1fr', gap: 20 }} className="kubo-two">
       <Card>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-          <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: COLORS.muted }}>Food library ({foods.length})</div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, gap: 8, flexWrap: 'wrap' }}>
+          <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: COLORS.muted }}>
+            Food library &middot; {filtered.length} of {foods.length}
+          </div>
           <button className="kubo-btn kubo-btn-primary" onClick={() => { setEditing(blank()); setCreating(true); }}>+ Add food</button>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 620, overflowY: 'auto' }}>
-          {foods.map(f => (
+
+        {/* Filters */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
+          <input
+            className="kubo-input"
+            placeholder="Search by brand or name…"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            style={{ padding: '8px 12px', fontSize: '0.82rem' }}
+          />
+          <div style={{ display: 'flex', gap: 4, background: COLORS.bg, borderRadius: 8, padding: 3, flexWrap: 'wrap' }}>
+            {([
+              { key: 'all' as const,   label: 'All',   count: counts.all   },
+              { key: 'dry' as const,   label: 'Dry',   count: counts.dry   },
+              { key: 'wet' as const,   label: 'Wet',   count: counts.wet   },
+              { key: 'treat' as const, label: 'Treat', count: counts.treat },
+            ]).map(t => (
+              <button key={t.key} onClick={() => setTypeFilter(t.key)} className="kubo-tab" style={{
+                flex: 1, minWidth: 60,
+                background: typeFilter === t.key ? COLORS.panelHi : 'transparent',
+                border: `1px solid ${typeFilter === t.key ? COLORS.borderHi : 'transparent'}`,
+                borderRadius: 6, padding: '6px 8px',
+                color: typeFilter === t.key ? COLORS.text : COLORS.muted,
+                fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem',
+                cursor: 'pointer', transition: 'all 0.15s ease',
+              }}>{t.label} <span style={{ opacity: 0.6, marginLeft: 2 }}>{t.count}</span></button>
+            ))}
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            <select className="kubo-select" value={stageFilter} onChange={e => setStageFilter(e.target.value as typeof stageFilter)} style={{ padding: '7px 10px', fontSize: '0.78rem' }}>
+              <option value="all">Any life stage</option>
+              <option value="kitten">Kitten only</option>
+              <option value="adult">Adult only</option>
+              <option value="all-stages">All-life-stages</option>
+            </select>
+            <select className="kubo-select" value={sort} onChange={e => setSort(e.target.value as typeof sort)} style={{ padding: '7px 10px', fontSize: '0.78rem' }}>
+              <option value="brand">Sort: brand A–Z</option>
+              <option value="kcal">Sort: highest kcal</option>
+              <option value="protein">Sort: highest protein</option>
+              <option value="price">Sort: cheapest first</option>
+            </select>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 620, overflowY: 'auto', paddingRight: 2 }}>
+          {filtered.length === 0 ? (
+            <div style={{ padding: '20px 12px', textAlign: 'center', fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.78rem', color: COLORS.muted, background: COLORS.bg, borderRadius: 8 }}>
+              No foods match those filters.
+            </div>
+          ) : filtered.map(f => (
             <button key={f.id} onClick={() => { setEditing(f); setCreating(false); }} style={{
               display: 'flex', flexDirection: 'column', gap: 2,
               background: editing?.id === f.id && !creating ? COLORS.panelHi : COLORS.bg,
@@ -1751,10 +1837,10 @@ function FoodsTab({ foods, upsertFood, removeFood }: {
               borderRadius: 10, padding: 12, textAlign: 'left', cursor: 'pointer', transition: 'all 0.15s ease',
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-                <span style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.85rem', color: COLORS.text, fontWeight: 500 }}>{f.brand} <span style={{ color: COLORS.muted }}>{f.name}</span></span>
-                <span style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.68rem', color: f.type === 'dry' ? COLORS.cream : COLORS.gold, textTransform: 'uppercase', letterSpacing: '0.1em', flexShrink: 0 }}>{f.type}</span>
+                <span style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.85rem', color: COLORS.text, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{f.brand} <span style={{ color: COLORS.muted }}>{f.name}</span></span>
+                <span style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.66rem', color: typeColor[f.type], textTransform: 'uppercase', letterSpacing: '0.1em', flexShrink: 0 }}>{f.type}</span>
               </div>
-              <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', color: COLORS.muted }}>
+              <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', color: COLORS.muted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {f.kcalPer100g} kcal/100g · {f.protein}% protein · {peso(f.pricePhp)} {f.priceUnit === 'per-kg' ? '/kg' : '/can'}
               </div>
             </button>
