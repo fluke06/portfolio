@@ -78,7 +78,14 @@ export interface MealEntry {
   notes?: string;
 }
 
+export interface SupplementGiven {
+  name: string;
+  dose: string;
+  time: string;
+}
+
 export interface IntakeLog {
   date: string;
   meals: MealEntry[];
+  supplementsGiven?: SupplementGiven[];
 }

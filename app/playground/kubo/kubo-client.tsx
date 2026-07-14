@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { StickyNav } from '@/components/sticky-nav';
 import { FooterSection } from '@/components/footer-section';
-import type { Cat, Food, IntakeLog, MealEntry, MealPlan, Supplement } from './types';
+import type { Cat, Food, IntakeLog, MealEntry, MealPlan, Supplement, SupplementGiven } from './types';
 import {
   ageDisplay, ageInMonths, computeMealPlan, defaultMealTimes, der, estimatedBcs, formatTime12, growthStatus,
   lifeStage, lifeStageLabel, normalizedMealTimes, planAdvisory, proteinTargetG, scoreFoodForCat, timeToMinutes,
@@ -571,6 +571,16 @@ function TodayIntakeCard({ cat, plan, foods, breakdown, log, setLog, clearLog, p
         </div>
       </div>
 
+      {/* Daily supplements checklist */}
+      {(cat.defaultSupplements && cat.defaultSupplements.length > 0) && (
+        <SupplementChecklist
+          defaults={cat.defaultSupplements}
+          given={log.supplementsGiven ?? []}
+          meals={meals}
+          onChange={next => setLog({ ...log, supplementsGiven: next })}
+        />
+      )}
+
       {/* Meal list */}
       {meals.length === 0 ? (
         <div style={{ padding: '24px 16px', textAlign: 'center', background: COLORS.bg, borderRadius: 10, fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.82rem', color: COLORS.muted, lineHeight: 1.6, marginBottom: 16 }}>
@@ -612,6 +622,106 @@ function TodayIntakeCard({ cat, plan, foods, breakdown, log, setLog, clearLog, p
 
       <style>{`@media (max-width: 640px) { .kubo-intake-inputs { grid-template-columns: 1fr !important; } }`}</style>
     </Card>
+  );
+}
+
+function SupplementChecklist({ defaults, given, meals, onChange }: {
+  defaults: Supplement[];
+  given: SupplementGiven[];
+  meals: MealEntry[];
+  onChange: (next: SupplementGiven[]) => void;
+}) {
+  // A supplement counts as "given" if it's in supplementsGiven OR appears in any meal today.
+  const givenFromMeals: Record<string, string> = {};
+  for (const m of meals) {
+    if (!m.supplements || !m.time) continue;
+    for (const s of m.supplements) {
+      if (!s.name) continue;
+      if (!givenFromMeals[s.name]) givenFromMeals[s.name] = m.time;
+    }
+  }
+
+  const isGiven = (name: string) => given.some(g => g.name === name) || Boolean(givenFromMeals[name]);
+  const givenAt = (name: string): string | null => {
+    const explicit = given.find(g => g.name === name);
+    if (explicit) return explicit.time;
+    return givenFromMeals[name] ?? null;
+  };
+  const givenSource = (name: string): 'checked' | 'meal' | null => {
+    if (given.some(g => g.name === name)) return 'checked';
+    if (givenFromMeals[name]) return 'meal';
+    return null;
+  };
+
+  const toggle = (s: Supplement) => {
+    if (givenSource(s.name) === 'meal') return;
+    if (given.some(g => g.name === s.name)) {
+      onChange(given.filter(g => g.name !== s.name));
+    } else {
+      const now = new Date();
+      const time = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      onChange([...given, { name: s.name, dose: s.dose, time }]);
+    }
+  };
+
+  const allDone = defaults.every(s => isGiven(s.name));
+  const doneCount = defaults.filter(s => isGiven(s.name)).length;
+
+  return (
+    <div style={{
+      background: allDone ? 'rgba(76,175,130,0.08)' : COLORS.bg,
+      border: `1px solid ${allDone ? 'rgba(76,175,130,0.25)' : COLORS.border}`,
+      borderRadius: 10, padding: 14, marginBottom: 12,
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, gap: 10, flexWrap: 'wrap' }}>
+        <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: allDone ? COLORS.good : COLORS.muted }}>
+          Today&apos;s supplements &middot; {doneCount}/{defaults.length} given
+        </div>
+        {allDone && (
+          <span style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', color: COLORS.good, fontWeight: 500 }}>All done for today</span>
+        )}
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {defaults.map((s, i) => {
+          const done = isGiven(s.name);
+          const t = givenAt(s.name);
+          const source = givenSource(s.name);
+          const isFromMeal = source === 'meal';
+          return (
+            <button key={i} onClick={() => toggle(s)} disabled={isFromMeal} style={{
+              display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: 10, alignItems: 'center',
+              background: done ? 'rgba(76,175,130,0.12)' : COLORS.panelHi,
+              border: `1px solid ${done ? 'rgba(76,175,130,0.35)' : COLORS.border}`,
+              borderRadius: 8, padding: '10px 12px', width: '100%', textAlign: 'left',
+              cursor: isFromMeal ? 'default' : 'pointer', transition: 'all 0.15s ease',
+              opacity: isFromMeal ? 0.9 : 1,
+            }}>
+              <span style={{
+                width: 20, height: 20, borderRadius: 6,
+                background: done ? COLORS.good : 'transparent',
+                border: `1.5px solid ${done ? COLORS.good : COLORS.muted}`,
+                display: 'grid', placeItems: 'center', flexShrink: 0,
+                fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.8rem', color: COLORS.bg, fontWeight: 700,
+              }}>{done ? '✓' : ''}</span>
+              <span style={{ minWidth: 0 }}>
+                <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.85rem', color: COLORS.text, fontWeight: 500 }}>
+                  {s.name}
+                </div>
+                <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.7rem', color: COLORS.muted, marginTop: 1 }}>
+                  {s.dose}{t && ` · given ${formatTime12(t)}`}{isFromMeal && ' (from a logged meal)'}
+                </div>
+              </span>
+              <span style={{
+                fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.7rem',
+                color: done ? COLORS.good : COLORS.muted, whiteSpace: 'nowrap',
+              }}>
+                {done ? 'Given' : 'Tap to mark'}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
