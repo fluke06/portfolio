@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { StickyNav } from '@/components/sticky-nav';
 import { FooterSection } from '@/components/footer-section';
-import type { Cat, Food, IntakeLog, MealEntry, MealPlan, Supplement, SupplementGiven } from './types';
+import type { Cat, Food, IntakeLog, MealEntry, MealPlan, MealTreat, Supplement, SupplementGiven } from './types';
 import {
   ageDisplay, ageInMonths, computeMealPlan, defaultMealTimes, der, estimatedBcs, formatTime12, growthStatus,
   lifeStage, lifeStageLabel, normalizedMealTimes, planAdvisory, proteinTargetG, scoreFoodForCat, timeToMinutes,
@@ -504,22 +504,17 @@ function TodayIntakeCard({ cat, plan, foods, breakdown, log, setLog, clearLog, p
   const totalDryG = meals.reduce((s, m) => s + m.dryG, 0);
   const totalWetG = meals.reduce((s, m) => s + m.wetG, 0);
   const totalWaterMl = meals.reduce((s, m) => s + m.addedWaterMl, 0);
-  const totalTreatKcal = meals.reduce((s, m) => {
-    if (!m.treatFoodId || !m.treatG) return s;
-    const tf = foods.find(f => f.id === m.treatFoodId);
-    return tf ? s + (m.treatG / 100) * tf.kcalPer100g : s;
+  const treatContribution = (fn: (food: Food, g: number) => number) => meals.reduce((s, m) => {
+    if (!m.treats) return s;
+    return s + m.treats.reduce((ss, t) => {
+      const tf = foods.find(f => f.id === t.foodId);
+      return tf && t.g > 0 ? ss + fn(tf, t.g) : ss;
+    }, 0);
   }, 0);
-  const totalTreatG = meals.reduce((s, m) => s + (m.treatG ?? 0), 0);
-  const totalTreatProteinG = meals.reduce((s, m) => {
-    if (!m.treatFoodId || !m.treatG) return s;
-    const tf = foods.find(f => f.id === m.treatFoodId);
-    return tf ? s + (m.treatG * tf.protein) / 100 : s;
-  }, 0);
-  const totalTreatMoistureMl = meals.reduce((s, m) => {
-    if (!m.treatFoodId || !m.treatG) return s;
-    const tf = foods.find(f => f.id === m.treatFoodId);
-    return tf ? s + (m.treatG * tf.moisture) / 100 : s;
-  }, 0);
+  const totalTreatKcal      = treatContribution((f, g) => (g / 100) * f.kcalPer100g);
+  const totalTreatG         = meals.reduce((s, m) => s + (m.treats?.reduce((ss, t) => ss + (t.g > 0 ? t.g : 0), 0) ?? 0), 0);
+  const totalTreatProteinG  = treatContribution((f, g) => (g * f.protein) / 100);
+  const totalTreatMoistureMl = treatContribution((f, g) => (g * f.moisture) / 100);
 
   const actualDryKcal = dryFood ? (totalDryG / 100) * dryFood.kcalPer100g : 0;
   const actualWetKcal = wetFood ? (totalWetG / 100) * wetFood.kcalPer100g : 0;
@@ -735,14 +730,19 @@ function MealRow({ meal, index, dryFood, wetFood, treatFoods, isEditing, default
   onChange: (patch: Partial<MealEntry>) => void;
   onDelete: () => void;
 }) {
-  const treatFood = meal.treatFoodId ? treatFoods.find(f => f.id === meal.treatFoodId) ?? null : null;
-  const treatG = meal.treatG ?? 0;
-  const treatKcal = treatFood ? (treatG / 100) * treatFood.kcalPer100g : 0;
+  const treats = meal.treats ?? [];
+  const resolvedTreats = treats.map(t => ({ ...t, food: treatFoods.find(f => f.id === t.foodId) ?? null }));
+  const totalTreatG = resolvedTreats.reduce((s, t) => s + (t.g > 0 ? t.g : 0), 0);
+  const totalTreatKcal = resolvedTreats.reduce((s, t) => s + (t.food && t.g > 0 ? (t.g / 100) * t.food.kcalPer100g : 0), 0);
   const kcal =
     (dryFood ? (meal.dryG / 100) * dryFood.kcalPer100g : 0) +
     (wetFood ? (meal.wetG / 100) * wetFood.kcalPer100g : 0) +
-    treatKcal;
+    totalTreatKcal;
   const label = meal.label || `Meal ${index + 1}`;
+
+  const addTreat = () => onChange({ treats: [...treats, { foodId: treatFoods[0]?.id ?? '', g: treatFoods[0]?.canSizeG ?? 15 }] });
+  const updateTreat = (i: number, patch: Partial<MealTreat>) => onChange({ treats: treats.map((t, idx) => idx === i ? { ...t, ...patch } : t) });
+  const removeTreat = (i: number) => onChange({ treats: treats.filter((_, idx) => idx !== i) });
 
   if (!isEditing) {
     return (
@@ -753,11 +753,11 @@ function MealRow({ meal, index, dryFood, wetFood, treatFoods, isEditing, default
           </div>
           <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', color: COLORS.muted, marginTop: 2 }}>
             {meal.dryG > 0 && <>{n1(meal.dryG)}g dry{dryFood ? ` (${dryFood.brand})` : ''}</>}
-            {meal.dryG > 0 && (meal.wetG > 0 || meal.addedWaterMl > 0 || treatG > 0) && ' · '}
+            {meal.dryG > 0 && (meal.wetG > 0 || meal.addedWaterMl > 0 || totalTreatG > 0) && ' · '}
             {meal.wetG > 0 && <>{n1(meal.wetG)}g wet{wetFood ? ` (${wetFood.brand})` : ''}</>}
-            {meal.wetG > 0 && (meal.addedWaterMl > 0 || treatG > 0) && ' · '}
-            {treatG > 0 && treatFood && <>{n1(treatG)}g {treatFood.brand} treat</>}
-            {treatG > 0 && meal.addedWaterMl > 0 && ' · '}
+            {meal.wetG > 0 && (meal.addedWaterMl > 0 || totalTreatG > 0) && ' · '}
+            {totalTreatG > 0 && <>{resolvedTreats.filter(t => t.g > 0).map((t, ti, arr) => <span key={ti}>{n1(t.g)}g {t.food ? t.food.brand : 'treat'}{ti < arr.length - 1 ? ', ' : ''}</span>)}</>}
+            {totalTreatG > 0 && meal.addedWaterMl > 0 && ' · '}
             {meal.addedWaterMl > 0 && <>{n0(meal.addedWaterMl)}ml water</>}
             {meal.supplements && meal.supplements.length > 0 && (
               <span style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: 4, marginLeft: 8 }}>
@@ -809,24 +809,55 @@ function MealRow({ meal, index, dryFood, wetFood, treatFoods, isEditing, default
           <input className="kubo-input" type="number" min={0} step={1} value={meal.addedWaterMl || ''} placeholder="0" onChange={e => onChange({ addedWaterMl: Math.max(0, parseFloat(e.target.value) || 0) })} />
         </div>
       </div>
-      <div style={{ marginBottom: 10, display: 'grid', gridTemplateColumns: '1.6fr 1fr auto', gap: 8, alignItems: 'end' }} className="kubo-treat-row">
-        <div>
-          <Label>Licky treat</Label>
-          <select className="kubo-select" value={meal.treatFoodId ?? ''} onChange={e => onChange({ treatFoodId: e.target.value || null, treatG: e.target.value ? (meal.treatG ?? (treatFoods.find(f => f.id === e.target.value)?.canSizeG ?? 15)) : 0 })}>
-            <option value="">— none —</option>
-            {treatFoods.map(f => <option key={f.id} value={f.id}>{f.brand} · {f.name}</option>)}
-          </select>
+      <div style={{ marginBottom: 10 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6, gap: 8, flexWrap: 'wrap' }}>
+          <Label>Licky treats</Label>
+          {treats.length > 0 && (
+            <span style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.7rem', color: COLORS.muted }}>
+              {treats.length} treat{treats.length === 1 ? '' : 's'} · {n0(totalTreatG)}g · {n0(totalTreatKcal)} kcal
+            </span>
+          )}
         </div>
-        <div>
-          <Label>Grams</Label>
-          <input className="kubo-input" type="number" min={0} step={0.5} value={meal.treatG || ''} placeholder={treatFood?.canSizeG?.toString() ?? '0'} onChange={e => onChange({ treatG: Math.max(0, parseFloat(e.target.value) || 0) })} disabled={!meal.treatFoodId} />
-        </div>
-        {meal.treatFoodId && treatFood && (
-          <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.72rem', color: COLORS.muted, paddingBottom: 8, whiteSpace: 'nowrap' }}>
-            {treatFood.canSizeG ? `${((meal.treatG ?? 0) / treatFood.canSizeG).toFixed(2)} tube · ` : ''}{n0(treatKcal)} kcal
+        {treats.length === 0 ? (
+          <div style={{
+            padding: '10px 12px', background: COLORS.bg, borderRadius: 8, border: `1px dashed ${COLORS.border}`,
+            fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.75rem', color: COLORS.muted, marginBottom: 8,
+          }}>
+            No treats this meal.
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8 }}>
+            {resolvedTreats.map((t, i) => {
+              const kcal = t.food ? (t.g / 100) * t.food.kcalPer100g : 0;
+              const tubes = t.food?.canSizeG ? t.g / t.food.canSizeG : 0;
+              return (
+                <div key={i} style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr auto auto', gap: 8, alignItems: 'center' }} className="kubo-treat-row">
+                  <select className="kubo-select" value={t.foodId} onChange={e => {
+                    const newFood = treatFoods.find(f => f.id === e.target.value);
+                    updateTreat(i, { foodId: e.target.value, g: t.g > 0 ? t.g : (newFood?.canSizeG ?? 15) });
+                  }} style={{ padding: '8px 10px', fontSize: '0.82rem' }}>
+                    <option value="" disabled>— pick a treat —</option>
+                    {treatFoods.map(f => <option key={f.id} value={f.id}>{f.brand} · {f.name}</option>)}
+                  </select>
+                  <input
+                    className="kubo-input" type="number" min={0} step={0.5} value={t.g || ''}
+                    placeholder={t.food?.canSizeG?.toString() ?? '0'}
+                    onChange={e => updateTreat(i, { g: Math.max(0, parseFloat(e.target.value) || 0) })}
+                    style={{ padding: '8px 10px', fontSize: '0.82rem' }}
+                  />
+                  <span style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '0.7rem', color: COLORS.muted, whiteSpace: 'nowrap' }}>
+                    {tubes > 0 ? `${tubes.toFixed(2)} tube · ` : ''}{n0(kcal)} kcal
+                  </span>
+                  <button className="kubo-btn kubo-btn-danger" onClick={() => removeTreat(i)} style={{ padding: '6px 10px', fontSize: '0.72rem' }} title="Remove">×</button>
+                </div>
+              );
+            })}
+            <style>{`@media (max-width: 640px) { .kubo-treat-row { grid-template-columns: 1fr 1fr !important; } .kubo-treat-row > span, .kubo-treat-row > button { grid-column: span 1 !important; } }`}</style>
           </div>
         )}
-        <style>{`@media (max-width: 640px) { .kubo-treat-row { grid-template-columns: 1fr 1fr !important; } }`}</style>
+        <button className="kubo-btn" onClick={addTreat} disabled={treatFoods.length === 0} style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
+          + Add treat
+        </button>
       </div>
       <div style={{ marginBottom: 8 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6, gap: 8, flexWrap: 'wrap' }}>

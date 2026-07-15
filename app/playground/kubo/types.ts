@@ -65,6 +65,11 @@ export interface Supplement {
   sourceUrl?: string;
 }
 
+export interface MealTreat {
+  foodId: string;
+  g: number;
+}
+
 export interface MealEntry {
   id: string;
   time?: string;
@@ -72,8 +77,7 @@ export interface MealEntry {
   dryG: number;
   wetG: number;
   addedWaterMl: number;
-  treatFoodId?: string | null;
-  treatG?: number;
+  treats?: MealTreat[];
   supplements?: Supplement[];
   notes?: string;
 }

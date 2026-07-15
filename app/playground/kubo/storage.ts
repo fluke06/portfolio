@@ -50,12 +50,45 @@ function migrateCat(cat: Cat & { defaultSupplements?: unknown }): Cat {
   return { ...cat, defaultSupplements: normalizeSupplements(cat.defaultSupplements) };
 }
 
+interface LegacyMealEntry {
+  id: string;
+  time?: string;
+  label?: string;
+  dryG?: number;
+  wetG?: number;
+  addedWaterMl?: number;
+  treatFoodId?: string | null;
+  treatG?: number;
+  treats?: IntakeLog['meals'][number]['treats'];
+  supplements?: unknown;
+  notes?: string;
+}
+
 interface LegacyIntakeLog {
   date: string;
   dryG?: number;
   wetG?: number;
   addedWaterMl?: number;
-  meals?: (IntakeLog['meals'][number] & { supplements?: unknown })[];
+  meals?: LegacyMealEntry[];
+}
+
+function migrateMeal(m: LegacyMealEntry): IntakeLog['meals'][number] {
+  const treats = Array.isArray(m.treats)
+    ? m.treats.filter(t => t && typeof t.foodId === 'string' && typeof t.g === 'number' && t.g > 0)
+    : m.treatFoodId && typeof m.treatG === 'number' && m.treatG > 0
+      ? [{ foodId: m.treatFoodId, g: m.treatG }]
+      : undefined;
+  return {
+    id: m.id,
+    time: m.time,
+    label: m.label,
+    dryG: m.dryG ?? 0,
+    wetG: m.wetG ?? 0,
+    addedWaterMl: m.addedWaterMl ?? 0,
+    treats,
+    supplements: normalizeSupplements(m.supplements),
+    notes: m.notes,
+  };
 }
 
 function migrateIntake(intake: Record<string, Record<string, LegacyIntakeLog>> | undefined): Record<string, Record<string, IntakeLog>> {
@@ -68,10 +101,7 @@ function migrateIntake(intake: Record<string, Record<string, LegacyIntakeLog>> |
       if (Array.isArray(raw.meals)) {
         out[catId][date] = {
           date,
-          meals: raw.meals.map(m => ({
-            ...m,
-            supplements: normalizeSupplements(m.supplements),
-          })),
+          meals: raw.meals.map(migrateMeal),
         };
       } else if (typeof raw.dryG === 'number' || typeof raw.wetG === 'number' || typeof raw.addedWaterMl === 'number') {
         out[catId][date] = {
